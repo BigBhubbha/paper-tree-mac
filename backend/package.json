@@ -1,0 +1,7 @@
+{
+  "name": "paper-tree-backend",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": { "dev": "netlify dev", "test:local": "node test-local.mjs" }
+}

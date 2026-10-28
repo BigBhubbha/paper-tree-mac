@@ -1,0 +1,7 @@
+# Paper Tree backend: one serverless function, served at /api/explain.
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"

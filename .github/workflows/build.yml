@@ -1,0 +1,75 @@
+name: Build Paper Tree.app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      VERSION: "0.1.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)/Contents/Developer"
+          xcodebuild -version
+          swift --version
+
+      - name: Build universal app
+        run: UNIVERSAL=1 ./build.sh
+
+      - name: Check the app
+        run: |
+          APP="build/Paper Tree.app"
+          lipo -info "$APP/Contents/MacOS/PaperTree"
+          plutil -lint "$APP/Contents/Info.plist"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+          codesign -dv "$APP" 2>&1 | head -20
+
+      - name: Make DMG
+        run: |
+          rm -rf dist && mkdir -p dist/stage
+          cp -R "build/Paper Tree.app" dist/stage/
+          ln -s /Applications dist/stage/Applications
+          cat > "dist/stage/First time - read me.txt" <<'TXT'
+          Paper Tree for Mac
+
+          1. Drag Paper Tree into the Applications folder.
+          2. Open Applications, right-click Paper Tree, choose Open, then Open again.
+             (Only the first time. Paper Tree isn't signed by Apple yet.)
+          3. System Settings > Privacy & Security > Accessibility: switch on Paper Tree.
+          4. Click the flask at the top of your screen and turn on Research mode.
+          TXT
+          hdiutil create -volname "Paper Tree" -srcfolder dist/stage -ov -format UDZO -fs HFS+ dist/Paper-Tree.dmg
+          hdiutil verify dist/Paper-Tree.dmg
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Paper-Tree-dmg
+          path: dist/Paper-Tree.dmg
+          if-no-files-found: error
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v$VERSION"
+          NOTES="Paper Tree for Mac $VERSION (universal: Apple Silicon + Intel). Open the DMG, drag Paper Tree into Applications, then right-click it and choose Open the first time. Built from ${GITHUB_SHA::7}."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/Paper-Tree.dmg --clobber
+            gh release edit "$TAG" --notes "$NOTES"
+          else
+            gh release create "$TAG" dist/Paper-Tree.dmg --title "Paper Tree $VERSION" --notes "$NOTES" --target "$GITHUB_SHA"
+          fi
