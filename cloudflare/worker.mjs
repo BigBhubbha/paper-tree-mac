@@ -1,0 +1,152 @@
+// Paper Tree explainer. The Mac app posts {text, context, mode}; we ask Gemini and return {text}.
+// The Gemini key lives only here, in the GEMINI_API_KEY environment variable on Netlify.
+
+let ENV = {};
+const MODEL_DEFAULT = "gemini-flash-lite-latest";
+const geminiUrl = () => `https://generativelanguage.googleapis.com/v1beta/models/${ENV.GEMINI_MODEL || MODEL_DEFAULT}:generateContent`;
+
+const MAX_BODY_BYTES = 12_000;
+const MAX_TEXT = 1500;
+const MAX_CONTEXT = 1800;
+const MODES = new Set(["plain", "simpler", "detail"]);
+
+// Best-effort per-instance rate limit (serverless instances do not share memory).
+const WINDOW_MS = 60_000;
+const MAX_PER_WINDOW = 20;
+const hits = new Map();
+
+const HEADERS = {
+  "Content-Type": "application/json; charset=utf-8",
+  "Cache-Control": "no-store",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Paper-Tree-Token",
+};
+
+const json = (status, body) => new Response(JSON.stringify(body), { status, headers: HEADERS });
+
+const SYSTEM = [
+  "You are Paper Tree, a friendly guide who explains hard reading to a curious high school student.",
+  "Explain only the highlighted text. Use the surrounding context to pick the right meaning, but do not summarize the whole passage.",
+  "Write plain text only: no markdown, no bullet points, no headings, no asterisks, no emoji.",
+  "Do not use em dashes or en dashes. Use commas or periods instead.",
+  "Never invent citations, numbers, or facts that are not implied by the text. A single word or short term is fine: define it and explain what it means here. Only if the highlight is a meaningless fragment (like \"of the\") should you say so in one sentence and suggest highlighting the full sentence.",
+  "Do not start with phrases like 'Sure' or 'Great question'. Start with the explanation.",
+].join(" ");
+
+const MODE_RULES = {
+  plain: "Explain it in plain words a high school student would understand, in under 120 words. Define any jargon you use.",
+  simpler: "Explain it as simply as possible, like to a curious 12 year old, in under 70 words. Use one everyday comparison if it helps.",
+  detail: "Give a fuller explanation in under 170 words: what it means, why it matters in this context, and one related idea worth knowing. Keep it readable for a high school student.",
+};
+
+function clientIp(req, context) {
+  return req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+}
+
+function rateLimited(ip) {
+  const now = Date.now();
+  const list = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  list.push(now);
+  hits.set(ip, list);
+  if (hits.size > 5000) hits.clear();
+  return list.length > MAX_PER_WINDOW;
+}
+
+function clean(s, max) {
+  return String(s ?? "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
+function tidy(out) {
+  return out
+    .replace(/(\d)\s*[\u2013\u2014]\s*(\d)/g, "$1 to $2") // 10–20 becomes 10 to 20
+    .replace(/\s*[\u2014\u2013]\s*/g, ", ")            // no em or en dashes
+    .replace(/\*\*?|__|`|^#+\s*/gm, "")          // strip stray markdown
+    .replace(/,\s*,/g, ",")
+    .trim();
+}
+
+async function handle(req, context) {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: HEADERS });
+  if (req.method !== "POST") return json(405, { error: "Use POST." });
+
+  const key = ENV.GEMINI_API_KEY;
+  if (!key) return json(500, { error: "The server is missing GEMINI_API_KEY." });
+
+  const appToken = ENV.APP_TOKEN;
+  if (appToken && req.headers.get("x-paper-tree-token") !== appToken) {
+    return json(401, { error: "Missing or wrong app token." });
+  }
+
+  if (rateLimited(clientIp(req, context))) return json(429, { error: "Too many requests. Try again in a minute." });
+
+  const raw = await req.text();
+  if (raw.length > MAX_BODY_BYTES) return json(413, { error: "That highlight is too long. Try a shorter piece." });
+
+  let body;
+  try { body = JSON.parse(raw); } catch { return json(400, { error: "Body must be JSON." }); }
+
+  const text = clean(body?.text, MAX_TEXT);
+  const ctx = clean(body?.context, MAX_CONTEXT);
+  const mode = MODES.has(body?.mode) ? body.mode : "plain";
+  if (!text) return json(400, { error: "Highlight some text first." });
+
+  const prompt =
+    `${MODE_RULES[mode]}\n\n` +
+    `Highlighted text:\n"""${text}"""\n\n` +
+    (ctx ? `Surrounding context (for meaning only):\n"""${ctx}"""\n` : "No surrounding context was available.\n");
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 20_000);
+  try {
+    const r = await fetch(geminiUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      signal: controller.signal,
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM }] },
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: mode === "detail" ? 500 : 320,
+          thinkingConfig: { thinkingLevel: "minimal" },
+        },
+      }),
+    });
+
+    if (r.status === 429) return json(429, { error: "The AI is busy right now. Try again in a minute." });
+    if (!r.ok) {
+      const detail = await r.text().catch(() => "");
+      console.error("Gemini error", r.status, detail.slice(0, 500));
+      return json(502, { error: "The AI service had a problem. Try again soon." });
+    }
+
+    const data = await r.json();
+    const cand = data?.candidates?.[0];
+    const out = (cand?.content?.parts || []).map((p) => p.text || "").join("").trim();
+    if (!out) {
+      const blocked = cand?.finishReason === "SAFETY" || data?.promptFeedback?.blockReason;
+      return json(502, { error: blocked ? "The AI declined to explain that one." : "The AI came back empty. Try again." });
+    }
+    return json(200, { text: tidy(out), mode, model: ENV.GEMINI_MODEL || MODEL_DEFAULT });
+  } catch (e) {
+    const timedOut = e?.name === "AbortError";
+    return json(timedOut ? 504 : 502, { error: timedOut ? "The AI took too long. Try again." : "Could not reach the AI service." });
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+
+export default {
+  async fetch(req, env) {
+    ENV = env;
+    const url = new URL(req.url);
+    if (url.pathname !== "/api/explain") return json(404, { error: "Not found." });
+    return handle(req, {});
+  },
+};

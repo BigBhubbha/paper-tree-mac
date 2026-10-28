@@ -33,7 +33,7 @@ struct SettingsView: View {
                 Text("Paper Tree sends your highlight to your own small server, which asks the AI. No key ever lives in this app.")
                     .font(.text(14)).foregroundColor(Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
-                field("Server address", text: $endpointDraft, placeholder: AppState.placeholderEndpoint)
+                field("Server address", text: $endpointDraft, placeholder: AppState.defaultEndpoint)
                 field("App token (optional)", text: $tokenDraft, placeholder: "Only if your server sets APP_TOKEN", secure: true)
                 HStack(spacing: 14) {
                     Button("Save") { save() }.buttonStyle(StampButtonStyle(compact: true))

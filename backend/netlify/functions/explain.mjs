@@ -1,7 +1,7 @@
 // Paper Tree explainer. The Mac app posts {text, context, mode}; we ask Gemini and return {text}.
 // The Gemini key lives only here, in the GEMINI_API_KEY environment variable on Netlify.
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 const MAX_BODY_BYTES = 12_000;

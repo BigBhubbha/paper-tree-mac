@@ -15,6 +15,8 @@ final class AppState: ObservableObject {
     static let shared = AppState()
 
     static let placeholderEndpoint = "https://YOUR-SITE.netlify.app/api/explain"
+    /// The built-in explainer. Users never have to set anything up.
+    static let defaultEndpoint = "https://paper-tree-explain.papertree.workers.dev/api/explain"
 
     private enum Key {
         static let researchMode = "researchMode"
@@ -52,7 +54,7 @@ final class AppState: ObservableObject {
         let defaults = UserDefaults.standard
         defaults.register(defaults: [
             Key.researchMode: false,
-            Key.endpoint: AppState.placeholderEndpoint,
+            Key.endpoint: AppState.defaultEndpoint,
             Key.clientToken: "",
             Key.buddyX: -1.0,
             Key.showBuddy: true,
@@ -60,7 +62,8 @@ final class AppState: ObservableObject {
             Key.onboarded: false,
         ])
         researchMode = defaults.bool(forKey: Key.researchMode)
-        endpoint = defaults.string(forKey: Key.endpoint) ?? AppState.placeholderEndpoint
+        let saved = defaults.string(forKey: Key.endpoint) ?? AppState.defaultEndpoint
+        endpoint = saved.contains("YOUR-SITE") || saved.trimmingCharacters(in: .whitespaces).isEmpty ? AppState.defaultEndpoint : saved
         clientToken = defaults.string(forKey: Key.clientToken) ?? ""
         buddyCenterXFraction = defaults.double(forKey: Key.buddyX)
         showBuddy = defaults.bool(forKey: Key.showBuddy)
