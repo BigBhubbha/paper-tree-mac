@@ -81,8 +81,8 @@ jobs:
 
           After this, updates install themselves from the flask's menu.
           TXT
-          hdiutil create -volname "Paper Tree" -srcfolder dist/stage -ov -format UDZO -fs HFS+ dist/Paper-Tree.dmg
-          hdiutil verify dist/Paper-Tree.dmg
+          hdiutil create -volname "Paper Tree" -srcfolder dist/stage -ov -format UDZO -fs HFS+ dist/Paper_Tree.dmg
+          hdiutil verify dist/Paper_Tree.dmg
           ditto -c -k --sequesterRsrc --keepParent "build/Paper Tree.app" "dist/Paper-Tree-$VERSION.zip"
           ls -la dist
 
@@ -111,7 +111,7 @@ jobs:
         with:
           name: Paper-Tree-${{ env.VERSION }}
           path: |
-            dist/Paper-Tree.dmg
+            dist/Paper_Tree.dmg
             dist/Paper-Tree-*.zip
             dist/appcast.xml
           if-no-files-found: error
@@ -123,7 +123,7 @@ jobs:
         run: |
           NOTES="release-notes/$VERSION.md"
           [[ -f "$NOTES" ]] || { echo "Paper Tree for Mac $VERSION" > "$RUNNER_TEMP/notes.md"; NOTES="$RUNNER_TEMP/notes.md"; }
-          gh release create "$TAG" dist/Paper-Tree.dmg "dist/Paper-Tree-$VERSION.zip" dist/appcast.xml \
+          gh release create "$TAG" dist/Paper_Tree.dmg "dist/Paper-Tree-$VERSION.zip" dist/appcast.xml \
             --title "Paper Tree $VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA" --latest
 
       - name: Release already exists
