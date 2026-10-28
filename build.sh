@@ -34,9 +34,32 @@ BIN_DIR="$(swift build -c release "${ARCH_FLAGS[@]}" --show-bin-path)"
 
 echo "==> Assembling $APP"
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/Fonts"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/Fonts" "$APP/Contents/Frameworks"
 cp "$BIN_DIR/$EXEC" "$APP/Contents/MacOS/$EXEC"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+# CI passes BUILD_NUMBER so every release has a higher CFBundleVersion (Sparkle compares this number).
+if [[ -n "${BUILD_NUMBER:-}" ]]; then
+  /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$APP/Contents/Info.plist"
+fi
+
+# Sparkle (the updater) ships as a prebuilt framework. SwiftPM links it but does not embed it,
+# so copy it into Contents/Frameworks (ditto keeps its internal symlinks) and add that folder to the rpath.
+SPARKLE_FW=""
+for candidate in \
+    "$BIN_DIR/Sparkle.framework" \
+    "$BIN_DIR/PackageFrameworks/Sparkle.framework" \
+    $(find .build/artifacts -type d -path "*Sparkle.xcframework/macos-*/Sparkle.framework" 2>/dev/null); do
+  if [[ -d "$candidate" ]]; then SPARKLE_FW="$candidate"; break; fi
+done
+if [[ -z "$SPARKLE_FW" ]]; then
+  echo "Could not find Sparkle.framework after the build." >&2
+  exit 1
+fi
+echo "==> Embedding $SPARKLE_FW"
+ditto "$SPARKLE_FW" "$APP/Contents/Frameworks/Sparkle.framework"
+if ! otool -l "$APP/Contents/MacOS/$EXEC" | grep -q "@executable_path/../Frameworks"; then
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/$EXEC"
+fi
 cp Resources/Fonts/*.ttf "$APP/Contents/Resources/Fonts/"
 cp Resources/Fonts/*.txt Resources/Fonts/*.md "$APP/Contents/Resources/Fonts/" 2>/dev/null || true
 
@@ -50,7 +73,15 @@ fi
 printf "APPL????" > "$APP/Contents/PkgInfo"
 
 echo "==> Signing (ad hoc)"
-codesign --force --deep --sign - --identifier "$BUNDLE_ID" --timestamp=none "$APP"
+# Inside out: Sparkle's helpers, then the framework, then the app.
+SP="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+for item in "$SP/XPCServices/Installer.xpc" "$SP/XPCServices/Downloader.xpc" "$SP/Autoupdate" "$SP/Updater.app"; do
+  if [[ -e "$item" ]]; then
+    codesign --force --sign - --timestamp=none --preserve-metadata=entitlements "$item"
+  fi
+done
+codesign --force --sign - --timestamp=none "$APP/Contents/Frameworks/Sparkle.framework"
+codesign --force --sign - --identifier "$BUNDLE_ID" --timestamp=none "$APP"
 codesign --verify --verbose=1 "$APP" || true
 
 echo ""

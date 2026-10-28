@@ -13,9 +13,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var settingsWindow: NSWindow?
     private var welcomeWindow: NSWindow?
     private var bag = Set<AnyCancellable>()
+    private var updater: Updater?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Typeface.registerBundledFonts()
+        updater = Updater()
         state.accessibilityGranted = Accessibility.isTrusted
 
         card = CardController()
@@ -86,6 +88,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let settings = NSMenuItem(title: "Settings...", action: #selector(showSettings), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)
+        let updates = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+        updates.target = self
+        updates.isEnabled = updater?.canCheckForUpdates ?? false
+        menu.addItem(updates)
         menu.addItem(.separator())
         let quit = NSMenuItem(title: "Quit Paper Tree", action: #selector(quit), keyEquivalent: "q")
         quit.target = self
@@ -96,6 +102,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func toggleBuddy() { state.showBuddy.toggle() }
     @objc private func resetBuddy() { buddy.resetPosition() }
     @objc private func showSettings() { openSettings() }
+    @objc private func checkForUpdates() { updater?.checkForUpdates() }
     @objc private func showWelcome() { openWelcome() }
     @objc private func quit() { NSApp.terminate(nil) }
 
@@ -129,7 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func openWelcome() {
         if welcomeWindow == nil {
-            welcomeWindow = makeWindow(title: "Welcome to Paper Tree", size: NSSize(width: 540, height: 520),
+            welcomeWindow = makeWindow(title: "Welcome to Paper Tree", size: NSSize(width: 620, height: 580),
                                        view: WelcomeView(state: state,
                                                          openSettings: { [weak self] in self?.openSettings() },
                                                          done: { [weak self] in

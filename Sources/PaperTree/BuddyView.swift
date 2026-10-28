@@ -7,13 +7,16 @@ struct BuddyView: View {
     var researchMode: Bool
     /// Pause the idle animation (used for static renders and reduced motion).
     var animated: Bool = true
+    /// Menu bar size: the halo is pulled in so the whole buddy, glow included, fits inside its square.
+    var compact: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(mood: BuddyMood, researchMode: Bool, animated: Bool = true) {
+    init(mood: BuddyMood, researchMode: Bool, animated: Bool = true, compact: Bool = false) {
         self.mood = mood
         self.researchMode = researchMode
         self.animated = animated
+        self.compact = compact
     }
 
     var body: some View {
@@ -21,7 +24,7 @@ struct BuddyView: View {
             let t = (animated && !reduceMotion) ? timeline.date.timeIntervalSinceReferenceDate : 0
             Canvas { ctx, size in
                 ctx.scaleBy(x: size.width / 100, y: size.height / 100)
-                BuddyArt.draw(in: &ctx, t: t, mood: mood, research: researchMode)
+                BuddyArt.draw(in: &ctx, t: t, mood: mood, research: researchMode, compact: compact)
             }
         }
         .accessibilityElement()
@@ -53,15 +56,17 @@ enum BuddyArt {
     static let eyeL: CGFloat = 41.5
     static let eyeR: CGFloat = 58.5
 
-    static func draw(in ctx: inout GraphicsContext, t: Double, mood: BuddyMood, research: Bool) {
+    static func draw(in ctx: inout GraphicsContext, t: Double, mood: BuddyMood, research: Bool, compact: Bool = false) {
         let thinking = mood == .thinking
         let noticed = mood == .noticed
 
         // 1. Halo: pink to lilac, brighter and wider in research mode.
         let pulse = research ? (sin(t * 2.4) * 0.5 + 0.5) : 0
-        let haloR: CGFloat = research ? 47 + CGFloat(pulse) * 2 : 42
+        // Compact (menu bar): the glow stays inside the 100 x 100 square so nothing spills below the bar.
+        let haloCY: CGFloat = compact ? 52 : 56
+        let haloR: CGFloat = compact ? (research ? 44 + CGFloat(pulse) * 2 : 40) : (research ? 47 + CGFloat(pulse) * 2 : 42)
         let haloAlpha = research ? 0.95 : 0.7
-        let halo = Path(ellipseIn: CGRect(x: 50 - haloR, y: 56 - haloR, width: haloR * 2, height: haloR * 2))
+        let halo = Path(ellipseIn: CGRect(x: 50 - haloR, y: haloCY - haloR, width: haloR * 2, height: haloR * 2))
         ctx.fill(halo, with: .radialGradient(
             Gradient(stops: [
                 .init(color: Palette.haloPink.opacity(haloAlpha), location: 0.0),
@@ -69,15 +74,15 @@ enum BuddyArt {
                 .init(color: Palette.haloLilac.opacity(haloAlpha * 0.55), location: 0.75),
                 .init(color: Palette.haloLilac.opacity(0), location: 1.0),
             ]),
-            center: CGPoint(x: 50, y: 56), startRadius: 0, endRadius: haloR))
+            center: CGPoint(x: 50, y: haloCY), startRadius: 0, endRadius: haloR))
 
         // 2. Idle bob. A little hop when a highlight is noticed.
-        let bob = CGFloat(sin(t * 2.1)) * 1.6 + (noticed ? CGFloat(-abs(sin(t * 6))) * 2.2 : 0)
+        let bob = CGFloat(sin(t * 2.1)) * (compact ? 1.0 : 1.6) + (noticed ? CGFloat(-abs(sin(t * 6))) * 2.2 : 0)
         var c = ctx
         c.translateBy(x: 0, y: bob)
 
         // Soft ground shadow (does not bob).
-        ctx.fill(Path(ellipseIn: CGRect(x: 30, y: 91.5, width: 40, height: 4)),
+        ctx.fill(Path(ellipseIn: CGRect(x: 30, y: compact ? 92 : 91.5, width: 40, height: compact ? 3.5 : 4)),
                  with: .color(Palette.mintLine.opacity(0.18)))
 
         let body = bodyPath

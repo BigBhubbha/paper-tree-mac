@@ -12,19 +12,37 @@ concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Must match the exact Sparkle version pinned in Package.swift.
+  SPARKLE_VERSION: "2.10.1"
+
 jobs:
   build:
     runs-on: macos-latest
-    env:
-      VERSION: "0.1.0"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Select Xcode
         run: |
           sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)/Contents/Developer"
           xcodebuild -version
           swift --version
+
+      - name: Work out version and build number
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)"
+          BUILD_NUMBER="$(git rev-list --count HEAD)"
+          TAG="v$VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then PUBLISH=false; else PUBLISH=true; fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> "$GITHUB_ENV"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "PUBLISH=$PUBLISH" >> "$GITHUB_ENV"
+          echo "Version $VERSION, build $BUILD_NUMBER, tag $TAG, publish $PUBLISH"
 
       - name: Build universal app
         run: UNIVERSAL=1 ./build.sh
@@ -33,14 +51,24 @@ jobs:
         run: |
           APP="build/Paper Tree.app"
           lipo -info "$APP/Contents/MacOS/PaperTree"
+          lipo -info "$APP/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle"
+          otool -L "$APP/Contents/MacOS/PaperTree" | grep -i sparkle
+          otool -l "$APP/Contents/MacOS/PaperTree" | grep -A2 LC_RPATH
           plutil -lint "$APP/Contents/Info.plist"
+          for k in CFBundleShortVersionString CFBundleVersion SUFeedURL SUPublicEDKey SUEnableAutomaticChecks; do
+            echo "$k = $(/usr/libexec/PlistBuddy -c "Print :$k" "$APP/Contents/Info.plist")"
+          done
           codesign --verify --deep --strict --verbose=2 "$APP"
           codesign -dv "$APP" 2>&1 | head -20
+          # The binary must load with Sparkle from inside the bundle.
+          "$APP/Contents/MacOS/PaperTree" --paper-tree-load-check >/dev/null 2>&1 &
+          PID=$!; sleep 4
+          if kill -0 $PID 2>/dev/null; then echo "App launched and stayed up for 4 s"; kill $PID; else wait $PID; echo "App exited early with status $?"; exit 1; fi
 
-      - name: Make DMG
+      - name: Make DMG and update archive
         run: |
           rm -rf dist && mkdir -p dist/stage
-          cp -R "build/Paper Tree.app" dist/stage/
+          ditto "build/Paper Tree.app" "dist/stage/Paper Tree.app"
           ln -s /Applications dist/stage/Applications
           cat > "dist/stage/First time - read me.txt" <<'TXT'
           Paper Tree for Mac
@@ -49,27 +77,55 @@ jobs:
           2. Open Applications, right-click Paper Tree, choose Open, then Open again.
              (Only the first time. Paper Tree isn't signed by Apple yet.)
           3. System Settings > Privacy & Security > Accessibility: switch on Paper Tree.
-          4. Click the flask at the top of your screen and turn on Research mode.
+          4. Click the flask in your menu bar and turn on Research mode.
+
+          After this, updates install themselves from the flask's menu.
           TXT
           hdiutil create -volname "Paper Tree" -srcfolder dist/stage -ov -format UDZO -fs HFS+ dist/Paper-Tree.dmg
           hdiutil verify dist/Paper-Tree.dmg
+          ditto -c -k --sequesterRsrc --keepParent "build/Paper Tree.app" "dist/Paper-Tree-$VERSION.zip"
           ls -la dist
+
+      - name: Sign the update and write the appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          if [[ -z "$SPARKLE_PRIVATE_KEY" ]]; then echo "SPARKLE_PRIVATE_KEY secret is missing" >&2; exit 1; fi
+          curl -fsSL -o "$RUNNER_TEMP/sparkle.tar.xz" "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz"
+          mkdir -p "$RUNNER_TEMP/sparkle" && tar -xJf "$RUNNER_TEMP/sparkle.tar.xz" -C "$RUNNER_TEMP/sparkle"
+          KEYFILE="$RUNNER_TEMP/ed_key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$KEYFILE"
+          ZIP="dist/Paper-Tree-$VERSION.zip"
+          SIG_LINE="$("$RUNNER_TEMP/sparkle/bin/sign_update" --ed-key-file "$KEYFILE" "$ZIP")"
+          rm -f "$KEYFILE"
+          echo "$SIG_LINE"
+          ED_SIG="$(echo "$SIG_LINE" | sed -n 's/.*sparkle:edSignature="\([^"]*\)".*/\1/p')"
+          LENGTH="$(stat -f%z "$ZIP")"
+          if [[ -z "$ED_SIG" ]]; then echo "sign_update gave no signature" >&2; exit 1; fi
+          URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/Paper-Tree-$VERSION.zip"
+          NOTES="release-notes/$VERSION.md"
+          [[ -f "$NOTES" ]] || { echo "Paper Tree $VERSION" > "$RUNNER_TEMP/notes.md"; NOTES="$RUNNER_TEMP/notes.md"; }
+          python3 scripts/make_appcast.py dist/appcast.xml "$VERSION" "$BUILD_NUMBER" "$URL" "$LENGTH" "$ED_SIG" "$NOTES"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Paper-Tree-dmg
-          path: dist/Paper-Tree.dmg
+          name: Paper-Tree-${{ env.VERSION }}
+          path: |
+            dist/Paper-Tree.dmg
+            dist/Paper-Tree-*.zip
+            dist/appcast.xml
           if-no-files-found: error
 
       - name: Publish release
+        if: env.PUBLISH == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="v$VERSION"
-          NOTES="Paper Tree for Mac $VERSION (universal: Apple Silicon + Intel). Open the DMG, drag Paper Tree into Applications, then right-click it and choose Open the first time. Built from ${GITHUB_SHA::7}."
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" dist/Paper-Tree.dmg --clobber
-            gh release edit "$TAG" --notes "$NOTES"
-          else
-            gh release create "$TAG" dist/Paper-Tree.dmg --title "Paper Tree $VERSION" --notes "$NOTES" --target "$GITHUB_SHA"
-          fi
+          NOTES="release-notes/$VERSION.md"
+          [[ -f "$NOTES" ]] || { echo "Paper Tree for Mac $VERSION" > "$RUNNER_TEMP/notes.md"; NOTES="$RUNNER_TEMP/notes.md"; }
+          gh release create "$TAG" dist/Paper-Tree.dmg "dist/Paper-Tree-$VERSION.zip" dist/appcast.xml \
+            --title "Paper Tree $VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA" --latest
+
+      - name: Release already exists
+        if: env.PUBLISH != 'true'
+        run: echo "Release $TAG already exists, so this run only uploads the build as an artifact. Bump CFBundleShortVersionString to publish a new version."

@@ -71,7 +71,10 @@ final class BuddyHitView: NSView {
 
 @MainActor
 final class BuddyController: NSObject, NSPopoverDelegate {
-    static let size = NSSize(width: 58, height: 58)
+    /// Fallback size before we know the screen; the real size comes from the menu bar height.
+    static let defaultSize = NSSize(width: 24, height: 24)
+    /// Current buddy size: a square exactly as tall as the menu bar strip.
+    private(set) var size = BuddyController.defaultSize
 
     private let state = AppState.shared
     let panel: FloatingPanel
@@ -87,12 +90,13 @@ final class BuddyController: NSObject, NSPopoverDelegate {
     var onRequestAccess: (() -> Void)?
 
     override init() {
-        panel = FloatingPanel(contentRect: NSRect(origin: .zero, size: BuddyController.size))
+        panel = FloatingPanel(contentRect: NSRect(origin: .zero, size: BuddyController.defaultSize))
         super.init()
         // Sit above the menu bar so the buddy can rest in it, beside the notch.
         panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.mainMenuWindow)) + 2)
 
-        let root = NSView(frame: NSRect(origin: .zero, size: BuddyController.size))
+        let root = NSView(frame: NSRect(origin: .zero, size: BuddyController.defaultSize))
+        root.autoresizingMask = [.width, .height]
         let host = NSHostingView(rootView: BuddyHost(state: state))
         host.frame = root.bounds
         host.autoresizingMask = [.width, .height]
@@ -129,6 +133,11 @@ final class BuddyController: NSObject, NSPopoverDelegate {
                                                object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.placeOnScreen() }
         }
+        // Menu bar height can differ per display and Space (for example after plugging in a monitor).
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification,
+                                                          object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.placeOnScreen() }
+        }
 
         state.$showBuddy.removeDuplicates().sink { [weak self] show in
             Task { @MainActor in self?.setVisible(show) }
@@ -142,23 +151,65 @@ final class BuddyController: NSObject, NSPopoverDelegate {
         NSScreen.screens.first(where: { $0.safeAreaInsets.top > 0 }) ?? NSScreen.screens.first
     }
 
+    /// Height of the menu bar strip on this screen, in points.
+    /// Notch Macs report it as the top safe area inset (about 37 pt); other displays show it as the
+    /// gap between frame and visibleFrame (about 24 pt). If the menu bar auto-hides, fall back to the
+    /// system status bar thickness.
+    static func menuBarHeight(of screen: NSScreen) -> CGFloat {
+        let notch = screen.safeAreaInsets.top
+        let gap = screen.frame.maxY - screen.visibleFrame.maxY
+        var h = max(notch, gap)
+        if h < 18 || h > 60 { h = max(NSStatusBar.system.thickness, 22) }
+        return floor(h)
+    }
+
+    /// The strip the buddy lives in: full width of the screen, menu bar height, flush with the top.
+    func menuBarStrip(of screen: NSScreen) -> NSRect {
+        let h = BuddyController.menuBarHeight(of: screen)
+        let f = screen.frame
+        return NSRect(x: f.minX, y: f.maxY - h, width: f.width, height: h)
+    }
+
+    /// The camera housing, if this screen has one. The buddy would be hidden behind it, so it never rests there.
+    private func notchGap(of screen: NSScreen) -> ClosedRange<CGFloat>? {
+        guard screen.safeAreaInsets.top > 0,
+              let left = screen.auxiliaryTopLeftArea, let right = screen.auxiliaryTopRightArea,
+              right.minX > left.maxX else { return nil }
+        return left.maxX...right.minX
+    }
+
+    /// Keeps the buddy's left edge inside the strip and out from under the notch.
+    private func clampedX(_ x: CGFloat, in strip: NSRect, screen: NSScreen) -> CGFloat {
+        let w = size.width
+        var x = min(max(x, strip.minX + 2), strip.maxX - w - 2)
+        if let gap = notchGap(of: screen), x + w > gap.lowerBound, x < gap.upperBound {
+            let toLeft = gap.lowerBound - w - 2
+            let toRight = gap.upperBound + 2
+            x = (x + w / 2) < (gap.lowerBound + gap.upperBound) / 2 ? toLeft : toRight
+        }
+        return x
+    }
+
     func placeOnScreen() {
         guard let screen = homeScreen else { return }
-        let f = screen.frame
-        let w = BuddyController.size.width
+        let strip = menuBarStrip(of: screen)
+        // A square as tall as the menu bar, with 1 pt of air top and bottom so the glow never touches the tabs.
+        let side = max(strip.height - 2, 16)
+        size = NSSize(width: side, height: side)
+        let w = size.width
         var centerX: CGFloat
         if state.buddyCenterXFraction >= 0 && state.buddyCenterXFraction <= 1 {
-            centerX = f.minX + CGFloat(state.buddyCenterXFraction) * f.width
-        } else if let left = screen.auxiliaryTopLeftArea, screen.safeAreaInsets.top > 0 {
+            centerX = strip.minX + CGFloat(state.buddyCenterXFraction) * strip.width
+        } else if let gap = notchGap(of: screen) {
             // Default: rest just left of the notch, where the app menus end.
-            centerX = left.maxX - w / 2 - 6
+            centerX = gap.lowerBound - w / 2 - 6
         } else {
-            centerX = f.midX
+            centerX = strip.midX
         }
-        centerX = min(max(centerX, f.minX + w / 2 + 4), f.maxX - w / 2 - 4)
-        // Top of the panel touches the top of the screen; the flask hangs into the menu bar.
-        let origin = NSPoint(x: centerX - w / 2, y: f.maxY - BuddyController.size.height + 4)
-        panel.setFrameOrigin(origin)
+        let x = clampedX(centerX - w / 2, in: strip, screen: screen)
+        // Bottom edge sits 1 pt above the bottom of the menu bar; it never hangs below it.
+        let frame = NSRect(x: x, y: strip.minY + 1, width: w, height: side)
+        panel.setFrame(frame, display: true)
     }
 
     func resetPosition() {
@@ -166,17 +217,22 @@ final class BuddyController: NSObject, NSPopoverDelegate {
         placeOnScreen()
     }
 
+    /// Dragging is sideways only, inside the menu bar strip. The buddy can pass over the notch while you drag
+    /// and settles beside it when you let go.
     private func moveBy(_ dx: CGFloat) {
         guard let screen = homeScreen else { return }
-        var frame = panel.frame
-        frame.origin.x = min(max(frame.origin.x + dx, screen.frame.minX + 2), screen.frame.maxX - frame.width - 2)
-        panel.setFrameOrigin(frame.origin)
+        let strip = menuBarStrip(of: screen)
+        let x = min(max(panel.frame.origin.x + dx, strip.minX + 2), strip.maxX - size.width - 2)
+        panel.setFrameOrigin(NSPoint(x: x, y: strip.minY + 1))
         if popover.isShown { popover.performClose(nil) }
     }
 
     private func savePosition() {
         guard let screen = homeScreen else { return }
-        state.buddyCenterXFraction = Double((panel.frame.midX - screen.frame.minX) / screen.frame.width)
+        let strip = menuBarStrip(of: screen)
+        let x = clampedX(panel.frame.origin.x, in: strip, screen: screen)
+        panel.setFrameOrigin(NSPoint(x: x, y: strip.minY + 1))
+        state.buddyCenterXFraction = Double((panel.frame.midX - strip.minX) / strip.width)
     }
 
     func setVisible(_ visible: Bool) {
@@ -220,7 +276,7 @@ final class BuddyController: NSObject, NSPopoverDelegate {
 private struct BuddyHost: View {
     @ObservedObject var state: AppState
     var body: some View {
-        BuddyView(mood: state.mood, researchMode: state.researchMode)
-            .frame(width: BuddyController.size.width, height: BuddyController.size.height)
+        BuddyView(mood: state.mood, researchMode: state.researchMode, compact: true)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
