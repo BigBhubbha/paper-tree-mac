@@ -75,6 +75,45 @@ Use this on every new surface. If a line fails, fix it or write down why.
 | Release notes | Already plain and specific | Keep the voice: what changed, where to find it, no hype |
 | DMG | Plain Finder window with a text file. No background image | Left as is for now; a drawn DMG background is a separate task |
 
+## Second pass: Settings, and what reads as generated (Oct 29, 2026, afternoon)
+
+Prompted by a screenshot of 0.2.2 Settings: a title, a rule, then three stacked sections of label, sentence, control. Correct, and exactly what a generator would make.
+
+### What makes a screen read as AI-made
+
+- **Every section has the same anatomy.** Heading, grey sentence, row of controls, repeat. Sites built by generators fall back on the same identical-card rhythm: same padding, same radius, same weight, so the eye learns the cards are interchangeable and skips them. The fix that keeps coming up is to change the layout from one section to the next and give one element clear dominance. [19][20][21]
+- **Containers for everything.** Cards for stats, cards for settings, cards inside cards, all with the same big radius. Hierarchy can come from spacing, type, rules and placement instead; remove a container and see if anyone misses it. [21]
+- **The obvious composition for the category.** A settings page that looks like every settings page: toggles on the right, labels on the left, perfect symmetry. The structure came from the category, not from this product. [21]
+- **Uniform controls.** Five identical iOS-style switches say "a form". The Mac's own Settings app gets criticized for swapping checkboxes for toggles everywhere and grouping things by no clear idea. [22]
+- **Stock type pairing with no jobs.** A display serif for headings and a sans for everything else, used the same way on every surface. Our 0.2.2 Settings did this: Fell for "Settings" and "Behavior", Hanken for the rest.
+- **Filler copy.** Sentences that could describe any app ("Start when you log in"). Generic copy is one of the most cited tells. [19][20]
+
+### What signals a person made it
+
+- **Objects with a past.** Herbarium labels have a fixed anatomy that has barely changed in 200 years: a constant printed heading, typed field names, the collector's hand filling the blanks, a collector number, and later corrections added as separate small "det." slips, never written over the original. The label sits lower right, glued along one edge. Writing tools went from quill to nib to pencil to typewriter, and you can see the person in a rushed hand. These are real conventions we can borrow instead of inventing decoration. [23][24][25][26]
+- **Weight and touch, used where they explain.** The new physicality in apps (Monologue's buttons studied from a light switch's shadow, Teenage Engineering's labels) works when the texture tells you something, like "this can be pressed", and fails as a texture pack. Keep one light direction and let color mean something. [27][28]
+- **Considered hierarchy.** One dominant thing per screen, asymmetric columns (a 5:3 split instead of thirds), and type sizes that differ on purpose. [19]
+- **Imperfect marks, rationed.** Hand-drawn, slightly irregular marks read as human (Inkdrop's raw, imperfect textures), but only if a few things get them. [29]
+- **Personality in the copy, and in small true details.** Rogue Amoeba keeps posts about every design decision and moves crowded settings into their own window instead of cramming a tab. Nova is praised for "restraint" and for details that reward attention instead of demanding it. [30][31]
+- **Ephemera with a ritual.** Postcard and stamp apps (Lost Post, Postpond) borrow the slowness and small ceremony of paper. A stamp landing when you approve something is a ritual, not an ornament. [32][33]
+
+### Applied to Settings (0.2.3 branch)
+
+Settings stops being a form and becomes **Plate II, the instrument drawer**, a sheet taped to the desk like the setup notebook:
+
+| Was | Now | Why |
+|---|---|---|
+| "Settings" in Fell, a rule, a typewriter label far right | "Plate II. Instruments" in typewriter (red catalog number), the title "The instrument drawer", one plain sentence, a printer's double rule | A plate in the same journal as setup, not a generic page head |
+| About you as rows of label plus menu | A printed herbarium label: centered heading "Paper Tree Herbarium", typed field names, answers handwritten in blue-black ink on dotted lines, "det. you" in the corner, "walk through setup again" | Real label anatomy; the answers look written by the reader |
+| Nothing alive on the page | A taped slip with the real number of cards this Mac has opened (`specimenCount`, practice included, and it says so). Zero shows "None yet" | A live corner with true data only. There is no growth tree yet, so none is drawn |
+| Three identical toggles | Three hanging specimen tags, each a slightly different width, tilt and indent, answered by circling "on" or "off" in pencil (green for on, red for off) | Controls become the same object the setup questions use; no uniform switch column |
+| "Shortcut." sentence | Fig. 1: the right end of a Mac keyboard drawn in ink, the right Option key marked with highlighter, red pen notes for two and three taps. Clicking the key plays a double tap | Teach by drawing; the one interactive detail explains the real gesture |
+| Permission dot | The green APPROVED stamp from setup when granted; a red pen note and "Let Paper Tree in" when not | Reuses the setup ritual |
+| Server address and token as a section | "For tinkerers", a closed disclosure under the colophon | No reader needs it |
+| Big "Check for Updates" stamp button | Colophon line: "Paper Tree 0.2.2, build N" and an underlined "Check for updates" | Quiet; this is a footnote |
+
+Rules applied to the other screens: color only means something (green on, red off or problem, yellow what you highlighted); one hand-drawn accent per object; varied section anatomy. The island is unchanged on purpose. The card already follows the website card.
+
 ## Sources
 
 1. The Tells, IOV Studio Labs (PDF): https://labs.iovstudio.kr/papers/ai-design-tells.pdf
@@ -95,3 +134,18 @@ Use this on every new surface. If a line fails, fix it or write down why.
 16. Teenage Engineering, Palate reference: https://palatemcp.com/gallery/teenage-engineering
 17. FormQue: https://www.formque.online/
 18. Personalization Form pattern: https://ui-patterns.com/patterns/PersonalizationForm
+19. 10 Signs a Website Was Generated by AI, Sailop: https://sailop.com/blog/10-dead-giveaways-website-generated-by-ai
+20. AI slop: 8 signs a website was generated by AI, Tenex: https://tenex.studio/en/blog/ai-slop-ui-8-signes/
+21. Why Every AI-Generated UI Looks the Same (video): https://www.youtube.com/watch?v=XKDfs9xTzfw
+22. What Makes an App Feel "Right" on the Mac?, Coyote Tracks: https://coyotetracks.org/blog/app-feel-on-mac/
+23. Labels, University of Arizona Herbarium: https://herbarium.arizona.edu/labels
+24. Annotation of Herbarium Specimens, Florida Museum (FLAS): https://www.floridamuseum.ufl.edu/herbarium/methods/annotations/
+25. Make Your Own Herbarium Specimens, University of Melbourne (MELU): https://plantdorks.com/wp-content/uploads/2024/04/MELU_MakeYourOwnHerb_Specimen_Dec18.pdf
+26. Analysis of museum labels description: https://bibliotekanauki.pl/articles/2171587.pdf ; Deciphering Handwriting on Botanic Labels, Nature Museum: https://naturemuseum.org/cas/blog/deciphering-handwriting-on-botanic-labels
+27. How to Design Software With Weight, Roger Wong: https://rogerwong.me/2026/03/how-to-design-software-with-weight
+28. Skeuomorphic UI in 2026, Tactile UI: https://tactileui.dev/blog/skeuomorphic-ui-in-2026
+29. Inkdrop case study, Doan Nguyen: https://doannguyenn.myportfolio.com/inkdrop
+30. SoundSource 6 Design Stories, Rogue Amoeba: https://weblog.rogueamoeba.com/2026/05/07/soundsource-6-design-stories/
+31. Nova: An Editor with a Soul, Nathan A. King: https://www.nateking.dev/blog/nova-an-editor-with-a-soul
+32. Lost Post, Daydrift: https://daydrift.design/work/lostpost/
+33. Postpond, Lilith Yu: https://lilithyu.com/projects/postpond

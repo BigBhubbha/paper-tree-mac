@@ -351,41 +351,31 @@ private struct ReaderLabel: View {
 
     private func row(_ title: String, options: [ProfileOption], value: Binding<String>) -> some View {
         line(title) {
-            Menu {
-                ForEach(options) { o in Button(o.label) { value.wrappedValue = o.id } }
-                Divider()
-                Button("Leave blank") { value.wrappedValue = "" }
-            } label: {
-                answer(ReaderProfile.label(value.wrappedValue, in: options))
+            AnswerPicker(title: title,
+                         shown: ReaderProfile.label(value.wrappedValue, in: options),
+                         options: options,
+                         selected: value.wrappedValue.isEmpty ? [] : [value.wrappedValue],
+                         multiple: false) { id in
+                value.wrappedValue = value.wrappedValue == id ? "" : id
             }
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            .fixedSize()
-            .accessibilityLabel(title)
         }
     }
 
     private var fieldsRow: some View {
         let picked = ReaderProfile.fields.filter { state.profileFields.contains($0.id) }.map(\.short)
         return line("reads") {
-            Menu {
-                ForEach(ReaderProfile.fields) { o in
-                    Button((state.profileFields.contains(o.id) ? "\u{2713} " : "    ") + o.label) {
-                        if let i = state.profileFields.firstIndex(of: o.id) { state.profileFields.remove(at: i) }
-                        else { state.profileFields.append(o.id) }
-                    }
-                }
-            } label: {
-                answer(picked.isEmpty ? nil : picked.joined(separator: ", "))
+            AnswerPicker(title: "fields you read",
+                         shown: picked.isEmpty ? nil : picked.joined(separator: ", "),
+                         options: ReaderProfile.fields,
+                         selected: Set(state.profileFields),
+                         multiple: true) { id in
+                if let i = state.profileFields.firstIndex(of: id) { state.profileFields.remove(at: i) }
+                else { state.profileFields.append(id) }
             }
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            .fixedSize()
-            .accessibilityLabel("fields you read")
         }
     }
 
-    private func answer(_ text: String?) -> some View {
+    static func answer(_ text: String?) -> some View {
         Text(text ?? "blank, tap to fill in")
             .font(.hand(text == nil ? 14 : 16))
             .foregroundColor(text == nil ? Palette.pencil : Color(hex: 0x23314A)) // blue-black fountain pen ink
@@ -406,6 +396,38 @@ private struct ReaderLabel: View {
                 .frame(height: 1)
                 .padding(.leading, 94)
         }
+    }
+}
+
+/// The handwritten answer on the label. Clicking it opens a small slip of choices to circle,
+/// the same way the setup questions work.
+private struct AnswerPicker: View {
+    var title: String
+    var shown: String?
+    var options: [ProfileOption]
+    var selected: Set<String>
+    var multiple: Bool
+    var pick: (String) -> Void
+    @State private var open = false
+
+    var body: some View {
+        Button { open.toggle() } label: { ReaderLabel.answer(shown) }
+            .buttonStyle(.plain)
+            .accessibilityLabel(title)
+            .accessibilityValue(shown ?? "blank")
+            .popover(isPresented: $open, arrowEdge: .bottom) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(multiple ? "\(title), tick any" : "\(title), circle one")
+                        .font(.typewriter(10.5)).foregroundColor(Palette.ink3)
+                    CircleChoices(options: options, selected: selected, multiple: multiple) { id in
+                        pick(id)
+                        if !multiple { open = false }
+                    }
+                }
+                .padding(16)
+                .frame(width: 340, alignment: .leading)
+                .background(PaperSheet(corner: 0))
+            }
     }
 }
 
@@ -530,10 +552,11 @@ struct OptionKeyFigure: View {
             .padding(.leading, 34)
 
             // Red pen notes, pointing at the marked key.
-            HandNote(text: "tap tap: the island opens", arrowTo: CGPoint(x: 18, y: 50))
-                .offset(x: 222, y: 0)
-            HandNote(text: "tap tap tap: Research mode on or off", arrowTo: CGPoint(x: -20, y: 30), flip: true)
-                .offset(x: 330, y: 26)
+            // The marked key spans about x 264 to 324, with its top edge at y 58.
+            HandNote(text: "tap tap: the island opens", arrowTo: CGPoint(x: 52, y: 30))
+                .offset(x: 218, y: 0)
+            HandNote(text: "tap tap tap: Research mode on or off", arrowTo: CGPoint(x: -34, y: 10), flip: true)
+                .offset(x: 352, y: 22)
         }
         .frame(height: 124, alignment: .topLeading)
     }
