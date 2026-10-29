@@ -1,65 +1,16 @@
-// First launch: a taped specimen sheet from the lab notebook where the flask introduces itself,
-// says in a handwritten note why it needs Accessibility, and gets stamped once you approve it.
+// Setup, entry 003: a taped specimen sheet where the flask introduces itself, says in a
+// handwritten note why it needs Accessibility, and gets stamped once you approve it.
+// The small drawn pieces at the bottom (tape, marks, stamp) are shared with the rest of setup.
 import SwiftUI
 
-struct WelcomeView: View {
+/// Setup entry 003: the specimen sheet that asks for Accessibility and stamps itself when it's on.
+struct AccessibilitySheet: View {
     @ObservedObject var state: AppState
-    var openSettings: () -> Void
-    var done: () -> Void
-
     @State private var asked = false
-    private let poll = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
-
-    init(state: AppState, openSettings: @escaping () -> Void, done: @escaping () -> Void) {
-        self.state = state
-        self.openSettings = openSettings
-        self.done = done
-    }
 
     private var granted: Bool { state.accessibilityGranted }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            // Running head, like a journal page.
-            HStack {
-                Text("Paper Tree, field notes on reading")
-                Spacer()
-                Text("Entry No. 001")
-            }
-            .font(.typewriter(10.5))
-            .foregroundColor(Palette.ink3)
-            .padding(.horizontal, 6)
-            Rectangle().fill(Palette.ink.opacity(0.55)).frame(height: 0.8).padding(.top, 6)
-
-            sheet
-                .padding(.top, 22)
-
-            HStack {
-                Button(granted ? "Close" : "Not now") { done() }
-                    .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
-                Spacer()
-                Text("Paper Tree asks for nothing else. No screen recording, no keystrokes.")
-                    .font(.ui(11.5))
-                    .foregroundColor(Palette.ink3)
-            }
-            .padding(.top, 16)
-            .padding(.horizontal, 6)
-        }
-        .padding(.top, 34)
-        .padding(.horizontal, 30)
-        .padding(.bottom, 20)
-        .frame(width: 620, height: 580)
-        .background(DeskBackground().ignoresSafeArea())
-        .onReceive(poll) { _ in
-            let trusted = Accessibility.isTrusted
-            if trusted != state.accessibilityGranted {
-                withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) {
-                    state.accessibilityGranted = trusted
-                }
-                state.refreshMood()
-            }
-        }
-    }
+    var body: some View { sheet }
 
     // MARK: The specimen sheet
 
@@ -90,7 +41,7 @@ struct WelcomeView: View {
             Tape().rotationEffect(.degrees(-7)).offset(x: 34, y: -11)
             Tape().rotationEffect(.degrees(5)).offset(x: 430, y: -10)
         }
-        .frame(height: 430)
+        .frame(height: 410)
         .rotationEffect(.degrees(-0.5))
         .shadow(color: Palette.ink.opacity(0.13), radius: 7, x: 0, y: 4)
     }
@@ -162,11 +113,12 @@ struct WelcomeView: View {
     private var action: some View {
         VStack(alignment: .leading, spacing: 9) {
             if granted {
-                Button("Start reading") { done() }
-                    .buttonStyle(StampButtonStyle())
-                Text("You're in. Triple-tap right Option any time to put the goggles on.")
-                    .font(.hand(14))
+                Text("You're in. I can see highlights now.")
+                    .font(.hand(15))
                     .foregroundColor(Palette.green)
+                Text("Next, a quick practice run.")
+                    .font(.text(13.5))
+                    .foregroundColor(Palette.ink3)
             } else {
                 Button("Let me read highlights") {
                     asked = true
@@ -192,7 +144,7 @@ struct WelcomeView: View {
 // MARK: - Pieces
 
 /// The lab bench behind the sheet: darker paper with grain.
-private struct DeskBackground: View {
+struct DeskBackground: View {
     var body: some View {
         Palette.paper
             .overlay(Image(nsImage: PaperGrain.image).resizable(resizingMode: .tile).opacity(0.9))
@@ -200,7 +152,7 @@ private struct DeskBackground: View {
 }
 
 /// A strip of translucent masking tape.
-private struct Tape: View {
+struct Tape: View {
     var body: some View {
         Rectangle()
             .fill(Color(hex: 0xE8DDB4).opacity(0.78))
@@ -211,7 +163,7 @@ private struct Tape: View {
 }
 
 /// Corner crop marks, like the plates on the landing site.
-private struct RegistrationMarks: Shape {
+struct RegistrationMarks: Shape {
     func path(in r: CGRect) -> Path {
         var p = Path()
         let l: CGFloat = 9, inset: CGFloat = -5
@@ -227,7 +179,7 @@ private struct RegistrationMarks: Shape {
 }
 
 /// A tiny "1 cm" scale bar under the figure.
-private struct ScaleBar: View {
+struct ScaleBar: View {
     var body: some View {
         HStack(spacing: 5) {
             ZStack(alignment: .leading) {
@@ -242,7 +194,7 @@ private struct ScaleBar: View {
 }
 
 /// A hand-drawn square bracket in the margin.
-private struct MarginBracket: Shape {
+struct MarginBracket: Shape {
     func path(in r: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: r.maxX, y: r.minY + 2))
@@ -254,7 +206,7 @@ private struct MarginBracket: Shape {
 }
 
 /// Empty pencil circle while waiting; a green ink stamp with a check mark the moment access is on.
-private struct ApprovalStamp: View {
+struct ApprovalStamp: View {
     var granted: Bool
 
     var body: some View {
@@ -299,7 +251,7 @@ private struct ApprovalStamp: View {
     }
 }
 
-private struct CheckMark: Shape {
+struct CheckMark: Shape {
     func path(in r: CGRect) -> Path {
         var p = Path()
         p.move(to: CGPoint(x: r.minX + 2, y: r.midY + 1))

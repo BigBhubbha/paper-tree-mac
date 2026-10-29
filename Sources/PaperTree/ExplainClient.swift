@@ -36,11 +36,13 @@ struct ExplainClient {
     var endpoint: String
     var token: String
     var configured: Bool
+    /// Optional "who is reading" hints. Older servers simply ignore it.
+    var profile: ProfilePayload? = nil
 
     static let maxTextChars = 1500
     static let maxContextChars = 1800
 
-    private struct RequestBody: Encodable { let text: String; let context: String; let mode: String }
+    private struct RequestBody: Encodable { let text: String; let context: String; let mode: String; let profile: ProfilePayload? }
     private struct ResponseBody: Decodable { let text: String?; let terms: [GlossaryTerm]?; let error: String? }
 
     func explain(text: String, context: String, mode: ExplainMode) async throws -> Explanation {
@@ -58,7 +60,8 @@ struct ExplainClient {
         request.httpBody = try JSONEncoder().encode(RequestBody(
             text: String(text.prefix(ExplainClient.maxTextChars)),
             context: String(context.prefix(ExplainClient.maxContextChars)),
-            mode: mode.rawValue))
+            mode: mode.rawValue,
+            profile: profile))
 
         let data: Data
         let response: URLResponse

@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var testing = false
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginError: String = ""
+    @State private var showDeveloper = false
 
     init(state: AppState, showWelcome: @escaping () -> Void,
          checkForUpdates: @escaping () -> Void) {
@@ -28,6 +29,18 @@ struct SettingsView: View {
     }
 
     var body: some View {
+        ScrollView(.vertical, showsIndicators: false) { content }
+            .frame(width: 520, height: 680)
+            .background(PaperSheet(corner: 0, graph: true).ignoresSafeArea())
+            .onAppear {
+                endpointDraft = state.endpoint
+                tokenDraft = state.clientToken
+                state.accessibilityGranted = Accessibility.isTrusted
+                launchAtLogin = SMAppService.mainApp.status == .enabled
+            }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Settings").font(.fell(30)).foregroundColor(Palette.ink)
@@ -36,23 +49,19 @@ struct SettingsView: View {
             }
             Rectangle().fill(Palette.ink).frame(height: 1.2).padding(.top, 8)
 
-            section("The explainer") {
-                Text("Paper Tree sends your highlight to your own small server, which asks the AI. No key ever lives in this app.")
+            section("About you") {
+                Text("I use these to pitch explanations at your level. They're sent with each highlight, nothing else about you is.")
                     .font(.text(14)).foregroundColor(Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
-                field("Server address", text: $endpointDraft, placeholder: AppState.defaultEndpoint)
-                field("App token (optional)", text: $tokenDraft, placeholder: "Only if your server sets APP_TOKEN", secure: true)
-                HStack(spacing: 14) {
-                    Button("Save") { save() }.buttonStyle(StampButtonStyle(compact: true))
-                    Button(testing ? "Testing..." : "Test it") { test() }
-                        .buttonStyle(StampButtonStyle(compact: true, quiet: true))
-                        .disabled(testing)
-                    Text(testStatus)
-                        .font(.hand(14))
-                        .foregroundColor(testStatus.hasPrefix("Works") ? Palette.green : Palette.red)
-                        .lineLimit(2)
+                profileRow("year in school", options: ReaderProfile.schoolYears, value: $state.profileSchool)
+                profileRow("science background", options: ReaderProfile.expertise, value: $state.profileExpertise)
+                fieldsRow
+                profileRow("note length", options: ReaderProfile.lengths, value: $state.profileLength)
+                HStack {
+                    Button("Redo setup") { showWelcome() }.buttonStyle(InkLinkButtonStyle())
+                    Spacer()
                 }
-                .padding(.top, 4)
+                .padding(.top, 2)
             }
 
             section("Behavior") {
@@ -74,7 +83,7 @@ struct SettingsView: View {
                     Text(state.accessibilityGranted ? "Accessibility is on. I can read highlights." : "Accessibility is off. I can't read highlights yet.")
                         .font(.ui(13)).foregroundColor(Palette.ink2)
                     Spacer()
-                    Button("Set up") { showWelcome() }.buttonStyle(InkLinkButtonStyle())
+                    Button("Open setup") { showWelcome() }.buttonStyle(InkLinkButtonStyle())
                 }
                 HStack(alignment: .top, spacing: 8) {
                     Text("Shortcut.")
@@ -85,7 +94,41 @@ struct SettingsView: View {
                 }
             }
 
-            Spacer(minLength: 0)
+            section("For developers") {
+                DisclosureGroup(isExpanded: $showDeveloper) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Highlights go to Paper Tree's explainer, which asks Google's Gemini for a short answer. Point this at your own copy of the explainer only if you run one.")
+                            .font(.text(13.5)).foregroundColor(Palette.ink2)
+                            .fixedSize(horizontal: false, vertical: true)
+                        field("Server address", text: $endpointDraft, placeholder: AppState.defaultEndpoint)
+                        field("App token (optional)", text: $tokenDraft, placeholder: "Only if your server sets APP_TOKEN", secure: true)
+                        HStack(spacing: 14) {
+                            Button("Save") { save() }.buttonStyle(StampButtonStyle(compact: true))
+                            Button(testing ? "Testing..." : "Test it") { test() }
+                                .buttonStyle(StampButtonStyle(compact: true, quiet: true))
+                                .disabled(testing)
+                            Button("Use the built-in explainer") {
+                                endpointDraft = AppState.defaultEndpoint
+                                tokenDraft = ""
+                                save()
+                            }
+                            .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
+                        }
+                        if !testStatus.isEmpty {
+                            Text(testStatus)
+                                .font(.hand(14))
+                                .foregroundColor(testStatus.hasPrefix("Works") ? Palette.green : Palette.red)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .padding(.top, 8)
+                } label: {
+                    Text(showDeveloper ? "Hide server settings" : "Show server settings")
+                        .font(.ui(12.5)).foregroundColor(Palette.ink3)
+                }
+            }
+
+            Spacer(minLength: 16)
             HStack {
                 Text(versionText)
                     .font(.typewriter(10)).foregroundColor(Palette.ink3)
@@ -95,13 +138,53 @@ struct SettingsView: View {
             }
         }
         .padding(26)
-        .frame(width: 520, height: 640)
-        .background(PaperSheet(corner: 0, graph: true).ignoresSafeArea())
-        .onAppear {
-            endpointDraft = state.endpoint
-            tokenDraft = state.clientToken
-            state.accessibilityGranted = Accessibility.isTrusted
-            launchAtLogin = SMAppService.mainApp.status == .enabled
+        .frame(width: 520, alignment: .topLeading)
+    }
+
+    /// One typed label and the current answer in handwriting; click it to pick another.
+    private func profileRow(_ title: String, options: [ProfileOption], value: Binding<String>) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text(title).font(.typewriter(11.5)).foregroundColor(Palette.ink3)
+                .frame(width: 150, alignment: .leading)
+            Menu {
+                ForEach(options) { o in
+                    Button(o.label) { value.wrappedValue = o.id }
+                }
+                Divider()
+                Button("Leave blank") { value.wrappedValue = "" }
+            } label: {
+                Text(ReaderProfile.label(value.wrappedValue, in: options) ?? "not set")
+                    .font(.hand(15.5))
+                    .foregroundColor(value.wrappedValue.isEmpty ? Palette.pencil : Palette.ink)
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var fieldsRow: some View {
+        let picked = ReaderProfile.fields.filter { state.profileFields.contains($0.id) }.map(\.short)
+        return HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Text("fields you read").font(.typewriter(11.5)).foregroundColor(Palette.ink3)
+                .frame(width: 150, alignment: .leading)
+            Menu {
+                ForEach(ReaderProfile.fields) { o in
+                    Button((state.profileFields.contains(o.id) ? "\u{2713} " : "    ") + o.label) {
+                        if let i = state.profileFields.firstIndex(of: o.id) { state.profileFields.remove(at: i) }
+                        else { state.profileFields.append(o.id) }
+                    }
+                }
+            } label: {
+                Text(picked.isEmpty ? "not set" : picked.joined(separator: ", "))
+                    .font(.hand(15.5))
+                    .foregroundColor(picked.isEmpty ? Palette.pencil : Palette.ink)
+                    .lineLimit(1)
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            Spacer(minLength: 0)
         }
     }
 
@@ -150,7 +233,7 @@ struct SettingsView: View {
         save()
         testing = true
         testStatus = ""
-        let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured)
+        let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured, profile: state.profilePayload)
         Task { @MainActor in
             do {
                 _ = try await client.explain(text: "photosynthesis", context: "", mode: .simpler)

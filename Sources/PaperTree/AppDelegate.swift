@@ -46,7 +46,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setUpMainMenu()
         state.refreshMood()
 
-        if !state.accessibilityGranted || !state.hasOnboarded {
+        if !state.accessibilityGranted || state.needsSetup {
             openWelcome()
         }
     }
@@ -74,6 +74,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let settings = NSMenuItem(title: "Settings...", action: #selector(showSettings), keyEquivalent: ",")
         settings.target = self
         appMenu.addItem(settings)
+        let redo = NSMenuItem(title: "Redo setup...", action: #selector(showWelcome), keyEquivalent: "")
+        redo.target = self
+        appMenu.addItem(redo)
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Hide Paper Tree", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(.separator())
@@ -143,6 +146,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let settings = NSMenuItem(title: "Settings...", action: #selector(showSettings), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)
+        let redo = NSMenuItem(title: "Redo setup...", action: #selector(showWelcome), keyEquivalent: "")
+        redo.target = self
+        menu.addItem(redo)
         let updates = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
         updates.target = self
         updates.isEnabled = updater?.canCheckForUpdates ?? false
@@ -179,7 +185,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func openSettings() {
         if settingsWindow == nil {
-            settingsWindow = makeWindow(title: "Paper Tree Settings", size: NSSize(width: 520, height: 640),
+            settingsWindow = makeWindow(title: "Paper Tree Settings", size: NSSize(width: 520, height: 680),
                                         view: SettingsView(state: state,
                                                            showWelcome: { [weak self] in self?.openWelcome() },
                                                            checkForUpdates: { [weak self] in self?.updater?.checkForUpdates() }))
@@ -188,17 +194,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
+    /// The practice passage in setup shows a real card, just like a highlight in any other app.
+    private func explainPractice(text: String, context: String, rect: NSRect) {
+        let sel = CapturedSelection(text: text, context: context, rect: rect, preciseRect: true,
+                                    appPID: ProcessInfo.processInfo.processIdentifier, appName: "Paper Tree",
+                                    capturedAt: Date(), source: .accessibility)
+        card.show(for: sel, clickedAt: NSPoint(x: rect.minX + 24, y: rect.minY))
+    }
+
     func openWelcome() {
-        if welcomeWindow == nil {
-            welcomeWindow = makeWindow(title: "Welcome to Paper Tree", size: NSSize(width: 620, height: 580),
-                                       view: WelcomeView(state: state,
-                                                         openSettings: { [weak self] in self?.openSettings() },
-                                                         done: { [weak self] in
-                                                             self?.state.hasOnboarded = true
-                                                             if self?.state.accessibilityGranted == true { self?.state.researchMode = true }
-                                                             self?.welcomeWindow?.close()
-                                                         }))
-        }
+        // Always start a fresh notebook at entry 001 (this is also "Redo setup").
+        welcomeWindow?.close()
+        welcomeWindow = makeWindow(title: "Set up Paper Tree", size: SetupView.size,
+                                   view: SetupView(state: state,
+                                                   island: island.model,
+                                                   explainPractice: { [weak self] text, context, rect in
+                                                       self?.explainPractice(text: text, context: context, rect: rect)
+                                                   },
+                                                   done: { [weak self] in
+                                                       guard let self else { return }
+                                                       self.state.hasOnboarded = true
+                                                       self.state.setupVersionCompleted = AppState.currentSetupVersion
+                                                       self.card.close()
+                                                       self.welcomeWindow?.close()
+                                                   }))
         NSApp.activate(ignoringOtherApps: true)
         welcomeWindow?.makeKeyAndOrderFront(nil)
     }

@@ -25,7 +25,7 @@ const HEADERS = {
 const json = (status, body) => new Response(JSON.stringify(body), { status, headers: HEADERS });
 
 const SYSTEM = [
-  "You are Paper Tree, a friendly guide who explains hard reading to a curious high school student.",
+  "You are Paper Tree, a friendly guide who explains hard reading. Unless told who the reader is, assume a curious high school student.",
   "Explain only the highlighted text. Use the surrounding context to pick the right meaning, but do not summarize the whole passage.",
   "Write plain text only: no markdown, no bullet points, no headings, no asterisks, no emoji.",
   "Do not use em dashes or en dashes. Use commas or periods instead.",
@@ -60,6 +60,49 @@ const RESPONSE_SCHEMA = {
   required: ["answer", "terms"],
   propertyOrdering: ["answer", "terms"],
 };
+
+// Optional "who is reading" hints from the app (0.2.3+). Only known values are used.
+const SCHOOL = {
+  middle: "a middle school student",
+  hs9: "a high school freshman", hs10: "a high school sophomore", hs11: "a high school junior", hs12: "a high school senior",
+  ug1: "a first year college student", ug2: "a second year college student", ug3: "a third year college student",
+  ug4: "a fourth year college student", grad: "a grad student", none: "an adult reader not in school",
+};
+const EXPERTISE = {
+  beginner: "a curious beginner in science",
+  classes: "someone who has taken some science classes",
+  ra: "an undergrad researcher or research assistant",
+  grad: "a grad student in science",
+  pro: "a professional scientist or principal investigator",
+};
+const FIELDS = {
+  biology: "biology", chemistry: "chemistry", physics: "physics", csai: "computer science and AI",
+  medicine: "medicine", psychology: "psychology", earth: "earth and climate science", other: "other fields",
+};
+const LENGTH_SCALE = { shortest: 0.7, balanced: 1, thorough: 1.3 };
+const BASE_WORDS = { plain: 40, simpler: 28, detail: 80 };
+
+function readerNote(profile) {
+  if (!profile || typeof profile !== "object") return { note: "", scale: 1, expert: false, novice: false };
+  const who = [SCHOOL[profile.school], EXPERTISE[profile.expertise]].filter(Boolean);
+  const fields = (Array.isArray(profile.fields) ? profile.fields : []).map((f) => FIELDS[f]).filter(Boolean).slice(0, 4);
+  const expert = ["grad", "pro"].includes(profile.expertise) || profile.school === "grad";
+  const novice = profile.expertise === "beginner" || ["middle", "hs9", "hs10"].includes(profile.school);
+  let note = "";
+  if (who.length) note += `The reader is ${who.join(", and ")}. `;
+  if (fields.length) note += `They mostly read ${fields.join(", ")}. `;
+  if (expert) note += "Use the standard terms of the field without defining basics, and focus on what is specific or surprising in this passage. ";
+  else if (novice) note += "Use everyday words and avoid jargon entirely. ";
+  else if (who.length) note += "Pitch the vocabulary at their level. ";
+  return { note, scale: LENGTH_SCALE[profile.length] || 1, expert, novice };
+}
+
+function modeRule(mode, reader) {
+  let rule = MODE_RULES[mode];
+  if (reader.scale !== 1) rule = rule.replace(/under \d+ words/, `under ${Math.round(BASE_WORDS[mode] * reader.scale)} words`);
+  if (reader.note) rule = rule.replace("a high school student", "this reader").replace("like to a curious 12 year old", "in the simplest everyday words");
+  return rule;
+}
 
 const MAX_TOKENS = { plain: 400, simpler: 320, detail: 560 };
 
@@ -137,8 +180,9 @@ export default async (req, context) => {
   const mode = MODES.has(body?.mode) ? body.mode : "plain";
   if (!text) return json(400, { error: "Highlight some text first." });
 
+  const reader = readerNote(body?.profile);
   const prompt =
-    `Reply as JSON with "answer" and "terms".\n${MODE_RULES[mode]}\n${TERMS_RULE}\n\n` +
+    `Reply as JSON with "answer" and "terms".\n${reader.note ? reader.note + "\n" : ""}${modeRule(mode, reader)}\n${reader.expert ? TERMS_RULE.replace("0 to 4", "0 to 2").replace("a high school student", "this reader") : TERMS_RULE}\n\n` +
     `Highlighted text:\n"""${text}"""\n\n` +
     (ctx ? `Surrounding context (for meaning only):\n"""${ctx}"""\n` : "No surrounding context was available.\n");
 

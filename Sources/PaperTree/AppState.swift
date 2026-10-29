@@ -25,6 +25,11 @@ final class AppState: ObservableObject {
         static let specimenCount = "specimenCount"
         static let onboarded = "onboardedAccessibility"
         static let copyFallback = "copyFallbackEnabled"
+        static let setupVersion = "setupVersionCompleted"
+        static let school = "profileSchool"
+        static let expertise = "profileExpertise"
+        static let fields = "profileFields"
+        static let length = "profileLength"
     }
 
     private let defaults = UserDefaults.standard
@@ -36,6 +41,25 @@ final class AppState: ObservableObject {
     /// When Accessibility gives no text, briefly press Cmd+C to read the highlight (pasteboard is restored).
     @Published var copyFallbackEnabled: Bool { didSet { defaults.set(copyFallbackEnabled, forKey: Key.copyFallback) } }
     @Published var hasOnboarded: Bool { didSet { defaults.set(hasOnboarded, forKey: Key.onboarded) } }
+
+    /// Bump when setup gains a step everyone should see once (2 = the questions and practice in 0.2.3).
+    static let currentSetupVersion = 2
+    @Published var setupVersionCompleted: Int { didSet { defaults.set(setupVersionCompleted, forKey: Key.setupVersion) } }
+    var needsSetup: Bool { setupVersionCompleted < AppState.currentSetupVersion }
+
+    // About the reader (empty string means "not answered").
+    @Published var profileSchool: String { didSet { defaults.set(profileSchool, forKey: Key.school) } }
+    @Published var profileExpertise: String { didSet { defaults.set(profileExpertise, forKey: Key.expertise) } }
+    @Published var profileFields: [String] { didSet { defaults.set(profileFields, forKey: Key.fields) } }
+    @Published var profileLength: String { didSet { defaults.set(profileLength, forKey: Key.length) } }
+
+    var profilePayload: ProfilePayload? {
+        let p = ProfilePayload(school: profileSchool.isEmpty ? nil : profileSchool,
+                               expertise: profileExpertise.isEmpty ? nil : profileExpertise,
+                               fields: profileFields.isEmpty ? nil : profileFields,
+                               length: profileLength.isEmpty ? nil : profileLength)
+        return p.isEmpty ? nil : p
+    }
 
     @Published var accessibilityGranted: Bool = false
     @Published var mood: BuddyMood = .idle
@@ -53,6 +77,7 @@ final class AppState: ObservableObject {
             Key.clientToken: "",
             Key.copyFallback: true,
             Key.onboarded: false,
+            Key.setupVersion: 0,
         ])
         researchMode = defaults.bool(forKey: Key.researchMode)
         let saved = defaults.string(forKey: Key.endpoint) ?? AppState.defaultEndpoint
@@ -60,6 +85,11 @@ final class AppState: ObservableObject {
         clientToken = defaults.string(forKey: Key.clientToken) ?? ""
         copyFallbackEnabled = defaults.bool(forKey: Key.copyFallback)
         hasOnboarded = defaults.bool(forKey: Key.onboarded)
+        setupVersionCompleted = defaults.integer(forKey: Key.setupVersion)
+        profileSchool = defaults.string(forKey: Key.school) ?? ""
+        profileExpertise = defaults.string(forKey: Key.expertise) ?? ""
+        profileFields = defaults.stringArray(forKey: Key.fields) ?? []
+        profileLength = defaults.string(forKey: Key.length) ?? ""
     }
 
     /// True when the endpoint still looks like the placeholder or is not a usable https URL.

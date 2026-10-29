@@ -140,7 +140,8 @@ final class CardController {
         model.phase = .loading
         state.mood = .thinking
 
-        let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured)
+        let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured,
+                                   profile: state.profilePayload)
         task = Task { [weak self] in
             do {
                 let explanation = try await client.explain(text: sel.text, context: sel.context, mode: mode)
