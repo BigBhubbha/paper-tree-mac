@@ -46,7 +46,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         setUpMainMenu()
         state.refreshMood()
 
-        if !state.accessibilityGranted || state.needsSetup {
+        if state.shouldReplaySetupForUpdate {
+            // Testing period: walk through setup again after every update (see AppState.replaySetupOnEveryUpdate).
+            openWelcome(replayAfterUpdate: true)
+        } else if !state.accessibilityGranted || state.needsSetup {
             openWelcome()
         }
     }
@@ -202,12 +205,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         card.show(for: sel, clickedAt: NSPoint(x: rect.minX + 24, y: rect.minY))
     }
 
-    func openWelcome() {
+    func openWelcome() { openWelcome(replayAfterUpdate: false) }
+
+    /// `replayAfterUpdate` hides the Accessibility page when permission is already granted.
+    func openWelcome(replayAfterUpdate: Bool) {
         // Always start a fresh notebook at entry 001 (this is also "Redo setup").
         welcomeWindow?.close()
         welcomeWindow = makeWindow(title: "Set up Paper Tree", size: SetupView.size,
                                    view: SetupView(state: state,
                                                    island: island.model,
+                                                   skipPermissionIfGranted: replayAfterUpdate,
                                                    explainPractice: { [weak self] text, context, rect in
                                                        self?.explainPractice(text: text, context: context, rect: rect)
                                                    },
@@ -215,6 +222,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                                                        guard let self else { return }
                                                        self.state.hasOnboarded = true
                                                        self.state.setupVersionCompleted = AppState.currentSetupVersion
+                                                       self.state.markSetupSeenForThisBuild()
                                                        self.card.close()
                                                        self.welcomeWindow?.close()
                                                    }))

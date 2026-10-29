@@ -14,6 +14,13 @@ enum BuddyMood: Equatable {
 final class AppState: ObservableObject {
     static let shared = AppState()
 
+    // TODO: Turn this off (set to false) before the public launch.
+    /// Testing-period switch. When true, the setup walkthrough opens again after every update
+    /// (any new CFBundleVersion), with your earlier answers already filled in. The Accessibility
+    /// page is skipped unless permission is actually missing. Set to false for normal
+    /// first-run-only setup.
+    static let replaySetupOnEveryUpdate = true
+
     static let placeholderEndpoint = "https://YOUR-SITE.netlify.app/api/explain"
     /// The built-in explainer. Users never have to set anything up.
     static let defaultEndpoint = "https://paper-tree-explain.papertree.workers.dev/api/explain"
@@ -30,6 +37,7 @@ final class AppState: ObservableObject {
         static let expertise = "profileExpertise"
         static let fields = "profileFields"
         static let length = "profileLength"
+        static let lastSeenBuild = "lastSeenBuild"
     }
 
     private let defaults = UserDefaults.standard
@@ -46,6 +54,16 @@ final class AppState: ObservableObject {
     static let currentSetupVersion = 2
     @Published var setupVersionCompleted: Int { didSet { defaults.set(setupVersionCompleted, forKey: Key.setupVersion) } }
     var needsSetup: Bool { setupVersionCompleted < AppState.currentSetupVersion }
+
+    /// This copy's build number (CFBundleVersion), and the one setup last ran on.
+    static let currentBuild = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+    var lastSeenBuild: String? { defaults.string(forKey: Key.lastSeenBuild) }
+    /// True on the first launch of a new build while `replaySetupOnEveryUpdate` is on.
+    var shouldReplaySetupForUpdate: Bool {
+        AppState.replaySetupOnEveryUpdate && !AppState.currentBuild.isEmpty && lastSeenBuild != AppState.currentBuild
+    }
+    /// Called when setup is finished or skipped, so it does not replay again until the next build.
+    func markSetupSeenForThisBuild() { defaults.set(AppState.currentBuild, forKey: Key.lastSeenBuild) }
 
     // About the reader (empty string means "not answered").
     @Published var profileSchool: String { didSet { defaults.set(profileSchool, forKey: Key.school) } }

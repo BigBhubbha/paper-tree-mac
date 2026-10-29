@@ -14,15 +14,18 @@ struct SetupView: View {
     var explainPractice: (_ text: String, _ context: String, _ screenRect: NSRect) -> Void
     var done: () -> Void
 
+    /// After an update replay: leave out the Accessibility page while permission is granted.
+    var skipPermissionIfGranted = false
     @State private var step: Int
 
-    init(state: AppState, island: IslandModel, initialStep: Int = 0,
+    init(state: AppState, island: IslandModel, skipPermissionIfGranted: Bool = false, initialStep: Int = 0,
          explainPractice: @escaping (_ text: String, _ context: String, _ screenRect: NSRect) -> Void,
          done: @escaping () -> Void) {
         self.state = state
         self.island = island
         self.explainPractice = explainPractice
         self.done = done
+        self.skipPermissionIfGranted = skipPermissionIfGranted
         _step = State(initialValue: initialStep)
     }
     @State private var forward = true
@@ -109,6 +112,9 @@ struct SetupView: View {
     }
 
     private func go(_ next: Int) {
+        var next = next
+        // Entry 003 is the permission page; hop over it when it has nothing to ask.
+        if next == 2 && skipPermissionIfGranted && state.accessibilityGranted { next = next > step ? 3 : 1 }
         forward = next > step
         withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) { step = max(0, min(4, next)) }
     }
