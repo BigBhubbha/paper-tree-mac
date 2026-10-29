@@ -82,7 +82,7 @@ jobs:
           grep -qi "designated => $EXPECTED" "$RUNNER_TEMP/dr.txt" \
             || { echo "Designated requirement is not the stable one: expected designated => $EXPECTED" >&2; exit 1; }
           # The app must satisfy exactly the requirement macOS stored when Accessibility was granted.
-          codesign --verify --strict -R="=designated => $EXPECTED" "$APP"
+          codesign --verify --strict -R="=$EXPECTED" "$APP"
           codesign -dvv "$APP" 2>&1 | grep -E "Authority|Identifier|TeamIdentifier|Signature"
           echo "Stable designated requirement OK"
 

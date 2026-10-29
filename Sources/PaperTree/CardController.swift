@@ -73,7 +73,7 @@ final class CardController {
             anchorPoint.y = click.y - 14
         }
         placeBelow = true
-        lastSize = CGSize(width: ExplanationCardView.width, height: 170)
+        lastSize = CGSize(width: ExplanationCardView.width, height: 200)
         layout(size: lastSize)
 
         panel.alphaValue = 0
@@ -165,7 +165,9 @@ final class CardController {
     private func layout(size: CGSize) {
         let screen = NSScreen.screens.first(where: { $0.frame.contains(anchorPoint) }) ?? NSScreen.main ?? NSScreen.screens.first
         let vf = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-        let w = size.width, h = size.height
+        let w = size.width
+        // Never taller than the screen; the explanation area scrolls instead of clipping.
+        let h = min(size.height, vf.height - 16)
         let gap: CGFloat = 10
 
         var x = anchorPoint.x - 40

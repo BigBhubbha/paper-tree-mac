@@ -35,10 +35,12 @@ const SYSTEM = [
 ].join(" ");
 
 const MODE_RULES = {
-  plain: "Explain it in plain words a high school student would understand, in under 120 words. Define any jargon you use.",
-  simpler: "Explain it as simply as possible, like to a curious 12 year old, in under 70 words. Use one everyday comparison if it helps.",
-  detail: "Give a fuller explanation in under 170 words: what it means, why it matters in this context, and one related idea worth knowing. Keep it readable for a high school student.",
+  plain: "Explain it in plain words a high school student would understand. Use at most 2 short sentences and under 45 words total. Define any jargon you use.",
+  simpler: "Explain it as simply as possible, like to a curious 12 year old. Use under 30 words. One everyday comparison is fine if it helps.",
+  detail: "Give a fuller explanation in under 90 words: what it means and why it matters in this context. Keep it readable for a high school student.",
 };
+
+const MAX_TOKENS = { plain: 160, simpler: 110, detail: 260 };
 
 function clientIp(req, context) {
   return req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -112,7 +114,7 @@ async function handle(req, context) {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.4,
-          maxOutputTokens: mode === "detail" ? 500 : 320,
+          maxOutputTokens: MAX_TOKENS[mode],
           thinkingConfig: { thinkingLevel: "minimal" },
         },
       }),
