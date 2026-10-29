@@ -1,18 +1,22 @@
 // Shows, places, sizes, and closes the explanation card, and runs the requests behind it.
 import AppKit
 import SwiftUI
+import Combine
 
 @MainActor
 final class CardController {
     private let state = AppState.shared
     private let model: CardModel
     private let panel: CardPanel
-    private let host: NSHostingView<ExplanationCardView>
+    private let host: NSHostingView<CardRoot>
+    /// Off-screen copies of the card used only to measure real text height.
+    private let cardMeasurer: NSHostingController<ExplanationCardView>
+    private let bodyMeasurer: NSHostingController<CardBody>
+    private var bag = Set<AnyCancellable>()
+    private var resizeScheduled = false
 
     private var current: CapturedSelection?
     private var anchorPoint: NSPoint = .zero
-    private var placeBelow = true
-    private var lastSize: CGSize = .zero
     private var task: Task<Void, Never>?
     private var outsideClickMonitor: Any?
     /// Bumped on every show, so a fade-out that finishes late never hides a newer card.
@@ -31,8 +35,7 @@ final class CardController {
         cardPanel.level = .popUpMenu
 
         let cardModel = CardModel()
-        var sizeHandler: (CGSize) -> Void = { _ in }
-        let hosting = NSHostingView(rootView: ExplanationCardView(model: cardModel, onSize: { sizeHandler($0) }))
+        let hosting = NSHostingView(rootView: CardRoot(model: cardModel, scrollBodyHeight: nil))
         hosting.sizingOptions = []
         hosting.frame = cardPanel.contentView?.bounds ?? .zero
         hosting.autoresizingMask = [.width, .height]
@@ -41,10 +44,14 @@ final class CardController {
         panel = cardPanel
         model = cardModel
         host = hosting
+        cardMeasurer = NSHostingController(rootView: ExplanationCardView(model: cardModel))
+        bodyMeasurer = NSHostingController(rootView: CardBody(model: cardModel))
 
-        sizeHandler = { [weak self] size in
-            Task { @MainActor in self?.applySize(size) }
-        }
+        // Any change (answer arrives, mode switch, error) re-measures and re-sizes the window.
+        model.objectWillChange.sink { [weak self] _ in
+            Task { @MainActor in self?.scheduleResize() }
+        }.store(in: &bag)
+
         panel.onEscape = { [weak self] in self?.close() }
 
         model.onClose = { [weak self] in self?.close() }
@@ -72,9 +79,7 @@ final class CardController {
         } else {
             anchorPoint.y = click.y - 14
         }
-        placeBelow = true
-        lastSize = CGSize(width: ExplanationCardView.width, height: 200)
-        layout(size: lastSize)
+        resize()
 
         panel.alphaValue = 0
         panel.orderFrontRegardless()
@@ -138,15 +143,15 @@ final class CardController {
         let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured)
         task = Task { [weak self] in
             do {
-                let text = try await client.explain(text: sel.text, context: sel.context, mode: mode)
+                let explanation = try await client.explain(text: sel.text, context: sel.context, mode: mode)
                 guard !Task.isCancelled else { return }
-                self?.model.phase = .loaded(text)
+                self?.model.phase = .loaded(explanation)
             } catch let err as ExplainError {
                 guard !Task.isCancelled else { return }
-                self?.model.phase = .failed(err)
+                self?.model.phase = .failed(title: err.title, detail: err.detail, canOpenSettings: err.canOpenSettings)
             } catch {
                 guard !Task.isCancelled else { return }
-                self?.model.phase = .failed(ExplainError(title: "Something went wrong.", detail: error.localizedDescription))
+                self?.model.phase = .failed(title: "Something went wrong.", detail: error.localizedDescription, canOpenSettings: false)
             }
             guard let self else { return }
             self.state.mood = .idle
@@ -156,35 +161,77 @@ final class CardController {
 
     // MARK: Layout
 
-    private func applySize(_ size: CGSize) {
-        guard size.height > 1, abs(size.height - lastSize.height) > 0.5 || abs(size.width - lastSize.width) > 0.5 else { return }
-        lastSize = size
-        layout(size: size)
+    private func scheduleResize() {
+        guard !resizeScheduled else { return }
+        resizeScheduled = true
+        // objectWillChange fires before the new value lands, so measure on the next turn.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.resizeScheduled = false
+            if self.panel.isVisible { self.resize() }
+        }
+    }
+
+    /// Measures the card's real height at its fixed width, then sizes the window to match.
+    /// Only past 80% of the screen height does the answer area scroll.
+    private func resize() {
+        let width = ExplanationCardView.width
+        let probe = CGSize(width: width, height: 100_000)
+
+        cardMeasurer.rootView = ExplanationCardView(model: model)
+        let full = ceil(cardMeasurer.sizeThatFits(in: probe).height)
+
+        let vf = screenForAnchor()?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let cap = floor(vf.height * 0.8)
+
+        var height = full
+        var scroll: CGFloat? = nil
+        if full > cap {
+            bodyMeasurer.rootView = CardBody(model: model)
+            let bodyHeight = ceil(bodyMeasurer.sizeThatFits(in: CGSize(width: width - 32, height: 100_000)).height)
+            let chrome = full - bodyHeight
+            scroll = max(80, cap - chrome)
+            height = chrome + (scroll ?? 0)
+        }
+        host.rootView = CardRoot(model: model, scrollBodyHeight: scroll)
+        layout(size: CGSize(width: width, height: height + 1))
+    }
+
+    private func screenForAnchor() -> NSScreen? {
+        NSScreen.screens.first(where: { $0.frame.contains(anchorPoint) }) ?? NSScreen.main ?? NSScreen.screens.first
     }
 
     private func layout(size: CGSize) {
-        let screen = NSScreen.screens.first(where: { $0.frame.contains(anchorPoint) }) ?? NSScreen.main ?? NSScreen.screens.first
-        let vf = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let vf = screenForAnchor()?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
         let w = size.width
-        // Never taller than the screen; the explanation area scrolls instead of clipping.
         let h = min(size.height, vf.height - 16)
         let gap: CGFloat = 10
 
         var x = anchorPoint.x - 40
         x = min(max(x, vf.minX + 8), vf.maxX - w - 8)
 
-        var y: CGFloat
+        // Prefer below the highlight; flip above if it would run off the bottom; clamp on screen.
         let topOfSelection = current.map { $0.preciseRect && $0.rect.height <= 60 ? $0.rect.maxY : anchorPoint.y + 26 } ?? anchorPoint.y + 26
-        if placeBelow && anchorPoint.y - gap - h < vf.minY + 8 {
-            placeBelow = false
-        }
-        if placeBelow {
+        var y: CGFloat
+        if anchorPoint.y - gap - h >= vf.minY + 8 {
             y = anchorPoint.y - gap - h
-        } else {
+        } else if topOfSelection + gap + h <= vf.maxY - 8 {
             y = topOfSelection + gap
-            if y + h > vf.maxY - 8 { y = max(vf.minY + 8, vf.maxY - 8 - h) }
+        } else {
+            y = max(vf.minY + 8, vf.maxY - 8 - h)
         }
         panel.setFrame(NSRect(x: x, y: y, width: w, height: h), display: true)
         panel.invalidateShadow()
+    }
+}
+
+/// What the window hosts: the card pinned to the top of the window.
+struct CardRoot: View {
+    @ObservedObject var model: CardModel
+    var scrollBodyHeight: CGFloat?
+
+    var body: some View {
+        ExplanationCardView(model: model, scrollBodyHeight: scrollBodyHeight)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }

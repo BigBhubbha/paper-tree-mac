@@ -14,6 +14,18 @@ enum ExplainMode: String, CaseIterable {
     }
 }
 
+/// One hard word from the highlight and what it means.
+struct GlossaryTerm: Decodable, Hashable, Sendable {
+    let term: String
+    let meaning: String
+}
+
+/// What the explainer sends back: a short answer plus a few defined terms (may be empty).
+struct Explanation: Sendable, Equatable {
+    let text: String
+    let terms: [GlossaryTerm]
+}
+
 struct ExplainError: Error {
     var title: String
     var detail: String
@@ -29,9 +41,9 @@ struct ExplainClient {
     static let maxContextChars = 1800
 
     private struct RequestBody: Encodable { let text: String; let context: String; let mode: String }
-    private struct ResponseBody: Decodable { let text: String?; let error: String? }
+    private struct ResponseBody: Decodable { let text: String?; let terms: [GlossaryTerm]?; let error: String? }
 
-    func explain(text: String, context: String, mode: ExplainMode) async throws -> String {
+    func explain(text: String, context: String, mode: ExplainMode) async throws -> Explanation {
         guard configured, let url = URL(string: endpoint.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             throw ExplainError(title: "No explainer connected yet.",
                                detail: "Add your Paper Tree server address in Settings, then try again.",
@@ -41,7 +53,7 @@ struct ExplainClient {
         var request = URLRequest(url: url, timeoutInterval: 25)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("PaperTree-Mac/0.1", forHTTPHeaderField: "User-Agent")
+        request.setValue("PaperTree-Mac/\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0")", forHTTPHeaderField: "User-Agent")
         if !token.isEmpty { request.setValue(token, forHTTPHeaderField: "X-Paper-Tree-Token") }
         request.httpBody = try JSONEncoder().encode(RequestBody(
             text: String(text.prefix(ExplainClient.maxTextChars)),
@@ -71,7 +83,10 @@ struct ExplainClient {
             guard let text = decoded?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
                 throw ExplainError(title: "The explainer came back empty.", detail: "Try highlighting a little more of the sentence.")
             }
-            return text
+            let terms = (decoded?.terms ?? [])
+                .filter { !$0.term.trimmingCharacters(in: .whitespaces).isEmpty && !$0.meaning.trimmingCharacters(in: .whitespaces).isEmpty }
+                .prefix(4)
+            return Explanation(text: text, terms: Array(terms))
         case 401, 403:
             throw ExplainError(title: "The explainer said no.",
                                detail: "Your server wants an app token. Add it in Settings.", canOpenSettings: true)

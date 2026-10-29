@@ -1,13 +1,15 @@
-// The explanation card: a taped specimen slip that appears beside your highlight.
+// The explanation card: a clean note card that opens beside your highlight, in the same style
+// as the card on the Paper Tree website. A short answer, a thin rule, then a mini glossary.
+// CardController measures this view's real height and sizes the window to match, so nothing clips.
 import AppKit
 import SwiftUI
 
 @MainActor
 final class CardModel: ObservableObject {
-    enum Phase {
+    enum Phase: Equatable {
         case loading
-        case loaded(String)
-        case failed(ExplainError)
+        case loaded(Explanation)
+        case failed(title: String, detail: String, canOpenSettings: Bool)
     }
 
     @Published var selection: String = ""
@@ -22,272 +24,224 @@ final class CardModel: ObservableObject {
     var onSettings: () -> Void = {}
 
     var isLoading: Bool { if case .loading = phase { return true } else { return false } }
-    var explanation: String? { if case .loaded(let s) = phase { return s } else { return nil } }
+    var explanation: Explanation? { if case .loaded(let e) = phase { return e } else { return nil } }
 }
 
-private struct CardSizeKey: PreferenceKey {
-    static var defaultValue: CGSize = .zero
-    static func reduce(value: inout CGSize, nextValue: () -> CGSize) { value = nextValue() }
+/// Colors lifted from the website's card.
+enum CardInk {
+    static let paper = Color(hex: 0xFFFEFA)
+    static let border = Color(hex: 0x2B2822)
+    static let text = Color(hex: 0x26231D)
+    static let muted = Color(hex: 0x5F584B)
+    static let faint = Color(hex: 0x8A8272)
+    static let rule = Color(hex: 0xE6DFCF)
+    static let chip = Color(hex: 0xD4CCBA)
 }
 
-private struct BodyHeightKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
-}
-
-/// A specimen slip from the field journal: taped down, a red margin rule, the highlighted
-/// term as its title, and the explanation in book type. It grows to fit the answer and
-/// scrolls only past `maxBodyHeight`, so text is never clipped.
+/// The whole card. `scrollBodyHeight` is nil when everything fits; otherwise the answer and
+/// glossary scroll inside a box of that height while the header and buttons stay put.
 struct ExplanationCardView: View {
     @ObservedObject var model: CardModel
-    var onSize: (CGSize) -> Void
+    var scrollBodyHeight: CGFloat? = nil
 
-    static let width: CGFloat = 480
-    /// Tallest the explanation area gets before it scrolls.
-    static let maxBodyHeight: CGFloat = 340
-
-    @State private var bodyHeight: CGFloat = 0
-
-    private let marginX: CGFloat = 26   // left edge of the writing area, right of the red margin rule
+    static let width: CGFloat = 440
+    static let corner: CGFloat = 12
 
     var body: some View {
-        card
-            .frame(width: ExplanationCardView.width)
-            .fixedSize(horizontal: false, vertical: true)
-            .background(GeometryReader { g in Color.clear.preference(key: CardSizeKey.self, value: g.size) })
-            .onPreferenceChange(CardSizeKey.self) { size in onSize(size) }
-    }
-
-    private var card: some View {
-        ZStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 0) {
-                header
-                title.padding(.top, 10)
-                DoubleRule().padding(.top, 12)
-                content.padding(.top, 14)
-                footer.padding(.top, 16)
-            }
-            .padding(.leading, marginX + 14)
-            .padding(.trailing, 22)
-            .padding(.top, 22)
-            .padding(.bottom, 16)
-            .background(
-                ZStack(alignment: .topLeading) {
-                    PaperSheet(corner: 4, graph: true)
-                    // Notebook margin rule.
-                    Rectangle()
-                        .fill(Palette.red.opacity(0.38))
-                        .frame(width: 1)
-                        .padding(.leading, marginX)
-                        .padding(.vertical, 1)
-                    // A faint deckle along the bottom edge.
-                    DeckleEdge()
-                        .fill(Palette.ink.opacity(0.05))
-                        .frame(height: 5)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
+        VStack(alignment: .leading, spacing: 0) {
+            CardHeader(model: model)
+            quote.padding(.top, 6)
+            Group {
+                if let h = scrollBodyHeight {
+                    ScrollView(.vertical, showsIndicators: true) {
+                        CardBody(model: model).padding(.trailing, 8)
+                    }
+                    .frame(height: h)
+                } else {
+                    CardBody(model: model)
                 }
-            )
-            .padding(.top, 9)
-
-            // Two strips of tape holding the slip down.
-            HStack {
-                Tape().frame(width: 62, height: 18).rotationEffect(.degrees(-6))
-                Spacer()
-                Tape().frame(width: 62, height: 18).rotationEffect(.degrees(5))
             }
-            .padding(.horizontal, 30)
-            .allowsHitTesting(false)
+            .padding(.top, 10)
+            CardFooter(model: model).padding(.top, 12)
         }
+        .padding(.horizontal, 16)
+        .padding(.top, 13)
+        .padding(.bottom, 12)
+        .frame(width: ExplanationCardView.width, alignment: .topLeading)
+        .background(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous).fill(CardInk.paper))
+        .overlay(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous)
+            .strokeBorder(CardInk.border.opacity(0.22), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous))
     }
 
-    // MARK: Header and title
+    /// One quiet line showing what you highlighted.
+    private var quote: some View {
+        Text("\u{201C}" + model.selection.replacingOccurrences(of: "\n", with: " ") + "\u{201D}")
+            .font(.ui(12))
+            .foregroundColor(CardInk.faint)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .help(model.selection)
+    }
+}
 
-    private var header: some View {
-        HStack(alignment: .center, spacing: 8) {
-            Sprout().stroke(Palette.green, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
-                .frame(width: 13, height: 13)
-            Text(String(format: "PT-%04d", model.specimen))
-                .font(.typewriter(11))
-                .foregroundColor(Palette.red)
-            Text("·").font(.typewriter(11)).foregroundColor(Palette.ink3)
-            Text(model.mode.label.lowercased())
-                .font(.typewriter(11))
-                .foregroundColor(Palette.ink3)
+private struct CardHeader: View {
+    @ObservedObject var model: CardModel
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 7) {
+            Sprout().stroke(Palette.green, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
+                .frame(width: 15, height: 15)
+            Text("Paper Tree")
+                .font(.uiBold(13.5))
+                .foregroundColor(CardInk.text)
             Spacer(minLength: 8)
+            Text(model.mode.label)
+                .font(.ui(12))
+                .foregroundColor(CardInk.faint)
             Button(action: model.onClose) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10.5, weight: .semibold))
-                    .foregroundColor(Palette.ink2)
-                    .frame(width: 22, height: 22)
-                    .background(Circle().fill(Palette.paper.opacity(0.9)))
-                    .overlay(Circle().strokeBorder(Palette.ink.opacity(0.18), lineWidth: 0.75))
-                    .contentShape(Circle())
+                    .font(.system(size: 9.5, weight: .semibold))
+                    .foregroundColor(CardInk.faint)
+                    .frame(width: 18, height: 18)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .help("Close (Esc)")
             .accessibilityLabel("Close")
         }
     }
+}
 
-    private var title: some View {
-        Text(model.selection)
-            .font(.fellItalic(21))
-            .foregroundColor(Palette.ink)
-            .lineSpacing(1)
-            .lineLimit(3)
-            .truncationMode(.tail)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.horizontal, 3)
-            .background(
-                // Highlighter swipe under the term, slightly uneven like a real marker.
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Palette.marker.opacity(0.55))
-                    .padding(.top, 9)
-                    .rotationEffect(.degrees(-0.5))
-            )
-            .help(model.selection)
-    }
+/// The answer plus the glossary. Measured on its own too, so the card knows how much can scroll.
+struct CardBody: View {
+    @ObservedObject var model: CardModel
 
-    // MARK: Body
-
-    @ViewBuilder private var content: some View {
+    var body: some View {
         switch model.phase {
         case .loading:
-            HStack(alignment: .center, spacing: 14) {
+            HStack(alignment: .center, spacing: 12) {
                 BuddyView(mood: .thinking, researchMode: true)
-                    .frame(width: 48, height: 48)
-                VStack(alignment: .leading, spacing: 3) {
+                    .frame(width: 36, height: 36)
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Reading closely...")
-                        .font(.hand(17))
-                        .foregroundColor(Palette.red)
-                    Text("Turning this into plain words.")
-                        .font(.ui(12.5))
-                        .foregroundColor(Palette.ink3)
-                    PencilLines().frame(height: 18).padding(.top, 4)
+                        .font(.ui(14))
+                        .foregroundColor(CardInk.muted)
+                    PencilLines().frame(width: 200, height: 18)
                 }
+                Spacer(minLength: 0)
             }
-            .padding(.vertical, 4)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Loading explanation")
 
-        case .loaded(let text):
-            ScrollView(.vertical, showsIndicators: bodyHeight > ExplanationCardView.maxBodyHeight) {
-                Text(text)
-                    .font(.text(16.5))
-                    .foregroundColor(Palette.ink)
-                    .lineSpacing(5)
+        case .loaded(let e):
+            VStack(alignment: .leading, spacing: 0) {
+                Text(e.text)
+                    .font(.ui(15.5))
+                    .foregroundColor(CardInk.text)
+                    .lineSpacing(3.5)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
-                    .padding(.trailing, bodyHeight > ExplanationCardView.maxBodyHeight ? 10 : 0)
-                    .padding(.bottom, 2)
-                    .background(GeometryReader { g in Color.clear.preference(key: BodyHeightKey.self, value: g.size.height) })
+                if !e.terms.isEmpty {
+                    Rectangle().fill(CardInk.rule).frame(height: 1).padding(.top, 12)
+                    Grid(alignment: .topLeading, horizontalSpacing: 12, verticalSpacing: 5) {
+                        ForEach(e.terms, id: \.self) { t in
+                            GridRow {
+                                Text(t.term)
+                                    .font(.uiBold(13))
+                                    .foregroundColor(CardInk.text)
+                                    .frame(maxWidth: 150, alignment: .leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text(t.meaning)
+                                    .font(.ui(13))
+                                    .foregroundColor(CardInk.muted)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
+                    .textSelection(.enabled)
+                    .padding(.top, 9)
+                }
             }
-            .frame(height: max(1, min(bodyHeight, ExplanationCardView.maxBodyHeight)))
-            .onPreferenceChange(BodyHeightKey.self) { h in bodyHeight = ceil(h) }
 
-        case .failed(let err):
+        case .failed(let title, let detail, let canOpenSettings):
             VStack(alignment: .leading, spacing: 6) {
-                Text(err.title)
-                    .font(.hand(18))
+                Text(title)
+                    .font(.uiBold(14))
                     .foregroundColor(Palette.red)
-                    .rotationEffect(.degrees(-0.8))
                     .fixedSize(horizontal: false, vertical: true)
-                Text(err.detail)
+                Text(detail)
                     .font(.ui(13))
-                    .foregroundColor(Palette.ink2)
+                    .foregroundColor(CardInk.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 14) {
-                    Button("Try again", action: model.onRetry).buttonStyle(StampButtonStyle(compact: true))
-                    if err.canOpenSettings {
-                        Button("Open Settings", action: model.onSettings).buttonStyle(InkLinkButtonStyle())
+                HStack(spacing: 8) {
+                    Button("Try again", action: model.onRetry).buttonStyle(ChipButtonStyle(selected: true))
+                    if canOpenSettings {
+                        Button("Open Settings", action: model.onSettings).buttonStyle(ChipButtonStyle())
                     }
                 }
-                .padding(.top, 6)
+                .padding(.top, 4)
             }
         }
     }
+}
 
-    // MARK: Footer
+private struct CardFooter: View {
+    @ObservedObject var model: CardModel
 
-    private var footer: some View {
-        HStack(spacing: 10) {
-            HStack(spacing: 0) {
-                modeTab("Plain", .plain)
-                modeTab("Simpler", .simpler)
-                modeTab("More detail", .detail)
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach([ExplainMode.plain, .simpler, .detail], id: \.self) { mode in
+                Button(mode == .plain ? "Plain" : mode.label) {
+                    if model.mode != mode || model.explanation == nil { model.onMode(mode) }
+                }
+                .buttonStyle(ChipButtonStyle(selected: model.mode == mode))
+                .disabled(model.isLoading)
             }
-            .background(RoundedRectangle(cornerRadius: 3).fill(Palette.paper2))
-            .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(Palette.ink.opacity(0.55), lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 3))
-            .disabled(model.isLoading)
-
             Spacer(minLength: 6)
-
-            if let text = model.explanation {
+            if let e = model.explanation {
                 Button(model.copied ? "Copied" : "Copy") {
+                    var text = e.text
+                    if !e.terms.isEmpty {
+                        text += "\n\n" + e.terms.map { "\($0.term): \($0.meaning)" }.joined(separator: "\n")
+                    }
                     let pb = NSPasteboard.general
                     pb.clearContents()
                     pb.setString(text, forType: .string)
                     model.copied = true
                 }
-                .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
+                .buttonStyle(ChipButtonStyle(quiet: true))
             }
         }
-        .opacity(model.isLoading ? 0.55 : 1)
-    }
-
-    private func modeTab(_ title: String, _ mode: ExplainMode) -> some View {
-        let selected = model.mode == mode
-        return Button { if !selected { model.onMode(mode) } } label: {
-            Text(title)
-                .font(selected ? .uiBold(12.5) : .ui(12.5))
-                .foregroundColor(selected ? Palette.paper2 : Palette.ink)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(selected ? Palette.ink : Color.clear)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        .opacity(model.isLoading ? 0.6 : 1)
     }
 }
 
-/// Thin-thick double rule, like the head of a lab notebook page.
-private struct DoubleRule: View {
-    var body: some View {
-        VStack(spacing: 2) {
-            Rectangle().fill(Palette.ink.opacity(0.75)).frame(height: 1.2)
-            Rectangle().fill(Palette.ink.opacity(0.35)).frame(height: 0.6)
-        }
-    }
-}
+/// Small outlined button like the website card's "Simpler" and "More detail".
+struct ChipButtonStyle: ButtonStyle {
+    var selected = false
+    var quiet = false
 
-/// A slightly torn paper edge along the bottom of the slip.
-private struct DeckleEdge: Shape {
-    func path(in r: CGRect) -> Path {
-        var p = Path()
-        p.move(to: CGPoint(x: r.minX, y: r.maxY))
-        var x = r.minX
-        var i = 0
-        while x < r.maxX {
-            let y = r.minY + r.height * CGFloat([0.2, 0.7, 0.4, 0.9, 0.3, 0.6][i % 6])
-            p.addLine(to: CGPoint(x: x, y: y))
-            x += 7; i += 1
-        }
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
-        p.closeSubpath()
-        return p
-    }
-}
-
-/// Translucent paper tape.
-private struct Tape: View {
-    var body: some View {
-        Rectangle()
-            .fill(Color(hex: 0xEADFB8).opacity(0.78))
-            .overlay(Rectangle().strokeBorder(Color(hex: 0xBFAF7E).opacity(0.35), lineWidth: 0.5))
-            .shadow(color: Color.black.opacity(0.08), radius: 1, x: 0, y: 1)
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.ui(12))
+            .foregroundColor(selected ? Color(hex: 0xFBF8EF) : (quiet ? CardInk.faint : Color(hex: 0x3A362E)))
+            .padding(.horizontal, 9)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(selected ? Palette.green : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .strokeBorder(selected ? Palette.green : CardInk.chip.opacity(quiet ? 0 : 1), lineWidth: 1)
+            )
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .contentShape(Rectangle())
     }
 }
 

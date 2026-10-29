@@ -34,12 +34,53 @@ const SYSTEM = [
 ].join(" ");
 
 const MODE_RULES = {
-  plain: "Explain it in plain words a high school student would understand. Use at most 2 short sentences and under 45 words total. Define any jargon you use.",
-  simpler: "Explain it as simply as possible, like to a curious 12 year old. Use under 30 words. One everyday comparison is fine if it helps.",
-  detail: "Give a fuller explanation in under 90 words: what it means and why it matters in this context. Keep it readable for a high school student.",
+  plain: "answer: explain it in plain words a high school student would understand, in at most 2 short sentences and under 40 words.",
+  simpler: "answer: explain it as simply as possible, like to a curious 12 year old, in under 28 words. One everyday comparison is fine.",
+  detail: "answer: a fuller explanation in under 80 words, covering what it means and why it matters in this context, readable for a high school student.",
 };
 
-const MAX_TOKENS = { plain: 160, simpler: 110, detail: 260 };
+const TERMS_RULE =
+  "terms: 0 to 4 hard words or phrases that appear in the highlighted text and that a high school student might not know, " +
+  "copied as they appear. For each, meaning is a plain definition under 10 words, with no period at the end. " +
+  "Skip easy words. Use an empty list if nothing is hard.";
+
+const RESPONSE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    answer: { type: "STRING" },
+    terms: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: { term: { type: "STRING" }, meaning: { type: "STRING" } },
+        required: ["term", "meaning"],
+      },
+    },
+  },
+  required: ["answer", "terms"],
+  propertyOrdering: ["answer", "terms"],
+};
+
+const MAX_TOKENS = { plain: 400, simpler: 320, detail: 560 };
+
+/// Parse Gemini's JSON reply. Falls back to treating the whole reply as the answer.
+function parseStructured(out) {
+  let answer = "";
+  let terms = [];
+  try {
+    const obj = JSON.parse(out.replace(/^```(?:json)?\s*|\s*```$/g, ""));
+    answer = String(obj?.answer ?? "");
+    if (Array.isArray(obj?.terms)) {
+      terms = obj.terms
+        .map((t) => ({ term: clean(t?.term, 60), meaning: tidy(clean(t?.meaning, 120)).replace(/\.$/, "") }))
+        .filter((t) => t.term && t.meaning)
+        .slice(0, 4);
+    }
+  } catch {
+    answer = out;
+  }
+  return { answer: tidy(answer), terms };
+}
 
 function clientIp(req, context) {
   return context?.ip || req.headers.get("x-nf-client-connection-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -97,7 +138,7 @@ export default async (req, context) => {
   if (!text) return json(400, { error: "Highlight some text first." });
 
   const prompt =
-    `${MODE_RULES[mode]}\n\n` +
+    `Reply as JSON with "answer" and "terms".\n${MODE_RULES[mode]}\n${TERMS_RULE}\n\n` +
     `Highlighted text:\n"""${text}"""\n\n` +
     (ctx ? `Surrounding context (for meaning only):\n"""${ctx}"""\n` : "No surrounding context was available.\n");
 
@@ -114,6 +155,8 @@ export default async (req, context) => {
         generationConfig: {
           temperature: 0.4,
           maxOutputTokens: MAX_TOKENS[mode],
+          responseMimeType: "application/json",
+          responseSchema: RESPONSE_SCHEMA,
           thinkingConfig: { thinkingBudget: 0 },
         },
       }),
@@ -133,7 +176,10 @@ export default async (req, context) => {
       const blocked = cand?.finishReason === "SAFETY" || data?.promptFeedback?.blockReason;
       return json(502, { error: blocked ? "The AI declined to explain that one." : "The AI came back empty. Try again." });
     }
-    return json(200, { text: tidy(out), mode, model: MODEL });
+    const { answer, terms } = parseStructured(out);
+    if (!answer) return json(502, { error: "The AI came back empty. Try again." });
+    // "text" stays the plain answer so 0.2.2 and older apps keep working.
+    return json(200, { text: answer, terms, mode, model: MODEL });
   } catch (e) {
     const timedOut = e?.name === "AbortError";
     return json(timedOut ? 504 : 502, { error: timedOut ? "The AI took too long. Try again." : "Could not reach the AI service." });
