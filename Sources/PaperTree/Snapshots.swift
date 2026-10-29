@@ -63,7 +63,15 @@ enum Snapshots {
             save(SetupView(state: state, island: island, initialStep: step, explainPractice: { _, _, _ in }, done: {}),
                  "setup-\(step + 1)", to: dir)
         }
+        // Settings as this build machine really is (no cards opened, no Accessibility).
         save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
-                .background(PaperSheet(corner: 0, graph: true)), "settings", to: dir)
+                .background(DeskBackground()), "settings", to: dir)
+        // Design sample only: a Mac that has opened 128 cards and granted Accessibility.
+        UserDefaults.standard.set(128, forKey: "specimenCount")
+        state.accessibilityGranted = true
+        save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
+                .background(DeskBackground()), "settings-sample-count", to: dir)
+        save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}, showTinkerers: true).content
+                .background(DeskBackground()), "settings-tinkerers", to: dir)
     }
 }

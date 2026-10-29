@@ -188,7 +188,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func openSettings() {
         if settingsWindow == nil {
-            settingsWindow = makeWindow(title: "Paper Tree Settings", size: NSSize(width: 520, height: 680),
+            settingsWindow = makeWindow(title: "Paper Tree Settings", size: SettingsView.size,
                                         view: SettingsView(state: state,
                                                            showWelcome: { [weak self] in self?.openWelcome() },
                                                            checkForUpdates: { [weak self] in self?.updater?.checkForUpdates() }))
