@@ -1,3 +1,8 @@
 name = "paper-tree-explain"
 main = "worker.mjs"
 compatibility_date = "2026-10-01"
+
+# Shared cache of finished answers, so repeat highlights come back instantly.
+[[kv_namespaces]]
+binding = "EXPLAIN_CACHE"
+id = "c805af5a9fdc4d329b28ef7e83d63434"

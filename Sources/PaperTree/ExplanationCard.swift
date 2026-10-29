@@ -8,6 +8,8 @@ import SwiftUI
 final class CardModel: ObservableObject {
     enum Phase: Equatable {
         case loading
+        /// The answer so far, while the words are still arriving. The glossary comes with `loaded`.
+        case streaming(String)
         case loaded(Explanation)
         case failed(title: String, detail: String, canOpenSettings: Bool)
     }
@@ -23,7 +25,12 @@ final class CardModel: ObservableObject {
     var onClose: () -> Void = {}
     var onSettings: () -> Void = {}
 
-    var isLoading: Bool { if case .loading = phase { return true } else { return false } }
+    var isLoading: Bool {
+        switch phase {
+        case .loading, .streaming: return true
+        default: return false
+        }
+    }
     var explanation: Explanation? { if case .loaded(let e) = phase { return e } else { return nil } }
 }
 
@@ -134,6 +141,21 @@ struct CardBody: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Loading explanation")
+
+        case .streaming(let text):
+            VStack(alignment: .leading, spacing: 0) {
+                Text(text)
+                    .font(.ui(15.5))
+                    .foregroundColor(CardInk.text)
+                    .lineSpacing(3.5)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                // The pencil keeps writing until the glossary lands.
+                PencilLines().frame(width: 120, height: 18).padding(.top, 10)
+                    .accessibilityHidden(true)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(text)
 
         case .loaded(let e):
             VStack(alignment: .leading, spacing: 0) {

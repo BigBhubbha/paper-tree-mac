@@ -41,6 +41,7 @@ final class SelectionMonitor {
             Task { @MainActor in
                 guard let self else { return }
                 if !on { self.captureTask?.cancel(); self.lastExplained = nil }
+                if on { ExplainClient.warmUp(endpoint: self.state.endpoint) }
                 self.state.refreshMood()
             }
         }.store(in: &bag)
@@ -121,6 +122,9 @@ final class SelectionMonitor {
         // Only selecting gestures: a drag, a double or triple click, or a shift-click.
         let selecting = moved || e.clickCount >= 2 || e.shift
         guard selecting else { return }
+
+        // Open the connection now, while we wait for the app to finish selecting.
+        ExplainClient.warmUp(endpoint: state.endpoint)
 
         let down = downPoint
         let clicks = e.clickCount

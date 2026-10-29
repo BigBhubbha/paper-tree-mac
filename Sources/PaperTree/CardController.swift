@@ -16,6 +16,8 @@ final class CardController {
     private var resizeScheduled = false
 
     private var current: CapturedSelection?
+    /// Answers already fetched for the current highlight, so flipping between modes is instant.
+    private var answers: [ExplainMode: Explanation] = [:]
     private var anchorPoint: NSPoint = .zero
     private var task: Task<Void, Never>?
     private var outsideClickMonitor: Any?
@@ -66,6 +68,7 @@ final class CardController {
         task?.cancel()
         generation += 1
         current = selection
+        answers = [:]
         model.selection = selection.text
         model.copied = false
         model.specimen = state.nextSpecimenNumber()
@@ -137,21 +140,32 @@ final class CardController {
         task?.cancel()
         model.mode = mode
         model.copied = false
+        if let saved = answers[mode] {
+            model.phase = .loaded(saved)
+            return
+        }
         model.phase = .loading
         state.mood = .thinking
 
         let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured,
                                    profile: state.profilePayload)
+        let shownFor = sel.text
         task = Task { [weak self] in
             do {
-                let explanation = try await client.explain(text: sel.text, context: sel.context, mode: mode)
+                // Words appear as they are written; the glossary follows when the answer is complete.
+                let explanation = try await client.explain(text: sel.text, context: sel.context, mode: mode) { [weak self] partial in
+                    guard let self, !Task.isCancelled, self.current?.text == shownFor, self.model.mode == mode else { return }
+                    self.model.phase = .streaming(partial)
+                }
                 guard !Task.isCancelled else { return }
+                self?.answers[mode] = explanation
                 self?.model.phase = .loaded(explanation)
             } catch let err as ExplainError {
                 guard !Task.isCancelled else { return }
                 self?.model.phase = .failed(title: err.title, detail: err.detail, canOpenSettings: err.canOpenSettings)
             } catch {
                 guard !Task.isCancelled else { return }
+                if error is CancellationError { return }
                 self?.model.phase = .failed(title: "Something went wrong.", detail: error.localizedDescription, canOpenSettings: false)
             }
             guard let self else { return }
