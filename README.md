@@ -23,7 +23,7 @@ The first time, macOS may say the app is from an unidentified developer. Right-c
 ## Permissions
 
 1. **Accessibility** (required). System Settings, Privacy & Security, Accessibility, switch on Paper Tree. The welcome window has a button that takes you there. This lets Paper Tree read the text you highlight and press Cmd+C for you in apps that hide their text.
-2. **After every rebuild**, macOS sees a "new" app because the ad hoc signature changes. If highlights stop working, open that same Accessibility list, select Paper Tree, press the minus button, then add it again (or toggle it off and on). Quit and reopen Paper Tree.
+2. **Local rebuilds** are signed ad hoc, so macOS sees a "new" app after each one. Release builds from GitHub Actions are signed with the long-lived "Paper Tree Signing" certificate and a fixed designated requirement, so Accessibility stays on across updates. For a local ad hoc build: If highlights stop working, open that same Accessibility list, select Paper Tree, press the minus button, then add it again (or toggle it off and on). Quit and reopen Paper Tree.
 3. No other permissions. Paper Tree never asks for Input Monitoring, Screen Recording, or files. It listens to mouse clicks only, not keystrokes.
 
 ## Connect the explainer

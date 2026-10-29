@@ -88,6 +88,7 @@ final class BuddyController: NSObject, NSPopoverDelegate {
 
     var onOpenSettings: (() -> Void)?
     var onRequestAccess: (() -> Void)?
+    var onCheckForUpdates: (() -> Void)?
 
     override init() {
         panel = FloatingPanel(contentRect: NSRect(origin: .zero, size: BuddyController.defaultSize))
@@ -126,6 +127,11 @@ final class BuddyController: NSObject, NSPopoverDelegate {
                 self?.keepFocusAfterClose = true
                 self?.popover.performClose(nil)
                 self?.onRequestAccess?()
+            },
+            checkForUpdates: { [weak self] in
+                self?.keepFocusAfterClose = true
+                self?.popover.performClose(nil)
+                self?.onCheckForUpdates?()
             },
             quit: { NSApp.terminate(nil) }))
 

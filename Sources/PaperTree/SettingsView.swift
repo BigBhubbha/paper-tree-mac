@@ -6,6 +6,7 @@ struct SettingsView: View {
     @ObservedObject var state: AppState
     var resetBuddy: () -> Void
     var showWelcome: () -> Void
+    var checkForUpdates: () -> Void
 
     @State private var endpointDraft: String = ""
     @State private var tokenDraft: String = ""
@@ -14,10 +15,18 @@ struct SettingsView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginError: String = ""
 
-    init(state: AppState, resetBuddy: @escaping () -> Void, showWelcome: @escaping () -> Void) {
+    init(state: AppState, resetBuddy: @escaping () -> Void, showWelcome: @escaping () -> Void,
+         checkForUpdates: @escaping () -> Void) {
         self.state = state
         self.resetBuddy = resetBuddy
         self.showWelcome = showWelcome
+        self.checkForUpdates = checkForUpdates
+    }
+
+    private var versionText: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        return "Paper Tree for Mac, version \(version)"
     }
 
     var body: some View {
@@ -78,8 +87,13 @@ struct SettingsView: View {
             }
 
             Spacer(minLength: 0)
-            Text("Paper Tree for Mac, version 0.1")
-                .font(.typewriter(10)).foregroundColor(Palette.ink3)
+            HStack {
+                Text(versionText)
+                    .font(.typewriter(10)).foregroundColor(Palette.ink3)
+                Spacer()
+                Button("Check for Updates") { checkForUpdates() }
+                    .buttonStyle(StampButtonStyle(compact: true, quiet: true))
+            }
         }
         .padding(26)
         .frame(width: 520, height: 640)

@@ -5,6 +5,7 @@ struct BuddyPopoverView: View {
     @ObservedObject var state: AppState
     var openSettings: () -> Void
     var requestAccess: () -> Void
+    var checkForUpdates: () -> Void
     var quit: () -> Void
 
     var body: some View {
@@ -84,16 +85,19 @@ struct BuddyPopoverView: View {
 
             Rectangle().fill(Palette.rule).frame(height: 1).padding(.top, 14)
 
-            HStack {
+            HStack(spacing: 14) {
                 Button("Settings", action: openSettings).buttonStyle(InkLinkButtonStyle())
-                Spacer()
-                Text(state.researchMode ? "Fig. 1. Erlenmeyer, at work" : "Fig. 1. Erlenmeyer, at rest")
-                    .font(.typewriter(10))
-                    .foregroundColor(Palette.ink3)
+                Button("Check for Updates", action: checkForUpdates).buttonStyle(InkLinkButtonStyle())
                 Spacer()
                 Button("Quit", action: quit).buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
             }
             .padding(.top, 10)
+
+            Text(state.researchMode ? "Fig. 1. Erlenmeyer, at work" : "Fig. 1. Erlenmeyer, at rest")
+                .font(.typewriter(10))
+                .foregroundColor(Palette.ink3)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 10)
         }
         .padding(.horizontal, 18)
         .padding(.top, 16)

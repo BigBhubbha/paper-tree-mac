@@ -4,7 +4,7 @@
 
 1. Open Xcode, File, Open, pick the `mac-app` folder (the one with `Package.swift`). Xcode opens it as a Swift package.
 2. Choose the `PaperTree` scheme and "My Mac" as the destination. Press Run.
-3. A plain package run starts the executable without the app bundle, so the icon, the bundled fonts, and `LSUIElement` are missing, and Accessibility permission gets attached to Xcode's helper instead of Paper Tree. That is fine for quick UI checks, but for real testing use `./build.sh --run`.
+3. A plain package run starts the executable without the app bundle, so the icon and the bundled fonts are missing, and Accessibility permission gets attached to Xcode's helper instead of Paper Tree. That is fine for quick UI checks, but for real testing use `./build.sh --run`.
 
 If you want a full Xcode app project:
 

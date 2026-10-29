@@ -24,8 +24,6 @@
     <string>3</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
-    <key>LSUIElement</key>
-    <true/>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.education</string>
     <key>NSHighResolutionCapable</key>

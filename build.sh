@@ -72,22 +72,41 @@ else
 fi
 printf "APPL????" > "$APP/Contents/PkgInfo"
 
-echo "==> Signing (ad hoc)"
+# Signing. CI sets SIGN_IDENTITY to the SHA-1 of the long-lived "Paper Tree Signing" certificate
+# (imported into a temporary keychain). The app then gets a fixed designated requirement
+# (bundle id + that certificate), so macOS keeps Accessibility permission across updates.
+# Without SIGN_IDENTITY (a local build) everything is signed ad hoc, like before.
+SIGN="${SIGN_IDENTITY:--}"
+KEYCHAIN_ARGS=()
+if [[ -n "${SIGN_KEYCHAIN:-}" ]]; then KEYCHAIN_ARGS=(--keychain "$SIGN_KEYCHAIN"); fi
+if [[ "$SIGN" == "-" ]]; then
+  echo "==> Signing (ad hoc)"
+else
+  echo "==> Signing with certificate $SIGN"
+fi
 # Inside out: Sparkle's helpers, then the framework, then the app.
 SP="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
 for item in "$SP/XPCServices/Installer.xpc" "$SP/XPCServices/Downloader.xpc" "$SP/Autoupdate" "$SP/Updater.app"; do
   if [[ -e "$item" ]]; then
-    codesign --force --sign - --timestamp=none --preserve-metadata=entitlements "$item"
+    codesign --force --sign "$SIGN" ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --timestamp=none --preserve-metadata=identifier,entitlements "$item"
   fi
 done
-codesign --force --sign - --timestamp=none "$APP/Contents/Frameworks/Sparkle.framework"
-codesign --force --sign - --identifier "$BUNDLE_ID" --timestamp=none "$APP"
+codesign --force --sign "$SIGN" ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --timestamp=none "$APP/Contents/Frameworks/Sparkle.framework"
+if [[ "$SIGN" == "-" ]]; then
+  codesign --force --sign - --identifier "$BUNDLE_ID" --timestamp=none "$APP"
+else
+  REQ="designated => identifier \"$BUNDLE_ID\" and certificate leaf = H\"$SIGN\""
+  codesign --force --sign "$SIGN" ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --identifier "$BUNDLE_ID" --timestamp=none \
+    --requirements "=$REQ" "$APP"
+fi
 codesign --verify --verbose=1 "$APP" || true
 
 echo ""
 echo "Built: $(pwd)/$APP"
-echo "Note: after every rebuild macOS treats this as a new app. If highlights stop working,"
-echo "open System Settings > Privacy & Security > Accessibility, remove Paper Tree (minus), and add it again."
+if [[ "$SIGN" == "-" ]]; then
+  echo "Note: ad hoc builds look like a new app to macOS after every rebuild. If highlights stop working,"
+  echo "open System Settings > Privacy & Security > Accessibility, remove Paper Tree (minus), and add it again."
+fi
 
 case "${1:-}" in
   --run)

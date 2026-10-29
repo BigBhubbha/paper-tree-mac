@@ -22,7 +22,7 @@ final class Updater {
     }
 }
 
-/// Paper Tree has no Dock icon, so when a scheduled check finds an update we bring the app
+/// Paper Tree usually runs in the background, so when a scheduled check finds an update we bring the app
 /// forward first, otherwise Sparkle's window could open behind whatever you are reading.
 final class UpdaterDriverDelegate: NSObject, SPUStandardUserDriverDelegate {
     var supportsGentleScheduledUpdateReminders: Bool { true }

@@ -2,7 +2,7 @@ name: Build Paper Tree.app
 
 on:
   push:
-    branches: [main]
+    branches: [main, stable-signing]
   workflow_dispatch:
 
 permissions:
@@ -15,6 +15,10 @@ concurrency:
 env:
   # Must match the exact Sparkle version pinned in Package.swift.
   SPARKLE_VERSION: "2.10.1"
+  # SHA-1 of the long-lived self-signed "Paper Tree Signing" certificate (public, not a secret).
+  # The app's designated requirement pins this, so macOS keeps Accessibility across updates.
+  # Never change this certificate, or every user has to re-approve Accessibility once more.
+  SIGN_CERT_SHA1: "9CD58C283100C34F864773EED1B2B9D96A7FC3BD"
 
 jobs:
   build:
@@ -44,8 +48,43 @@ jobs:
           echo "PUBLISH=$PUBLISH" >> "$GITHUB_ENV"
           echo "Version $VERSION, build $BUILD_NUMBER, tag $TAG, publish $PUBLISH"
 
+      - name: Import the signing certificate
+        env:
+          MACOS_SIGN_P12: ${{ secrets.MACOS_SIGN_P12 }}
+          MACOS_SIGN_P12_PASSWORD: ${{ secrets.MACOS_SIGN_P12_PASSWORD }}
+        run: |
+          if [[ -z "$MACOS_SIGN_P12" || -z "$MACOS_SIGN_P12_PASSWORD" ]]; then echo "MACOS_SIGN_P12 / MACOS_SIGN_P12_PASSWORD secrets are missing" >&2; exit 1; fi
+          KEYCHAIN="$RUNNER_TEMP/papertree-signing.keychain-db"
+          KEYCHAIN_PASSWORD="$(openssl rand -hex 24)"
+          P12="$RUNNER_TEMP/sign.p12"
+          printf '%s' "$MACOS_SIGN_P12" | base64 --decode > "$P12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$P12" -k "$KEYCHAIN" -P "$MACOS_SIGN_P12_PASSWORD" -f pkcs12 -T /usr/bin/codesign
+          rm -f "$P12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          # Add it to the search list so codesign can find the identity.
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          security find-certificate -a -Z "$KEYCHAIN" | grep -i "SHA-1 hash: $SIGN_CERT_SHA1" \
+            || { echo "The imported certificate is not the expected Paper Tree Signing certificate" >&2; exit 1; }
+          echo "SIGN_KEYCHAIN=$KEYCHAIN" >> "$GITHUB_ENV"
+          echo "SIGN_IDENTITY=$SIGN_CERT_SHA1" >> "$GITHUB_ENV"
+
       - name: Build universal app
         run: UNIVERSAL=1 ./build.sh
+
+      - name: Check the stable designated requirement
+        run: |
+          APP="build/Paper Tree.app"
+          EXPECTED='identifier "com.papertree.mac" and certificate leaf = H"'"$(echo "$SIGN_CERT_SHA1" | tr 'A-F' 'a-f')"'"'
+          codesign -dr - "$APP" 2>&1 | tee "$RUNNER_TEMP/dr.txt"
+          grep -qi "designated => $EXPECTED" "$RUNNER_TEMP/dr.txt" \
+            || { echo "Designated requirement is not the stable one: expected designated => $EXPECTED" >&2; exit 1; }
+          # The app must satisfy exactly the requirement macOS stored when Accessibility was granted.
+          codesign --verify --strict -R="=designated => $EXPECTED" "$APP"
+          codesign -dvv "$APP" 2>&1 | grep -E "Authority|Identifier|TeamIdentifier|Signature"
+          echo "Stable designated requirement OK"
 
       - name: Check the app
         run: |
@@ -117,7 +156,8 @@ jobs:
           if-no-files-found: error
 
       - name: Publish release
-        if: env.PUBLISH == 'true'
+        # Releases only ever come from main, so test branches can build without shipping.
+        if: env.PUBLISH == 'true' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -126,6 +166,11 @@ jobs:
           gh release create "$TAG" dist/Paper_Tree.dmg "dist/Paper-Tree-$VERSION.zip" dist/appcast.xml \
             --title "Paper Tree $VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA" --latest
 
+      - name: Remove the signing keychain
+        if: always()
+        run: |
+          if [[ -n "${SIGN_KEYCHAIN:-}" ]]; then security delete-keychain "$SIGN_KEYCHAIN" || true; fi
+
       - name: Release already exists
-        if: env.PUBLISH != 'true'
+        if: env.PUBLISH != 'true' || github.ref != 'refs/heads/main'
         run: echo "Release $TAG already exists, so this run only uploads the build as an artifact. Bump CFBundleShortVersionString to publish a new version."

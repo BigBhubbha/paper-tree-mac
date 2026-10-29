@@ -26,12 +26,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         buddy = BuddyController()
         buddy.onOpenSettings = { [weak self] in self?.openSettings() }
         buddy.onRequestAccess = { [weak self] in self?.openWelcome() }
+        buddy.onCheckForUpdates = { [weak self] in self?.updater?.checkForUpdates() }
         buddy.setVisible(state.showBuddy)
 
         monitor = SelectionMonitor(card: card)
         monitor.start()
 
         setUpStatusItem()
+        setUpMainMenu()
         state.refreshMood()
 
         if !state.accessibilityGranted || !state.hasOnboarded {
@@ -42,6 +44,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         openSettings()
         return true
+    }
+
+    // MARK: Main menu (shown in the menu bar while Paper Tree is the active app)
+
+    private func setUpMainMenu() {
+        let main = NSMenu()
+        let appItem = NSMenuItem()
+        main.addItem(appItem)
+        let appMenu = NSMenu(title: "Paper Tree")
+        appItem.submenu = appMenu
+
+        appMenu.addItem(withTitle: "About Paper Tree",
+                        action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+        let updates = NSMenuItem(title: "Check for Updates...", action: #selector(checkForUpdates), keyEquivalent: "")
+        updates.target = self
+        appMenu.addItem(updates)
+        appMenu.addItem(.separator())
+        let settings = NSMenuItem(title: "Settings...", action: #selector(showSettings), keyEquivalent: ",")
+        settings.target = self
+        appMenu.addItem(settings)
+        appMenu.addItem(.separator())
+        appMenu.addItem(withTitle: "Hide Paper Tree", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(.separator())
+        let quit = NSMenuItem(title: "Quit Paper Tree", action: #selector(quit), keyEquivalent: "q")
+        quit.target = self
+        appMenu.addItem(quit)
+
+        // Edit menu so Cmd+C / Cmd+V / Cmd+A work in Settings text fields.
+        let editItem = NSMenuItem()
+        main.addItem(editItem)
+        let edit = NSMenu(title: "Edit")
+        editItem.submenu = edit
+        edit.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        edit.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        edit.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        edit.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+
+        // Window menu so Cmd+W closes Settings or the welcome page.
+        let windowItem = NSMenuItem()
+        main.addItem(windowItem)
+        let window = NSMenu(title: "Window")
+        windowItem.submenu = window
+        window.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        window.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        NSApp.windowsMenu = window
+
+        NSApp.mainMenu = main
     }
 
     // MARK: Menu bar
@@ -128,7 +177,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             settingsWindow = makeWindow(title: "Paper Tree Settings", size: NSSize(width: 520, height: 640),
                                         view: SettingsView(state: state,
                                                            resetBuddy: { [weak self] in self?.buddy.resetPosition() },
-                                                           showWelcome: { [weak self] in self?.openWelcome() }))
+                                                           showWelcome: { [weak self] in self?.openWelcome() },
+                                                           checkForUpdates: { [weak self] in self?.updater?.checkForUpdates() }))
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
