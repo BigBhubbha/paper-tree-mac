@@ -28,7 +28,7 @@ struct SetupView: View {
     @State private var forward = true
     private let poll = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 
-    static let size = NSSize(width: 700, height: 640)
+    static let size = NSSize(width: 700, height: 600)
     private let titles = ["The reader", "The reader, cont.", "Permission", "Practice", "Entry closed"]
 
     var body: some View {

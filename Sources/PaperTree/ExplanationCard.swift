@@ -149,11 +149,17 @@ struct CardBody: View {
                     Grid(alignment: .topLeading, horizontalSpacing: 12, verticalSpacing: 5) {
                         ForEach(e.terms, id: \.self) { t in
                             GridRow {
-                                Text(t.term)
-                                    .font(.uiBold(13))
-                                    .foregroundColor(CardInk.text)
-                                    .frame(maxWidth: 150, alignment: .leading)
-                                    .fixedSize(horizontal: false, vertical: true)
+                                // Short terms set the column width; long ones wrap at 150 pt.
+                                Group {
+                                    if t.term.count <= 20 {
+                                        Text(t.term).fixedSize()
+                                    } else {
+                                        Text(t.term).frame(width: 150, alignment: .leading)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+                                .font(.uiBold(13))
+                                .foregroundColor(CardInk.text)
                                 Text(t.meaning)
                                     .font(.ui(13))
                                     .foregroundColor(CardInk.muted)

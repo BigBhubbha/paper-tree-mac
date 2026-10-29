@@ -63,6 +63,7 @@ enum Snapshots {
             save(SetupView(state: state, island: island, initialStep: step, explainPractice: { _, _, _ in }, done: {}),
                  "setup-\(step + 1)", to: dir)
         }
-        save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}), "settings", to: dir)
+        save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
+                .background(PaperSheet(corner: 0, graph: true)), "settings", to: dir)
     }
 }

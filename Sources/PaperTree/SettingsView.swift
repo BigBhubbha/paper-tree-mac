@@ -40,7 +40,8 @@ struct SettingsView: View {
             }
     }
 
-    private var content: some View {
+    /// The page itself (outside the scroll view, so snapshots can render it).
+    var content: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
                 Text("Settings").font(.fell(30)).foregroundColor(Palette.ink)

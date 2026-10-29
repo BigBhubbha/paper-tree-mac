@@ -24,7 +24,7 @@ final class IslandModel: ObservableObject {
     var onRequestAccess: () -> Void = {}
     var onQuit: () -> Void = {}
 
-    static let expandedSize = CGSize(width: 400, height: 262)
+    static let expandedSize = CGSize(width: 400, height: 208)
     static let flashExtraWidth: CGFloat = 170
     static let flashExtraHeight: CGFloat = 30
 
