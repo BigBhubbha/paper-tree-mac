@@ -148,9 +148,9 @@ struct SettingsView: View {
                 }
                 .frame(width: 548)
 
-                SpecimenTag(number: 2, label: "copy fallback", tilt: 0.5) {
-                    switchRow("Some apps hide their text from me. Then I press Cmd+C for you and put your clipboard back after.",
-                              isOn: $state.copyFallbackEnabled, name: "Copy fallback")
+                SpecimenTag(number: 2, label: "grab stubborn text", tilt: 0.5) {
+                    switchRow("Some apps, like certain PDFs, won't share what you highlight. Then I copy it for you and put back whatever was on your clipboard.",
+                              isOn: $state.copyFallbackEnabled, name: "Grab stubborn text")
                 }
                 .frame(width: 530)
                 .padding(.leading, 22)
