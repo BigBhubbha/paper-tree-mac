@@ -14,7 +14,17 @@ struct SetupView: View {
     var explainPractice: (_ text: String, _ context: String, _ screenRect: NSRect) -> Void
     var done: () -> Void
 
-    @State private var step = 0
+    @State private var step: Int
+
+    init(state: AppState, island: IslandModel, initialStep: Int = 0,
+         explainPractice: @escaping (_ text: String, _ context: String, _ screenRect: NSRect) -> Void,
+         done: @escaping () -> Void) {
+        self.state = state
+        self.island = island
+        self.explainPractice = explainPractice
+        self.done = done
+        _step = State(initialValue: initialStep)
+    }
     @State private var forward = true
     private let poll = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
 

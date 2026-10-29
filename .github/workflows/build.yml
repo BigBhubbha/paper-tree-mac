@@ -104,6 +104,19 @@ jobs:
           PID=$!; sleep 4
           if kill -0 $PID 2>/dev/null; then echo "App launched and stayed up for 4 s"; kill $PID; else wait $PID; echo "App exited early with status $?"; exit 1; fi
 
+      - name: Render design snapshots
+        continue-on-error: true
+        run: |
+          "build/Paper Tree.app/Contents/MacOS/PaperTree" --paper-tree-snapshots "$RUNNER_TEMP/snapshots"
+          ls -la "$RUNNER_TEMP/snapshots"
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: design-snapshots
+          path: ${{ runner.temp }}/snapshots
+          if-no-files-found: warn
+
       - name: Make DMG and update archive
         run: |
           rm -rf dist && mkdir -p dist/stage
