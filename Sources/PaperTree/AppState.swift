@@ -2,10 +2,10 @@
 import AppKit
 import Combine
 
-/// What the buddy is doing right now. Drives its face and bubbles.
+/// What the flask is doing right now. Drives its face in the island and the card.
 enum BuddyMood: Equatable {
     case idle        // resting, happy closed eyes
-    case noticed     // a highlight was captured; eyes open, waiting for a click
+    case noticed     // a highlight was captured; eyes open
     case thinking    // an explanation is loading; lots of bubbles
     case needsAccess // Accessibility permission missing
 }
@@ -22,8 +22,6 @@ final class AppState: ObservableObject {
         static let researchMode = "researchMode"
         static let endpoint = "explainEndpoint"
         static let clientToken = "clientToken"
-        static let buddyX = "buddyCenterXFraction"
-        static let showBuddy = "showBuddy"
         static let specimenCount = "specimenCount"
         static let onboarded = "onboardedAccessibility"
         static let copyFallback = "copyFallbackEnabled"
@@ -35,9 +33,6 @@ final class AppState: ObservableObject {
     @Published var endpoint: String { didSet { defaults.set(endpoint, forKey: Key.endpoint) } }
     /// Optional shared token, only needed if the backend sets APP_TOKEN.
     @Published var clientToken: String { didSet { defaults.set(clientToken, forKey: Key.clientToken) } }
-    /// Buddy's horizontal center as a fraction of the screen width (0 to 1). Negative means "default spot".
-    @Published var buddyCenterXFraction: Double { didSet { defaults.set(buddyCenterXFraction, forKey: Key.buddyX) } }
-    @Published var showBuddy: Bool { didSet { defaults.set(showBuddy, forKey: Key.showBuddy) } }
     /// When Accessibility gives no text, briefly press Cmd+C to read the highlight (pasteboard is restored).
     @Published var copyFallbackEnabled: Bool { didSet { defaults.set(copyFallbackEnabled, forKey: Key.copyFallback) } }
     @Published var hasOnboarded: Bool { didSet { defaults.set(hasOnboarded, forKey: Key.onboarded) } }
@@ -56,8 +51,6 @@ final class AppState: ObservableObject {
             Key.researchMode: false,
             Key.endpoint: AppState.defaultEndpoint,
             Key.clientToken: "",
-            Key.buddyX: -1.0,
-            Key.showBuddy: true,
             Key.copyFallback: true,
             Key.onboarded: false,
         ])
@@ -65,8 +58,6 @@ final class AppState: ObservableObject {
         let saved = defaults.string(forKey: Key.endpoint) ?? AppState.defaultEndpoint
         endpoint = saved.contains("YOUR-SITE") || saved.trimmingCharacters(in: .whitespaces).isEmpty ? AppState.defaultEndpoint : saved
         clientToken = defaults.string(forKey: Key.clientToken) ?? ""
-        buddyCenterXFraction = defaults.double(forKey: Key.buddyX)
-        showBuddy = defaults.bool(forKey: Key.showBuddy)
         copyFallbackEnabled = defaults.bool(forKey: Key.copyFallback)
         hasOnboarded = defaults.bool(forKey: Key.onboarded)
     }
@@ -87,7 +78,7 @@ final class AppState: ObservableObject {
         return specimenCount
     }
 
-    /// Recomputes the buddy's face from permissions and mode, unless it is busy thinking.
+    /// Recomputes the flask's face from permissions and mode, unless it is busy thinking.
     func refreshMood(noticed: Bool = false) {
         if mood == .thinking { return }
         if !accessibilityGranted && researchMode { mood = .needsAccess; return }

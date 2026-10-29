@@ -4,7 +4,6 @@ import ServiceManagement
 
 struct SettingsView: View {
     @ObservedObject var state: AppState
-    var resetBuddy: () -> Void
     var showWelcome: () -> Void
     var checkForUpdates: () -> Void
 
@@ -15,10 +14,9 @@ struct SettingsView: View {
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var loginError: String = ""
 
-    init(state: AppState, resetBuddy: @escaping () -> Void, showWelcome: @escaping () -> Void,
+    init(state: AppState, showWelcome: @escaping () -> Void,
          checkForUpdates: @escaping () -> Void) {
         self.state = state
-        self.resetBuddy = resetBuddy
         self.showWelcome = showWelcome
         self.checkForUpdates = checkForUpdates
     }
@@ -58,14 +56,12 @@ struct SettingsView: View {
             }
 
             section("Behavior") {
-                Toggle(isOn: $state.researchMode) { label("Research mode", "Highlight, then click, to get an explanation.") }
+                Toggle(isOn: $state.researchMode) { label("Research mode", "Highlight anything and it explains. Triple-tap right Option to flip it on or off.") }
                     .toggleStyle(InkToggleStyle())
                 Toggle(isOn: $state.copyFallbackEnabled) {
                     label("Copy fallback", "For apps that hide their text, Paper Tree presses Cmd+C for you and then puts your clipboard back.")
                 }
                 .toggleStyle(InkToggleStyle())
-                Toggle(isOn: $state.showBuddy) { label("Show the buddy", "Hide it if you only want the menu bar item.") }
-                    .toggleStyle(InkToggleStyle())
                 Toggle(isOn: Binding(get: { launchAtLogin }, set: { setLaunchAtLogin($0) })) {
                     label("Open at login", loginError.isEmpty ? "Start Paper Tree when you log in." : loginError)
                 }
@@ -80,9 +76,12 @@ struct SettingsView: View {
                     Spacer()
                     Button("Set up") { showWelcome() }.buttonStyle(InkLinkButtonStyle())
                 }
-                HStack {
-                    Button("Put the buddy back by the notch") { resetBuddy() }.buttonStyle(InkLinkButtonStyle())
-                    Spacer()
+                HStack(alignment: .top, spacing: 8) {
+                    Text("Shortcut.")
+                        .font(.typewriter(11.5)).foregroundColor(Palette.red)
+                    Text("Double-tap right Option to open the island at the notch. Triple-tap to toggle Research mode.")
+                        .font(.ui(12.5)).foregroundColor(Palette.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 

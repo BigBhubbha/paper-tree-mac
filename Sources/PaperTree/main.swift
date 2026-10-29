@@ -1,5 +1,5 @@
 // Entry point. Paper Tree is a regular app: it has a Dock icon and shows up in Cmd+Tab,
-// plus the flask buddy by the notch and a small menu bar item. Clicking the Dock icon opens Settings.
+// plus the island at the notch (double-tap right Option) and a small menu bar item. Clicking the Dock icon opens Settings.
 import AppKit
 
 // Top-level code runs on the main thread; tell the compiler so it can create the @MainActor delegate.

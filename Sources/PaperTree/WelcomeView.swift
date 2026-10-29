@@ -130,7 +130,7 @@ struct WelcomeView: View {
             Text("Hello. I'm the flask.")
                 .font(.fell(31))
                 .foregroundColor(Palette.ink)
-            Text("I live up in your menu bar, beside the notch. Highlight a hard line in any paper, click it, and I'll write you a note in plain words.")
+            Text("I live in the notch. Double-tap the right Option key to open me, triple-tap to toggle Research mode. Then highlight a hard line in any paper and I'll explain it in plain words.")
                 .font(.text(15))
                 .foregroundColor(Palette.ink2)
                 .lineSpacing(2)
@@ -164,7 +164,7 @@ struct WelcomeView: View {
             if granted {
                 Button("Start reading") { done() }
                     .buttonStyle(StampButtonStyle())
-                Text("You're in. Click the flask any time to put the goggles on.")
+                Text("You're in. Triple-tap right Option any time to put the goggles on.")
                     .font(.hand(14))
                     .foregroundColor(Palette.green)
             } else {
@@ -178,7 +178,7 @@ struct WelcomeView: View {
                     .font(.typewriter(10.5))
                     .foregroundColor(Palette.ink3)
                 if asked {
-                    Text("Already switched on? Switch it off and on again. Each new version makes macOS forget me.")
+                    Text("Already switched on? Switch it off and on again, and I'll see it.")
                         .font(.hand(13))
                         .foregroundColor(Palette.pencil)
                         .fixedSize(horizontal: false, vertical: true)

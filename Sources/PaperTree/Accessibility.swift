@@ -2,7 +2,7 @@
 import AppKit
 import ApplicationServices
 
-/// A highlight we captured, waiting for you to click it.
+/// A highlight we captured, ready to explain.
 struct CapturedSelection {
     var text: String
     var context: String

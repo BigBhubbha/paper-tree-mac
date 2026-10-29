@@ -1,7 +1,7 @@
 // Watches the mouse across all apps (only while research mode is on):
-//   1. You drag or double-click to highlight text. On mouse up we read the highlight.
-//   2. You click on that highlight. We open the explanation card next to it.
-// We only listen to mouse clicks; we never record keystrokes.
+// you drag, double-click, or triple-click to highlight text, and a moment after you let go
+// we read the highlight and open the explanation card next to it. No extra click needed.
+// We only listen to mouse clicks here; we never record keystrokes.
 import AppKit
 import Combine
 
@@ -12,15 +12,16 @@ final class SelectionMonitor {
     private var monitors: [Any] = []
     private var bag = Set<AnyCancellable>()
 
-    private var pending: CapturedSelection?
     private var downPoint: NSPoint = .zero
     private var dragged = false
-    private var armed = false
     private var captureTask: Task<Void, Never>?
-    private var noticeTimer: Task<Void, Never>?
 
-    /// How long a highlight stays "clickable" after you make it.
-    private let selectionLifetime: TimeInterval = 60
+    /// The last highlight we explained, so letting go on the same text again does not re-fire.
+    private var lastExplained: String?
+    private var lastExplainedAt = Date.distantPast
+    /// Wait this long after mouse up, so the app finishes selecting (and a triple-click can land).
+    private let debounce: UInt64 = 350_000_000
+    private let minCharacters = 2
     private let ownPID = ProcessInfo.processInfo.processIdentifier
 
     init(card: CardController) {
@@ -39,7 +40,7 @@ final class SelectionMonitor {
         state.$researchMode.removeDuplicates().sink { [weak self] on in
             Task { @MainActor in
                 guard let self else { return }
-                if !on { self.clearPending() }
+                if !on { self.captureTask?.cancel(); self.lastExplained = nil }
                 self.state.refreshMood()
             }
         }.store(in: &bag)
@@ -59,6 +60,8 @@ final class SelectionMonitor {
         var kind: Kind
         var clickCount: Int
         var shift: Bool
+        /// Cmd, Control, or Option held: the user is doing something else (Cmd-click links, etc.).
+        var commandLike: Bool
         /// Screen location (Cocoa coordinates) at the moment the event arrived.
         var location: NSPoint
 
@@ -73,6 +76,8 @@ final class SelectionMonitor {
             }
             clickCount = (e.type == .leftMouseDown || e.type == .leftMouseUp) ? e.clickCount : 0
             shift = e.modifierFlags.contains(.shift)
+            let f = e.modifierFlags
+            commandLike = f.contains(.command) || f.contains(.control) || f.contains(.option)
         }
     }
 
@@ -90,19 +95,11 @@ final class SelectionMonitor {
         // Global events never land on our own windows, so any click here is "outside" the card.
         if card.isVisible && !card.frame.contains(p) { card.close() }
 
-        guard e.kind == .leftDown, state.researchMode else { armed = false; return }
+        guard e.kind == .leftDown, state.researchMode else { return }
+        // A new gesture replaces any highlight we were still waiting on.
+        captureTask?.cancel()
         downPoint = p
         dragged = false
-        armed = false
-
-        if let sel = pending,
-           e.clickCount == 1,
-           !e.shift,
-           Date().timeIntervalSince(sel.capturedAt) < selectionLifetime,
-           hitArea(for: sel).contains(p),
-           NSWorkspace.shared.frontmostApplication?.processIdentifier == sel.appPID {
-            armed = true
-        }
     }
 
     private func mouseDragged(_ e: MouseInfo) {
@@ -116,22 +113,14 @@ final class SelectionMonitor {
         let trusted = Accessibility.isTrusted
         if trusted != state.accessibilityGranted { state.accessibilityGranted = trusted }
         guard trusted else { state.refreshMood(); return }
+        guard !e.commandLike else { return }
 
         let p = e.location
         let moved = dragged || hypot(p.x - downPoint.x, p.y - downPoint.y) > 4
 
-        // Step 2: a plain click on the highlight you just made.
-        if armed && !moved, let sel = pending {
-            armed = false
-            clearPending()
-            card.show(for: sel, clickedAt: p)
-            return
-        }
-        armed = false
-
-        // Step 1: was this a selecting gesture? Drag, double or triple click, or shift-click.
+        // Only selecting gestures: a drag, a double or triple click, or a shift-click.
         let selecting = moved || e.clickCount >= 2 || e.shift
-        guard selecting else { clearPending(); return }
+        guard selecting else { return }
 
         let down = downPoint
         let clicks = e.clickCount
@@ -144,9 +133,12 @@ final class SelectionMonitor {
     // MARK: Capturing the highlight
 
     private func capture(down: NSPoint, up: NSPoint, clickCount: Int, dragged: Bool) async {
-        // Give the app a moment to finish updating its selection.
-        try? await Task.sleep(nanoseconds: 90_000_000)
+        // Debounce: give the app a moment to finish its selection (and a triple-click time to land).
+        try? await Task.sleep(nanoseconds: debounce)
         guard !Task.isCancelled,
+              state.researchMode,
+              !NSEvent.modifierFlags.contains(.command),
+              NSEvent.pressedMouseButtons & 1 == 0,      // still dragging: wait for the real mouse up
               let front = NSWorkspace.shared.frontmostApplication,
               front.processIdentifier != ownPID else { return }
         let pid = front.processIdentifier
@@ -183,18 +175,15 @@ final class SelectionMonitor {
             }
         }
 
-        guard !Task.isCancelled else { return }
-        guard let sel = selection, sel.text.count >= 1 else { clearPending(); return }
-        pending = sel
-        state.refreshMood(noticed: true)
-
-        // Calm the buddy down again if the highlight is never clicked.
-        noticeTimer?.cancel()
-        noticeTimer = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64((self?.selectionLifetime ?? 60) * 1_000_000_000))
-            guard !Task.isCancelled else { return }
-            self?.clearPending()
-        }
+        guard !Task.isCancelled, let sel = selection else { return }
+        let text = sel.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard text.count >= minCharacters else { return }
+        // Same highlight as the one just explained: leave the card alone.
+        if text == lastExplained && (card.isVisible || Date().timeIntervalSince(lastExplainedAt) < 8) { return }
+        lastExplained = text
+        lastExplainedAt = Date()
+        // show() cancels any explanation still loading for an older highlight.
+        card.show(for: sel, clickedAt: up)
     }
 
     /// When the app does not tell us where the highlight is, estimate it from the mouse path.
@@ -212,17 +201,5 @@ final class SelectionMonitor {
             maxX += 260
         }
         return NSRect(x: minX - 6, y: minY, width: (maxX - minX) + 12, height: maxY - minY)
-    }
-
-    private func hitArea(for sel: CapturedSelection) -> NSRect {
-        sel.rect.insetBy(dx: sel.preciseRect ? -4 : -8, dy: sel.preciseRect ? -4 : -6)
-    }
-
-    private func clearPending() {
-        pending = nil
-        noticeTimer?.cancel()
-        noticeTimer = nil
-        if state.mood == .noticed { state.mood = .idle }
-        state.refreshMood()
     }
 }

@@ -107,7 +107,7 @@ final class CardController {
     }
 
     /// Click-outside to close. The selection monitor also routes outside clicks here,
-    /// this local one covers clicks on our own windows such as the buddy.
+    /// this local one covers clicks on our own windows such as the island.
     private func installOutsideClickMonitor() {
         removeOutsideClickMonitor()
         outsideClickMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in

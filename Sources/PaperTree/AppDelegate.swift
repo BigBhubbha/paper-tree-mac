@@ -1,4 +1,4 @@
-// Wires everything together: buddy, menu bar item, selection monitor, card, and windows.
+// Wires everything together: the notch island, menu bar item, right Option taps, selection monitor, card, and windows.
 import AppKit
 import SwiftUI
 import Combine
@@ -6,7 +6,8 @@ import Combine
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let state = AppState.shared
-    private var buddy: BuddyController!
+    private var island: IslandController!
+    private var optionTaps: RightOptionTapDetector!
     private var card: CardController!
     private var monitor: SelectionMonitor!
     private var statusItem: NSStatusItem!
@@ -23,11 +24,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         card = CardController()
         card.onOpenSettings = { [weak self] in self?.openSettings() }
 
-        buddy = BuddyController()
-        buddy.onOpenSettings = { [weak self] in self?.openSettings() }
-        buddy.onRequestAccess = { [weak self] in self?.openWelcome() }
-        buddy.onCheckForUpdates = { [weak self] in self?.updater?.checkForUpdates() }
-        buddy.setVisible(state.showBuddy)
+        island = IslandController()
+        island.model.onOpenSettings = { [weak self] in self?.island.close(); self?.openSettings() }
+        island.model.onRequestAccess = { [weak self] in self?.island.close(); self?.openWelcome() }
+        island.model.onCheckForUpdates = { [weak self] in self?.island.close(); self?.updater?.checkForUpdates() }
+
+        // Double-tap right Option: open or close the island. Triple-tap: flip Research mode.
+        optionTaps = RightOptionTapDetector()
+        optionTaps.onDoubleTap = { [weak self] in self?.island.toggle() }
+        optionTaps.onTripleTap = { [weak self] in
+            guard let self else { return }
+            self.island.close()
+            self.state.researchMode.toggle()
+        }
+        optionTaps.start()
 
         monitor = SelectionMonitor(card: card)
         monitor.start()
@@ -120,13 +130,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         research.target = self
         menu.addItem(research)
 
-        let show = NSMenuItem(title: state.showBuddy ? "Hide buddy" : "Show buddy", action: #selector(toggleBuddy), keyEquivalent: "")
-        show.target = self
-        menu.addItem(show)
-
-        let reset = NSMenuItem(title: "Move buddy back to the notch", action: #selector(resetBuddy), keyEquivalent: "")
-        reset.target = self
-        menu.addItem(reset)
+        let open = NSMenuItem(title: "Open the island (double-tap right Option)", action: #selector(toggleIsland), keyEquivalent: "")
+        open.target = self
+        menu.addItem(open)
 
         menu.addItem(.separator())
         if !Accessibility.isTrusted {
@@ -148,8 +154,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func toggleResearch() { state.researchMode.toggle() }
-    @objc private func toggleBuddy() { state.showBuddy.toggle() }
-    @objc private func resetBuddy() { buddy.resetPosition() }
+    @objc private func toggleIsland() { island.toggle() }
     @objc private func showSettings() { openSettings() }
     @objc private func checkForUpdates() { updater?.checkForUpdates() }
     @objc private func showWelcome() { openWelcome() }
@@ -176,7 +181,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if settingsWindow == nil {
             settingsWindow = makeWindow(title: "Paper Tree Settings", size: NSSize(width: 520, height: 640),
                                         view: SettingsView(state: state,
-                                                           resetBuddy: { [weak self] in self?.buddy.resetPosition() },
                                                            showWelcome: { [weak self] in self?.openWelcome() },
                                                            checkForUpdates: { [weak self] in self?.updater?.checkForUpdates() }))
         }
