@@ -34,6 +34,9 @@ struct GroveScroll<Content: View>: View {
     var body: some View {
         if Snapshots.isRendering {
             content
+                .fixedSize(horizontal: axis.contains(.horizontal), vertical: axis.contains(.vertical))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .clipped()
         } else {
             ScrollView(axis, showsIndicators: indicators) { content }
         }
@@ -159,6 +162,7 @@ struct SpecimenPlate: View {
     var body: some View {
         VStack(spacing: 0) {
             TreeCanvas(tree: tree, store: store)
+                .clipped()
             HStack(alignment: .bottom) {
                 Text(String(format: "Sheet PT-%04d", tree.number))
                     .font(.typewriter(9.5)).foregroundColor(Palette.ink3)

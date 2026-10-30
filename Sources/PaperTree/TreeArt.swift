@@ -228,7 +228,40 @@ struct TreeGeometry {
             let control = CGPoint(x: mid.x + r.cg(-0.2, 0.2) * len, y: mid.y - r.cg(0.05, 0.25) * len)
             g.ghosts.append(Ghost(id: s.id, from: from.point, control: control, to: to))
         }
+        g.fit(in: size)
         return g
+    }
+
+    /// Shrinks the whole drawing about its base (and slides it sideways) so every branch, leaf
+    /// cloud, paper and pencil branch stays on the sheet. Big trees get denser, not cut off.
+    private mutating func fit(in size: CGSize) {
+        let pad = max(8, cardSize.width * 0.25)
+        let leaf = cardSize.height * 1.15   // foliage and the card that hangs off a tip
+        var minX = base.x, maxX = base.x, minY = base.y
+        func take(_ p: CGPoint, _ r: CGFloat) {
+            minX = min(minX, p.x - r); maxX = max(maxX, p.x + r); minY = min(minY, p.y - r)
+        }
+        for l in limbs { for p in l.points { take(p, l.w0) } }
+        for l in twigs { for p in l.points { take(p, leaf * 0.5) } }
+        for t in tips { take(t.point, leaf) }
+        for gh in ghosts { take(gh.to, cardSize.height * 0.9); take(gh.control, 0) }
+        let availW = size.width - pad * 2, availH = base.y - pad
+        let s = min(1, availW / max(1, maxX - minX), availH / max(1, base.y - minY))
+        let left = base.x + (minX - base.x) * s, right = base.x + (maxX - base.x) * s
+        var dx: CGFloat = 0
+        if left < pad { dx = pad - left } else if right > size.width - pad { dx = size.width - pad - right }
+        guard s < 0.999 || abs(dx) > 0.5 else { return }
+        let b = base
+        func m(_ p: CGPoint) -> CGPoint { CGPoint(x: b.x + (p.x - b.x) * s + dx, y: b.y + (p.y - b.y) * s) }
+        func ml(_ l: Limb) -> Limb { Limb(points: l.points.map(m), w0: l.w0 * s, w1: l.w1 * s, depth: l.depth) }
+        limbs = limbs.map(ml)
+        twigs = twigs.map(ml)
+        tips = tips.map { Tip(id: $0.id, point: m($0.point), angle: $0.angle) }
+        ghosts = ghosts.map { Ghost(id: $0.id, from: m($0.from), control: m($0.control), to: m($0.to)) }
+        base = CGPoint(x: base.x + dx, y: base.y)
+        height *= s
+        let c = max(0.7, s.squareRoot())
+        cardSize = CGSize(width: cardSize.width * c, height: cardSize.height * c)
     }
 
     /// One branch: a gently bending curve from `start`, with species habits (droop, curl, kinks).

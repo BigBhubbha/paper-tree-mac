@@ -454,6 +454,10 @@ private struct PracticeBench: View {
                         .font(.typewriter(10)).foregroundColor(Palette.ink3)
                     Text("Leaves in a dry spell")
                         .font(.fell(19)).foregroundColor(Palette.ink)
+                    if Snapshots.isRendering {
+                        Text(PracticeBench.passage).font(.text(16.5)).foregroundColor(Palette.ink).lineSpacing(5)
+                            .fixedSize(horizontal: false, vertical: true).frame(height: 176, alignment: .top)
+                    } else {
                     PracticeTextView(text: PracticeBench.passage) { text, rect in
                         guard state.researchMode else {
                             hint = "Research mode is off, so nothing happened. Triple-tap right Option first."
@@ -466,12 +470,18 @@ private struct PracticeBench: View {
                         }
                     }
                     .frame(height: 176)
+                    }
                     Rectangle().fill(Palette.pencil.opacity(0.35)).frame(height: 1)
                         .padding(.vertical, 2)
                     Text("Further reading")
                         .font(.typewriter(10)).foregroundColor(Palette.ink3)
-                    PracticeTextView(text: PracticeBench.title) { _, _ in }
-                        .frame(height: 64)
+                    if Snapshots.isRendering {
+                        Text(PracticeBench.title).font(.text(16.5)).foregroundColor(Palette.ink).lineSpacing(5)
+                            .fixedSize(horizontal: false, vertical: true).frame(height: 64, alignment: .top)
+                    } else {
+                        PracticeTextView(text: PracticeBench.title) { _, _ in }
+                            .frame(height: 64)
+                    }
                     Text(PracticeBench.reference)
                         .font(.text(12.5)).italic().foregroundColor(Palette.ink2)
                     if !hint.isEmpty {
