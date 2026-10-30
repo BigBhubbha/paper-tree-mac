@@ -429,11 +429,14 @@ struct TreeSheetPage: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .rotationEffect(.degrees(-0.8))
                 }
+                // Fixing a match sits at the top, where it can't scroll out of sight.
+                if let id = rematching, let p = tree.papers.first(where: { $0.id == id }) {
+                    RematchPanel(paper: p, treeId: tree.id, store: store, done: { rematching = nil }, preset: rematchPreset)
+                        .id(id)
+                }
                 Text("Papers").font(.fellItalic(18)).foregroundColor(Palette.ink).padding(.top, 4)
                 ForEach(Array(tree.papers.sorted { $0.addedAt < $1.addedAt }.enumerated()), id: \.element.id) { i, p in
-                    if rematching == p.id {
-                        RematchPanel(paper: p, treeId: tree.id, store: store, done: { rematching = nil }, preset: rematchPreset)
-                    } else {
+                    Group {
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(String(format: "%02d", i + 1)).font(.typewriter(10)).foregroundColor(Palette.red)
                             VStack(alignment: .leading, spacing: 1) {
@@ -452,6 +455,8 @@ struct TreeSheetPage: View {
                                 }
                             }
                         }
+                        .padding(.horizontal, rematching == p.id ? 4 : 0)
+                        .background(rematching == p.id ? Palette.marker.opacity(0.35) : Color.clear)
                         .contentShape(Rectangle())
                         .onHover { inside in hovered = inside ? p.id : (hovered == p.id ? nil : hovered) }
                         .contextMenu {

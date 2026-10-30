@@ -53,7 +53,7 @@ final class IslandModel: ObservableObject {
                           height: notchSize.height + IslandModel.flashExtraHeight)
         case .adding:
             // Taller while the list of possible matches is open.
-            let extra: CGFloat = adding?.choosing == true ? CGFloat(min(adding?.candidates.count ?? 3, adding?.showAll == true ? 6 : 3)) * 46 + 70 : 24
+            let extra: CGFloat = adding?.choosing == true ? CGFloat(min(adding?.candidates.count ?? 3, adding?.showAll == true ? 6 : 3)) * 52 : 24
             return CGSize(width: IslandModel.addingSize.width, height: notchSize.height + IslandModel.addingSize.height + extra)
         case .expanded:
             return CGSize(width: groveSize.width, height: notchSize.height + groveSize.height)

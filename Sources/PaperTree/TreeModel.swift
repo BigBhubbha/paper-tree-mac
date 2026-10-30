@@ -298,7 +298,13 @@ final class TreeStore: ObservableObject {
     private func suggest(from paper: Paper, in treeId: UUID) async {
         guard !paper.isLocal, let tree = trees.first(where: { $0.id == treeId }) else { return }
         let exclude = tree.papers.map(\.id) + tree.dismissed + tree.suggestions.map(\.id) + tree.papers.compactMap { $0.doi.map { "doi:" + $0 } }
-        guard let papers = try? await TreeClient.current.recommend(paper: paper, exclude: exclude, limit: 2) else { return }
+        var papers = (try? await TreeClient.current.recommend(paper: paper, exclude: exclude, limit: 2)) ?? []
+        // Crossref only matches titles; real "related papers" are worth one direct try from this Mac.
+        if papers.isEmpty || papers.allSatisfy({ $0.source == "Crossref" }) {
+            let direct = await DirectSources.recommendations(for: paper).filter { !exclude.contains($0.id) && !$0.title.isEmpty }
+            if !direct.isEmpty { papers = Array(direct.prefix(2)) }
+        }
+        guard !papers.isEmpty else { return }
         guard let i = trees.firstIndex(where: { $0.id == treeId }) else { return }
         for p in papers where !trees[i].suggestions.contains(where: { $0.id == p.id }) && !trees[i].papers.contains(where: { $0.id == p.id }) {
             trees[i].suggestions.append(Suggestion(paper: p, fromPaperId: paper.id))
@@ -573,6 +579,31 @@ enum DirectSources {
         guard let d = await getJSON("https://api.openalex.org/works?search=\(q(clean))&per-page=6&select=\(oaSelect)"),
               let rows = d["results"] as? [[String: Any]] else { return [] }
         return rows.compactMap(openAlexRecord)
+    }
+
+    /// Semantic Scholar's related papers, asked from this Mac (by its id, or by DOI for other records).
+    static func recommendations(for paper: Paper) async -> [Paper] {
+        let ref: String
+        if paper.id.count == 40, paper.id.allSatisfy(\.isHexDigit) { ref = paper.id }
+        else if let doi = paper.doi, !doi.isEmpty { ref = "DOI:" + doi }
+        else { return [] }
+        let fields = "paperId,title,authors,year,venue,openAccessPdf,externalIds,url,fieldsOfStudy,citationCount"
+        guard let d = await getJSON("https://api.semanticscholar.org/recommendations/v1/papers/forpaper/\(q(ref))?limit=10&fields=\(fields)"),
+              let rows = d["recommendedPapers"] as? [[String: Any]] else { return [] }
+        return rows.compactMap { p -> Paper? in
+            guard let id = p["paperId"] as? String, let t = p["title"] as? String else { return nil }
+            let ext = p["externalIds"] as? [String: Any] ?? [:]
+            var out = Paper(id: id, title: t, authors: ((p["authors"] as? [[String: Any]]) ?? []).prefix(6).compactMap { $0["name"] as? String },
+                            year: p["year"] as? Int, venue: p["venue"] as? String ?? "",
+                            pdf: (p["openAccessPdf"] as? [String: Any])?["url"] as? String ?? "",
+                            url: p["url"] as? String ?? "", fields: p["fieldsOfStudy"] as? [String] ?? [])
+            out.doi = ext["DOI"] as? String
+            out.arxiv = ext["ArXiv"] as? String
+            if let a = out.arxiv { out.pdfs = ["https://arxiv.org/pdf/\(a)"] }
+            out.cites = p["citationCount"] as? Int
+            out.source = "Semantic Scholar"
+            return out
+        }
     }
 
     /// Open-access PDF links OpenAlex knows for a paper, found by DOI or by its exact title.
