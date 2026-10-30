@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let state = AppState.shared
     private var island: IslandController!
     private var optionTaps: RightOptionTapDetector!
+    private var adder: PaperAdder!
     private var card: CardController!
     private var monitor: SelectionMonitor!
     private var statusItem: NSStatusItem!
@@ -29,8 +30,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         island.model.onRequestAccess = { [weak self] in self?.island.close(); self?.openWelcome() }
         island.model.onCheckForUpdates = { [weak self] in self?.island.close(); self?.updater?.checkForUpdates() }
 
-        // Double-tap right Option: open or close the island. Triple-tap: flip Research mode.
+        // Right Option: one tap adds the highlighted paper, two open or close the grove, three flip Research mode.
+        adder = PaperAdder(island: island)
         optionTaps = RightOptionTapDetector()
+        optionTaps.onSingleTap = { [weak self] in
+            guard let self else { return }
+            self.card.close()
+            self.adder.singleTap()
+        }
         optionTaps.onDoubleTap = { [weak self] in self?.island.toggle() }
         optionTaps.onTripleTap = { [weak self] in
             guard let self else { return }

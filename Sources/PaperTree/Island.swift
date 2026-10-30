@@ -1,5 +1,6 @@
 // The island: a black pill that grows out of the notch, Dynamic Island style.
-// Double-tap the right Option key to open or close it; triple-tap to flip Research mode.
+// Tap the right Option key once to add a highlighted paper, twice to open the grove (it fills most of
+// the screen), three times to flip Research mode.
 import AppKit
 import SwiftUI
 import Combine
@@ -11,10 +12,19 @@ final class IslandModel: ObservableObject {
     enum Mode: Equatable {
         case hidden
         case flash(on: Bool)
+        /// A short message, like "Added to Tree No. 2".
+        case note(String)
+        /// Half open: choosing which tree gets a paper.
+        case adding
+        /// Wide open: the grove.
         case expanded
     }
 
     @Published var mode: Mode = .hidden
+    @Published var page: GrovePage = .grove
+    @Published var adding: AddRequest?
+    /// The open grove's size; set from the screen so it fills most of it.
+    @Published var groveSize = CGSize(width: 1180, height: 720)
     /// Size of the notch (or a small stand-in on Macs without one). The pill starts and ends here.
     @Published var notchSize = CGSize(width: 190, height: 32)
     @Published var hasNotch = true
@@ -23,8 +33,11 @@ final class IslandModel: ObservableObject {
     var onCheckForUpdates: () -> Void = {}
     var onRequestAccess: () -> Void = {}
     var onQuit: () -> Void = {}
+    var onClose: () -> Void = {}
+    /// A paper landed on a tree: show it there.
+    var onAdded: (UUID) -> Void = { _ in }
 
-    static let expandedSize = CGSize(width: 400, height: 208)
+    static let addingSize = CGSize(width: 600, height: 300)
     static let flashExtraWidth: CGFloat = 170
     static let flashExtraHeight: CGFloat = 30
 
@@ -35,9 +48,13 @@ final class IslandModel: ObservableObject {
         case .flash:
             return CGSize(width: notchSize.width + IslandModel.flashExtraWidth,
                           height: notchSize.height + IslandModel.flashExtraHeight)
+        case .note(let text):
+            return CGSize(width: max(notchSize.width + IslandModel.flashExtraWidth, CGFloat(text.count) * 7.4 + 90),
+                          height: notchSize.height + IslandModel.flashExtraHeight)
+        case .adding:
+            return CGSize(width: IslandModel.addingSize.width, height: notchSize.height + IslandModel.addingSize.height)
         case .expanded:
-            return CGSize(width: IslandModel.expandedSize.width,
-                          height: notchSize.height + IslandModel.expandedSize.height)
+            return CGSize(width: groveSize.width, height: notchSize.height + groveSize.height)
         }
     }
 }
@@ -58,22 +75,34 @@ final class IslandController {
     private let margin: CGFloat = 24
 
     var isExpanded: Bool { model.mode == .expanded }
+    var isOpen: Bool { model.mode == .expanded || model.mode == .adding }
 
     init() {
         panel = IslandPanel(contentRect: NSRect(x: 0, y: 0, width: 10, height: 10))
         panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.mainMenuWindow)) + 3)
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
-        let host = NSHostingView(rootView: IslandView(model: model, state: state))
+        let host = NSHostingView(rootView: IslandView(model: model, state: state, store: TreeStore.shared))
         host.sizingOptions = []
         panel.contentView = host
         panel.onEscape = { [weak self] in self?.close() }
 
         model.onQuit = { NSApp.terminate(nil) }
+        model.onClose = { [weak self] in
+            guard let self else { return }
+            self.close()
+            if TreeStore.shared.plantingNewTree != nil {
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    self?.note("Now highlight a paper's title, then tap right Option")
+                }
+            }
+        }
+        model.onAdded = { [weak self] id in self?.open(page: .tree(id)) }
 
         // A small flash whenever Research mode changes, unless the full panel is already open.
         state.$researchMode.dropFirst().removeDuplicates().sink { [weak self] on in
             Task { @MainActor in
-                guard let self, !self.isExpanded else { return }
+                guard let self, !self.isOpen else { return }
                 self.flash(researchOn: on)
             }
         }.store(in: &bag)
@@ -104,12 +133,16 @@ final class IslandController {
         }
     }
 
-    /// The panel is sized for the largest pill so the spring never gets cut off, and sits flush with the top.
+    /// The panel is sized for the largest pill (the grove) so the spring never gets cut off, and sits
+    /// flush with the top. Its empty parts are transparent, so clicks there reach the apps below.
     private func placeOnScreen() {
         guard let screen = homeScreen else { return }
         measureNotch(screen)
-        let w = max(IslandModel.expandedSize.width, model.notchSize.width + IslandModel.flashExtraWidth) + margin * 2
-        let h = model.notchSize.height + IslandModel.expandedSize.height + margin
+        let f0 = screen.frame
+        model.groveSize = CGSize(width: floor(min(f0.width - 60, max(900, f0.width * 0.92))),
+                                 height: floor(min(f0.height - model.notchSize.height - 40, max(600, (f0.height - model.notchSize.height) * 0.9))))
+        let w = max(model.groveSize.width, IslandModel.addingSize.width) + margin * 2
+        let h = model.notchSize.height + model.groveSize.height + margin
         let f = screen.frame
         panel.setFrame(NSRect(x: f.midX - w / 2, y: f.maxY - h, width: w, height: h), display: true)
     }
@@ -118,7 +151,38 @@ final class IslandController {
 
     func toggle() { isExpanded ? close() : open() }
 
-    func open() {
+    /// Opens the grove, on the grove overview or on one tree.
+    func open(page: GrovePage? = nil) {
+        if let page { model.page = page }
+        else if case .tree(let id) = model.page, !TreeStore.shared.trees.contains(where: { $0.id == id }) { model.page = .grove }
+        else if model.page == .newTree && TreeStore.shared.plantingNewTree != nil { model.page = .grove }
+        show(.expanded)
+    }
+
+    /// Half-opens to choose a tree for a highlighted paper.
+    func openAdding(_ request: AddRequest) {
+        model.adding = request
+        show(.adding)
+    }
+
+    /// A short message pill that tucks back into the notch.
+    func note(_ text: String) {
+        hideTask?.cancel()
+        collapseTask?.cancel()
+        if !panel.isVisible { placeOnScreen(); model.mode = .hidden }
+        panel.ignoresMouseEvents = true
+        panel.orderFrontRegardless()
+        DispatchQueue.main.async { [weak self] in
+            withAnimation(IslandView.spring) { self?.model.mode = .note(text) }
+        }
+        collapseTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard let self, !Task.isCancelled else { return }
+            if case .note = self.model.mode { self.close() }
+        }
+    }
+
+    private func show(_ mode: IslandModel.Mode) {
         collapseTask?.cancel()
         hideTask?.cancel()
         state.accessibilityGranted = Accessibility.isTrusted
@@ -130,7 +194,7 @@ final class IslandController {
         panel.makeKey()
         // Let the collapsed pill draw first, then spring it open.
         DispatchQueue.main.async { [weak self] in
-            withAnimation(IslandView.spring) { self?.model.mode = .expanded }
+            withAnimation(IslandView.spring) { self?.model.mode = mode }
         }
         installOutsideClickMonitors()
     }
@@ -141,6 +205,7 @@ final class IslandController {
         collapseTask?.cancel()
         panel.allowsKey = false
         withAnimation(IslandView.spring) { model.mode = .hidden }
+        model.adding = nil
         hideTask?.cancel()
         hideTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 450_000_000)
@@ -176,8 +241,10 @@ final class IslandController {
         if let l = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak self] e in
             let number = e.windowNumber
             let location = NSEvent.mouseLocation
+            // Popovers (a suggestion slip, a menu) are their own windows but belong to the island.
+            let inPopover = e.window.map { NSStringFromClass(type(of: $0)).contains("Popover") || $0.level.rawValue > NSWindow.Level.popUpMenu.rawValue } ?? false
             Task { @MainActor in
-                guard let self else { return }
+                guard let self, !inPopover else { return }
                 if number != self.panel.windowNumber || !self.pillFrameOnScreen.contains(location) { self.close() }
             }
             return e
@@ -211,6 +278,7 @@ final class IslandPanel: FloatingPanel {
 struct IslandView: View {
     @ObservedObject var model: IslandModel
     @ObservedObject var state: AppState
+    @ObservedObject var store: TreeStore
 
     static let spring = Animation.spring(response: 0.42, dampingFraction: 0.78)
 
@@ -218,7 +286,7 @@ struct IslandView: View {
         let size = model.pillSize
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                IslandShape(bottomRadius: model.mode == .expanded ? 30 : min(size.height / 2, 18))
+                IslandShape(bottomRadius: model.mode == .expanded ? 34 : (model.mode == .adding ? 30 : min(size.height / 2, 18)))
                     .fill(Color.black)
                     .shadow(color: .black.opacity(model.mode == .hidden ? 0 : 0.35), radius: 14, x: 0, y: 6)
 
@@ -253,94 +321,25 @@ struct IslandView: View {
             .padding(.horizontal, 22)
             .frame(height: IslandModel.flashExtraHeight)
             .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .top)))
-        case .expanded:
-            IslandPanelContent(model: model, state: state)
-                .transition(.opacity.animation(.easeOut(duration: 0.18).delay(0.12)))
-        }
-    }
-}
-
-/// What's inside the open island: a field-journal slip set into the black pill.
-private struct IslandPanelContent: View {
-    @ObservedObject var model: IslandModel
-    @ObservedObject var state: AppState
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .center, spacing: 9) {
-                BuddyView(mood: state.mood, researchMode: state.researchMode, compact: true)
-                    .frame(width: 24, height: 24)
-                Text("Paper Tree")
-                    .font(.fell(19))
+        case .note(let text):
+            HStack(spacing: 10) {
+                BuddyView(mood: .idle, researchMode: state.researchMode, compact: true)
+                    .frame(width: 22, height: 22)
+                Text(text)
+                    .font(.uiBold(13))
                     .foregroundColor(.white)
-                Spacer()
-                Text("Field kit, No. 1")
-                    .font(.typewriter(10.5))
-                    .foregroundColor(Palette.mint.opacity(0.85))
+                    .lineLimit(1)
+                Spacer(minLength: 0)
             }
-            .padding(.horizontal, 6)
-
-            VStack(alignment: .leading, spacing: 0) {
-                Toggle(isOn: $state.researchMode) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Research mode")
-                            .font(.uiBold(14.5))
-                            .foregroundColor(Palette.ink)
-                        Text(state.researchMode ? "On. Highlight anything and it explains." : "Off. Highlight freely.")
-                            .font(.ui(12))
-                            .foregroundColor(Palette.ink3)
-                    }
-                }
-                .toggleStyle(InkToggleStyle())
-
-                status.padding(.top, 10)
-
-                Rectangle().fill(Palette.rule).frame(height: 1).padding(.top, 10)
-
-                HStack(spacing: 14) {
-                    Button("Settings", action: model.onOpenSettings).buttonStyle(InkLinkButtonStyle())
-                    Button("Check for Updates", action: model.onCheckForUpdates).buttonStyle(InkLinkButtonStyle())
-                    Spacer()
-                    Button("Quit", action: model.onQuit).buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
-                }
-                .padding(.top, 9)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .background(PaperSheet(corner: 12, graph: true))
-
-            Text("double-tap right Option to open, triple-tap to toggle research mode")
-                .font(.typewriter(9.5))
-                .foregroundColor(Color.white.opacity(0.5))
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .padding(.horizontal, 14)
-        .padding(.top, 8)
-        .padding(.bottom, 14)
-    }
-
-    @ViewBuilder private var status: some View {
-        if !state.accessibilityGranted {
-            HStack(alignment: .center, spacing: 8) {
-                Circle().fill(Palette.red).frame(width: 7, height: 7)
-                Text("I can't see highlights yet.")
-                    .font(.ui(12.5)).foregroundColor(Palette.ink2)
-                Spacer(minLength: 4)
-                Button("Grant access", action: model.onRequestAccess)
-                    .buttonStyle(StampButtonStyle(compact: true))
-            }
-        } else if !state.endpointIsConfigured {
-            HStack(spacing: 8) {
-                Circle().fill(Palette.red).frame(width: 7, height: 7)
-                Text("No explainer connected. Check Settings.")
-                    .font(.ui(12.5)).foregroundColor(Palette.ink2)
-            }
-        } else {
-            HStack(spacing: 8) {
-                Circle().fill(Palette.green).frame(width: 7, height: 7)
-                Text("Explainer connected. Ready when you are.")
-                    .font(.hand(14)).foregroundColor(Palette.green)
-            }
+            .padding(.horizontal, 22)
+            .frame(height: IslandModel.flashExtraHeight)
+            .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .top)))
+        case .adding:
+            AddChooser(model: model, store: store)
+                .transition(.opacity.animation(.easeOut(duration: 0.18).delay(0.1)))
+        case .expanded:
+            GroveView(model: model, state: state, store: store)
+                .transition(.opacity.animation(.easeOut(duration: 0.2).delay(0.14)))
         }
     }
 }
@@ -376,10 +375,13 @@ struct IslandShape: Shape {
 
 // MARK: Right Option taps
 
-/// Counts quick taps of the RIGHT Option key (key code 61) and reports double and triple taps.
-/// It only looks at that one key's up and down; other keys just reset the count and are never stored.
+/// Counts quick taps of the RIGHT Option key (key code 61) and reports single, double and triple taps.
+/// It only looks at that one key's up and down; other keys, other modifiers, mouse clicks, and holding
+/// the key too long all cancel the count, and nothing is ever stored. A single or double tap waits out
+/// the tap window first, so it never fires on the way to a double or triple.
 @MainActor
 final class RightOptionTapDetector {
+    var onSingleTap: () -> Void = {}
     var onDoubleTap: () -> Void = {}
     var onTripleTap: () -> Void = {}
 
@@ -406,7 +408,8 @@ final class RightOptionTapDetector {
 
     func start() {
         stop()
-        let mask: NSEvent.EventTypeMask = [.flagsChanged, .keyDown]
+        // Mouse clicks are watched only so Option-click and Option-drag never count as a tap.
+        let mask: NSEvent.EventTypeMask = [.flagsChanged, .keyDown, .leftMouseDown, .rightMouseDown, .otherMouseDown, .scrollWheel]
         if let g = NSEvent.addGlobalMonitorForEvents(matching: mask, handler: { [weak self] e in
             let info = RightOptionTapDetector.info(e)
             Task { @MainActor in self?.handle(info) }
@@ -426,7 +429,9 @@ final class RightOptionTapDetector {
     nonisolated private static func info(_ e: NSEvent) -> KeyInfo {
         let flags = e.modifierFlags
         let others = flags.contains(.command) || flags.contains(.control) || flags.contains(.shift) || flags.contains(.function)
-        return KeyInfo(isFlagsChanged: e.type == .flagsChanged, keyCode: e.keyCode,
+        // keyCode only exists on key events; reading it on a mouse event would crash.
+        let isKey = e.type == .flagsChanged || e.type == .keyDown
+        return KeyInfo(isFlagsChanged: e.type == .flagsChanged, keyCode: isKey ? e.keyCode : 0,
                        rawFlags: flags.rawValue, otherModifiers: others)
     }
 
@@ -461,14 +466,15 @@ final class RightOptionTapDetector {
         if tapCount >= 3 {
             reset()
             onTripleTap()
-        } else if tapCount == 2 {
-            // Wait out the tap window in case a third tap is coming.
+        } else {
+            // Wait out the tap window in case another tap is coming.
+            let count = tapCount
             decideTask?.cancel()
             decideTask = Task { [weak self] in
                 try? await Task.sleep(nanoseconds: UInt64((self?.window ?? 0.35) * 1_000_000_000))
-                guard let self, !Task.isCancelled, self.tapCount == 2 else { return }
+                guard let self, !Task.isCancelled, self.tapCount == count, self.downAt == nil else { return }
                 self.reset()
-                self.onDoubleTap()
+                if count == 2 { self.onDoubleTap() } else { self.onSingleTap() }
             }
         }
     }

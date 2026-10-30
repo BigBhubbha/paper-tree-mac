@@ -434,8 +434,13 @@ private struct PracticeBench: View {
     @State private var openedIsland = false
     @State private var researchOn = false
     @State private var explained = false
+    @State private var added = false
     @State private var researchWasAlreadyOn = false
     @State private var hint = ""
+
+    /// A real paper, so the lookup finds it.
+    static let title = "Photosynthesis under drought and salt stress: regulation mechanisms from whole plant to cell"
+    static let reference = "Chaves, Flexas & Pinheiro. Annals of Botany, 2009."
 
     static let passage = "Under drought, plants close their stomata to save water. That limits transpiration, so leaf temperature rises, and with less carbon dioxide reaching the chloroplasts, photorespiration increases and net carbon assimilation falls."
 
@@ -461,6 +466,14 @@ private struct PracticeBench: View {
                         }
                     }
                     .frame(height: 176)
+                    Rectangle().fill(Palette.pencil.opacity(0.35)).frame(height: 1)
+                        .padding(.vertical, 2)
+                    Text("Further reading")
+                        .font(.typewriter(10)).foregroundColor(Palette.ink3)
+                    PracticeTextView(text: PracticeBench.title) { _, _ in }
+                        .frame(height: 64)
+                    Text(PracticeBench.reference)
+                        .font(.text(12.5)).italic().foregroundColor(Palette.ink2)
                     if !hint.isEmpty {
                         Text(hint).font(.hand(13.5)).foregroundColor(Palette.red)
                             .fixedSize(horizontal: false, vertical: true)
@@ -482,7 +495,7 @@ private struct PracticeBench: View {
                     .font(.fell(26)).foregroundColor(Palette.ink)
                 TaskRow(number: 1, done: openedIsland,
                         title: "Double-tap the right Option key.",
-                        detail: "The island grows out of the notch. Double-tap again, or press Esc, to put it away.")
+                        detail: "The island grows out of the notch and opens your trees. Double-tap again, or press Esc, to put it away.")
                 TaskRow(number: 2, done: researchOn,
                         title: "Triple-tap it.",
                         detail: researchWasAlreadyOn ? "Research mode was already on, so this one is stamped. Triple-tap turns it off and on."
@@ -490,8 +503,11 @@ private struct PracticeBench: View {
                 TaskRow(number: 3, done: explained,
                         title: "Highlight a phrase in the sample.",
                         detail: "Drag across a few words, like \"photorespiration\". A note opens right beside them.")
-                if openedIsland && researchOn && explained {
-                    Button("All three stamped. Next") { finished() }
+                TaskRow(number: 4, done: added,
+                        title: "Highlight the title under \"Further reading\", then tap right Option once.",
+                        detail: "The island finds the paper and asks which tree should get it. Pick one, start a new tree, or say not now.")
+                if openedIsland && researchOn && explained && added {
+                    Button("All four stamped. Next") { finished() }
                         .buttonStyle(StampButtonStyle(compact: true))
                         .transition(.opacity)
                 }
@@ -507,6 +523,9 @@ private struct PracticeBench: View {
         .onChange(of: island.mode) { mode in
             if mode == .expanded && !openedIsland {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { openedIsland = true }
+            }
+            if mode == .adding && !added {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { added = true }
             }
         }
         .onChange(of: state.researchMode) { on in

@@ -186,7 +186,7 @@ struct SettingsView: View {
                 .padding(.top, 12)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("Fig. 1.").font(.fellItalic(14)).foregroundColor(Palette.ink)
-                Text("The right Option key. Two quick taps open the island at the notch; three flip Research mode.")
+                Text("The right Option key. One tap adds the paper title you've highlighted to a tree; two open your trees at the notch; three flip Research mode.")
                     .font(.text(13))
                     .foregroundColor(Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -548,17 +548,19 @@ struct OptionKeyFigure: View {
                     .accessibilityLabel("Right Option key. Click to see a double tap.")
                 ArrowCluster()
             }
-            .padding(.top, 58)
+            .padding(.top, 76)
             .padding(.leading, 34)
 
             // Red pen notes, pointing at the marked key.
-            // The marked key spans about x 264 to 324, with its top edge at y 58.
-            HandNote(text: "tap tap: the island opens", arrowTo: CGPoint(x: 52, y: 30))
-                .offset(x: 218, y: 0)
-            HandNote(text: "tap tap tap: Research mode on or off", arrowTo: CGPoint(x: -34, y: 10), flip: true)
-                .offset(x: 352, y: 22)
+            // The marked key spans about x 264 to 324, with its top edge at y 76.
+            HandNote(text: "tap: add a highlighted paper", arrowTo: CGPoint(x: 214, y: 52))
+                .offset(x: 56, y: 2)
+            HandNote(text: "tap tap: open your trees", arrowTo: CGPoint(x: -24, y: 54), flip: true)
+                .offset(x: 346, y: 0)
+            HandNote(text: "tap tap tap: Research mode", arrowTo: CGPoint(x: -34, y: 32), flip: true)
+                .offset(x: 360, y: 34)
         }
-        .frame(height: 124, alignment: .topLeading)
+        .frame(height: 142, alignment: .topLeading)
     }
 
     private func keyLabel(symbol: String, word: String) -> some View {

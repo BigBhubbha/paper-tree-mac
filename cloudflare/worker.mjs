@@ -501,11 +501,189 @@ function tidyPartial(s) {
   return tidy(s).replace(/[,\s]+$/, "");
 }
 
+// MARK: Trees. Paper lookup and suggestions come from Semantic Scholar; the tree's species comes from Gemini.
+
+const S2 = "https://api.semanticscholar.org";
+const PAPER_FIELDS = "paperId,title,authors,year,venue,abstract,openAccessPdf,externalIds,url,fieldsOfStudy,s2FieldsOfStudy";
+const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/// Calls Semantic Scholar, with an API key if the Worker has one, retrying briefly when it is busy.
+async function s2(path, init = {}) {
+  const headers = { "Content-Type": "application/json", ...(ENV.S2_API_KEY ? { "x-api-key": ENV.S2_API_KEY } : {}) };
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const r = await fetch(S2 + path, { ...init, headers, signal: AbortSignal.timeout(9000) });
+    if (r.status === 429 || r.status >= 500) { await sleepMs(900 * (attempt + 1)); continue; }
+    return r;
+  }
+  return new Response(null, { status: 503 });
+}
+
+function slimPaper(p) {
+  if (!p?.paperId || !p?.title) return null;
+  const arxiv = p.externalIds?.ArXiv;
+  let pdf = p.openAccessPdf?.url || "";
+  if (!/\.pdf($|\?)|arxiv\.org\/pdf|\/pdf\//i.test(pdf)) pdf = ""; // landing pages are not PDFs
+  if (!pdf && arxiv) pdf = `https://arxiv.org/pdf/${arxiv}`;
+  const fields = [...new Set([...(p.fieldsOfStudy || []), ...(p.s2FieldsOfStudy || []).map((f) => f.category)].filter(Boolean))];
+  return {
+    id: p.paperId,
+    title: clean(p.title, 400).replace(/\.$/, ""),
+    authors: (p.authors || []).slice(0, 6).map((a) => a.name).filter(Boolean),
+    year: p.year || null,
+    venue: clean(p.venue, 160),
+    abstract: clean(p.abstract, 700),
+    pdf,
+    url: p.url || `https://www.semanticscholar.org/paper/${p.paperId}`,
+    fields: fields.slice(0, 5),
+  };
+}
+
+async function cached(key, ttl, waitUntil, make) {
+  const k = await cacheKey([key]);
+  const hit = await cacheRead(k);
+  if (hit) return hit;
+  const value = await make();
+  if (value?.ok) cacheWrite(k, { ...value, text: "1" }, waitUntil);
+  return value;
+}
+
+async function readJSON(req) {
+  const raw = await req.text();
+  if (raw.length > MAX_BODY_BYTES) throw new Error("too big");
+  return JSON.parse(raw);
+}
+
+async function lookupPaper(req, waitUntil) {
+  let body;
+  try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
+  const title = clean(body?.title, 400).replace(/^["'\u201C]+|["'\u201D]+$/g, "");
+  if (title.length < 4) return json(400, { error: "Highlight the paper's whole title first." });
+  const result = await cached("s2-match:" + title.toLowerCase(), 0, waitUntil, async () => {
+    let r = await s2(`/graph/v1/paper/search/match?query=${encodeURIComponent(title)}&fields=${PAPER_FIELDS}`);
+    let paper = null;
+    if (r.ok) paper = slimPaper((await r.json())?.data?.[0]);
+    if (!paper) {
+      r = await s2(`/graph/v1/paper/search?query=${encodeURIComponent(title)}&limit=1&fields=${PAPER_FIELDS}`);
+      if (r.ok) paper = slimPaper((await r.json())?.data?.[0]);
+    }
+    if (!paper && r.status === 503) return { ok: false, busy: true };
+    return { ok: !!paper, paper };
+  });
+  if (result.busy) return json(503, { error: "Semantic Scholar is busy. Try again in a moment." });
+  if (!result.ok) return json(404, { error: "I couldn't find that title in Semantic Scholar." });
+  return json(200, { paper: result.paper });
+}
+
+async function recommendPapers(req, waitUntil) {
+  let body;
+  try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
+  const id = String(body?.paperId || "").replace(/[^A-Za-z0-9:._-]/g, "").slice(0, 80);
+  if (!id) return json(400, { error: "Missing paperId." });
+  const exclude = new Set((Array.isArray(body?.exclude) ? body.exclude : []).map(String));
+  const limit = Math.max(1, Math.min(10, Number(body?.limit) || 4));
+  const result = await cached("s2-rec:" + id, 0, waitUntil, async () => {
+    const tries = [
+      () => s2(`/recommendations/v1/papers/forpaper/${id}?limit=20&fields=${PAPER_FIELDS}`),
+      () => s2(`/recommendations/v1/papers?limit=20&fields=${PAPER_FIELDS}`, { method: "POST", body: JSON.stringify({ positivePaperIds: [id] }) }),
+      () => s2(`/recommendations/v1/papers/forpaper/${id}?from=all-cs&limit=20&fields=${PAPER_FIELDS}`),
+    ];
+    for (const t of tries) {
+      const r = await t();
+      if (!r.ok) continue;
+      const papers = ((await r.json())?.recommendedPapers || []).map(slimPaper).filter(Boolean);
+      if (papers.length) return { ok: true, papers };
+    }
+    return { ok: false, papers: [] };
+  });
+  const papers = (result.papers || []).filter((p) => !exclude.has(p.id)).slice(0, limit);
+  return json(200, { papers });
+}
+
+const SPECIES = ["oak", "willow", "conifer", "flytrap", "alien", "coral"];
+const TONES = ["sage", "moss", "olive", "rust", "plum", "teal", "ochre"];
+const SPECIES_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    species: { type: "STRING", enum: SPECIES },
+    commonName: { type: "STRING" },
+    latinName: { type: "STRING" },
+    note: { type: "STRING" },
+    leafTone: { type: "STRING", enum: TONES },
+    vigor: { type: "NUMBER" },
+    twist: { type: "NUMBER" },
+    droop: { type: "NUMBER" },
+  },
+  required: ["species", "commonName", "latinName", "note", "leafTone", "vigor", "twist", "droop"],
+  propertyOrdering: ["species", "commonName", "latinName", "note", "leafTone", "vigor", "twist", "droop"],
+};
+
+async function treeSpecies(req, waitUntil) {
+  let body;
+  try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
+  const titles = (Array.isArray(body?.titles) ? body.titles : []).map((t) => clean(t, 200)).filter(Boolean).slice(0, 12);
+  const fields = (Array.isArray(body?.fields) ? body.fields : []).map((t) => clean(t, 60)).filter(Boolean).slice(0, 10);
+  if (!titles.length) return json(400, { error: "A tree needs at least one paper." });
+  const prompt =
+    "You name and design a drawn plant that stands for a reader's collection of research papers. " +
+    "Pick the species whose character best fits the topics:\n" +
+    "oak = broad, foundational, classic biology, ecology, history of science; willow = people, minds, society, psychology, education, the humanities; " +
+    "conifer = rigorous and structured, mathematics, physics, engineering, statistics; flytrap = medicine, disease, immunology, infection, predators and parasites, pharmacology; " +
+    "alien = computing, AI, space, quantum, anything futuristic; coral = chemistry, materials, oceans, climate, earth science.\n" +
+    "commonName: a playful two or three word name for this particular plant, like \"Lantern-pod Transformer Tree\". latinName: a made-up binomial in Latin style. " +
+    "note: one plain sentence under 18 words saying why this plant fits the papers. No em dashes. " +
+    "leafTone: a color that suits the topics. vigor, twist, droop: numbers from 0 to 1 for how bushy, how twisty, how drooping the plant is.\n\n" +
+    `Fields: ${fields.join(", ") || "unknown"}\nPaper titles:\n- ${titles.join("\n- ")}`;
+  const key = await cacheKey(["species-v1", prompt]);
+  const hit = await cacheRead(key);
+  if (hit) return json(200, hit.species);
+  const outer = new AbortController();
+  const timer = setTimeout(() => outer.abort(), 15_000);
+  try {
+    const geminiBody = JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 300, responseMimeType: "application/json", responseSchema: SPECIES_SCHEMA, thinkingConfig: { thinkingLevel: "minimal" } },
+    });
+    const { out, model } = await hedged(plan().map((m) => wholeAttempt(m, geminiBody)), outer.signal);
+    const o = JSON.parse(out);
+    const num = (v) => Math.max(0, Math.min(1, Number(v) || 0.5));
+    const species = {
+      species: SPECIES.includes(o.species) ? o.species : "oak",
+      commonName: tidy(clean(o.commonName, 60)),
+      latinName: tidy(clean(o.latinName, 60)),
+      note: tidy(clean(o.note, 200)),
+      leafTone: TONES.includes(o.leafTone) ? o.leafTone : "sage",
+      vigor: num(o.vigor), twist: num(o.twist), droop: num(o.droop),
+      model,
+    };
+    cacheWrite(key, { text: "1", species }, waitUntil);
+    return json(200, species);
+  } catch (e) {
+    const { status, error } = errorFor(e);
+    return json(status, { error });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+const ROUTES = {
+  "/api/explain": handle,
+  "/api/paper/lookup": lookupPaper,
+  "/api/paper/recommend": recommendPapers,
+  "/api/tree/species": treeSpecies,
+};
+
 export default {
   async fetch(req, env, ctx) {
     ENV = env;
     const url = new URL(req.url);
-    if (url.pathname !== "/api/explain") return json(404, { error: "Not found." });
-    return handle(req, (p) => ctx.waitUntil(p));
+    const route = ROUTES[url.pathname];
+    if (!route) return json(404, { error: "Not found." });
+    const waitUntil = (p) => ctx.waitUntil(p);
+    if (route === handle) return handle(req, waitUntil);
+    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: HEADERS });
+    if (req.method !== "POST") return json(405, { error: "Use POST." });
+    if (ENV.APP_TOKEN && req.headers.get("x-paper-tree-token") !== ENV.APP_TOKEN) return json(401, { error: "Missing or wrong app token." });
+    if (rateLimited(clientIp(req))) return json(429, { error: "Too many requests. Try again in a minute." });
+    return route(req, waitUntil);
   },
 };
