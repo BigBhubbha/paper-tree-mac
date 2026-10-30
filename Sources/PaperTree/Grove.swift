@@ -461,7 +461,9 @@ struct AddChooser: View {
             HStack {
                 Text("Add a paper").font(.fell(19)).foregroundColor(.white)
                 Spacer()
-                Text("Esc to cancel").font(.typewriter(9.5)).foregroundColor(.white.opacity(0.5))
+                Button("Not now") { model.onClose() }
+                    .buttonStyle(InkLinkButtonStyle(color: Color.white.opacity(0.72)))
+                    .help("Esc does this too")
             }
             .padding(.horizontal, 6)
 
