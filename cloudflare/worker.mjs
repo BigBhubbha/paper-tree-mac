@@ -518,12 +518,28 @@ const UA = "PaperTree/1.0 (https://github.com/BigBhubbha/paper-tree-mac)";
 let s2CoolUntil = 0;
 
 /// Semantic Scholar, with the optional S2_API_KEY secret, backoff with jitter, and Retry-After respected.
+// A key allows about one request a second, so calls from this isolate queue up and go out spaced.
+let s2Gate = Promise.resolve();
+let s2Last = 0;
+function s2Slot() {
+  const gap = ENV.S2_API_KEY ? 1100 : 0;
+  const slot = s2Gate.then(async () => {
+    const wait = s2Last + gap - Date.now();
+    if (wait > 0) await sleepMs(wait);
+    s2Last = Date.now();
+  });
+  s2Gate = slot.catch(() => {});
+  return slot;
+}
+
 async function s2(path, init = {}, budgetMs = 6000) {
   if (Date.now() < s2CoolUntil) return new Response(null, { status: 429 });
   const headers = { "Content-Type": "application/json", "User-Agent": UA, ...(ENV.S2_API_KEY ? { "x-api-key": ENV.S2_API_KEY } : {}) };
   const deadline = Date.now() + budgetMs;
   for (let attempt = 0; attempt < 3; attempt++) {
     let r;
+    await s2Slot();
+    if (Date.now() > deadline) return new Response(null, { status: 429 });
     try {
       r = await fetch(S2 + path, { ...init, headers, signal: AbortSignal.timeout(Math.max(1500, Math.min(8000, deadline - Date.now()))) });
     } catch {
@@ -533,7 +549,7 @@ async function s2(path, init = {}, budgetMs = 6000) {
     const retryAfter = Number(r.headers.get("retry-after")) || 0;
     const wait = retryAfter ? Math.min(retryAfter * 1000, 3000) : 350 * 2 ** attempt + Math.random() * 250;
     if (r.status === 429 && (attempt === 2 || Date.now() + wait > deadline)) {
-      s2CoolUntil = Date.now() + Math.max(20_000, retryAfter * 1000);
+      s2CoolUntil = Date.now() + Math.max(ENV.S2_API_KEY ? 5_000 : 20_000, retryAfter * 1000);
       return r;
     }
     if (Date.now() + wait > deadline) return r;
@@ -757,7 +773,7 @@ async function lookupPaper(req, waitUntil) {
   // The app may send what it fetched itself from Semantic Scholar or OpenAlex (from the Mac's own
   // network, when the Worker's shared one is rate limited). Same shape as our papers; checked here.
   const seen = (Array.isArray(body?.seen) ? body.seen : []).slice(0, 16).map(fromSeen).filter(Boolean);
-  const result = await cached("lookup-v2:" + normTitle(title) + (seen.length ? ":seen" : ""), waitUntil, async () => {
+  const result = await cached("lookup-v3:" + normTitle(title) + (seen.length ? ":seen" : ""), waitUntil, async () => {
     // All three sources race; Semantic Scholar's answer is preferred but never waited on forever.
     const [s2r, oa, cr] = await Promise.all([
       s2Search(title).catch(() => ({ papers: [], busy: true })),
@@ -796,7 +812,7 @@ async function recommendPapers(req, waitUntil) {
   const exclude = new Set((Array.isArray(body?.exclude) ? body.exclude : []).map(String));
   const excludeTitles = new Set([normTitle(title)]);
   const limit = Math.max(1, Math.min(10, Number(body?.limit) || 4));
-  const result = await cached("rec-v2:" + (id || normTitle(title)), waitUntil, async () => {
+  const result = await cached("rec-v3:" + (id || normTitle(title)), waitUntil, async () => {
     let busy = false;
     // 1. Semantic Scholar recommendations, for its own ids and for DOIs.
     const s2id = /^[0-9a-f]{40}$/i.test(id) ? id : doi ? `DOI:${doi}` : "";
