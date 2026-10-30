@@ -552,6 +552,7 @@ struct AddChooser: View {
             VStack(spacing: 4) {
                 TreeDrawing(tree: tree, geometry: TreeGeometry.make(tree, in: CGSize(width: 84, height: 70)), detail: 0.5)
                     .frame(width: 84, height: 70)
+                    .clipped()
                     .background(Color(hex: 0xFBF8EE))
                     .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.3), lineWidth: 0.7))
                 Text(tree.displayName).font(.ui(11.5)).foregroundColor(Palette.ink).lineLimit(1)
