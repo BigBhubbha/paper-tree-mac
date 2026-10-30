@@ -33,10 +33,12 @@ struct GroveScroll<Content: View>: View {
     @ViewBuilder var content: Content
     var body: some View {
         if Snapshots.isRendering {
-            content
-                .fixedSize(horizontal: axis.contains(.horizontal), vertical: axis.contains(.vertical))
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .clipped()
+            GeometryReader { geo in
+                content
+                    .fixedSize(horizontal: axis.contains(.horizontal), vertical: axis.contains(.vertical))
+                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+                    .clipped()
+            }
         } else {
             ScrollView(axis, showsIndicators: indicators) { content }
         }
