@@ -12,16 +12,44 @@ enum GrovePage: Equatable {
 
 /// One paper someone highlighted and tapped to add, while we look it up.
 struct AddRequest: Equatable {
-    enum Lookup: Equatable { case looking, found(Paper), notFound(String) }
+    enum Lookup: Equatable { case looking, found([Paper], confident: Bool), notFound(String) }
     var highlighted: String
     var lookup: Lookup = .looking
+    /// The candidate picked from the list.
+    var chosen: Paper?
+    /// "None of these": add it with just the highlighted title.
+    var asHighlighted = false
+    /// "Pick another match" opened the list even though the first match looked right.
+    var showAll = false
+    /// Made once, so its id stays the same however often it is read.
+    private let localId = "local-" + UUID().uuidString
 
-    /// What goes on the tree: the matched paper, or the highlight as written.
+    init(highlighted: String, lookup: Lookup = .looking) {
+        self.highlighted = highlighted
+        self.lookup = lookup
+    }
+
+    var candidates: [Paper] {
+        if case .found(let list, _) = lookup { return list }
+        return []
+    }
+
+    var confident: Bool {
+        if case .found(_, let c) = lookup { return c }
+        return false
+    }
+
+    /// The list of matches is open: the match is unsure, or they asked to pick another.
+    var choosing: Bool { !candidates.isEmpty && (showAll || !confident) && chosen == nil && !asHighlighted }
+
+    /// What goes on the tree, or nil while we still need them to pick.
     var paper: Paper? {
+        if asHighlighted { return Paper(id: localId, title: highlighted) }
+        if let chosen { return chosen }
         switch lookup {
         case .looking: return nil
-        case .found(let p): return p
-        case .notFound: return Paper(id: "local-" + UUID().uuidString, title: highlighted)
+        case .found(let list, let confident): return confident && !showAll ? list.first : nil
+        case .notFound: return Paper(id: localId, title: highlighted)
         }
     }
 }
@@ -133,22 +161,54 @@ struct GroveOverview: View {
     @ObservedObject var model: IslandModel
     @ObservedObject var store: TreeStore
 
+    /// How the sheets are laid out for a number of trees in a space: one row for up to three trees,
+    /// then two rows of sheets that never get narrower than a little under their height. Past what
+    /// fits, the rows scroll sideways; the New tree sheet stays pinned outside the scroll.
+    struct Layout {
+        var rows: Int, columns: Int, cell: CGSize, spacing: CGFloat
+        static func make(count: Int, in size: CGSize, spacing: CGFloat = 12) -> Layout {
+            let n = max(1, count)
+            let rows = n <= 3 ? 1 : 2
+            let columns = Int((Double(n) / Double(rows)).rounded(.up))
+            let h = (size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
+            let even = (size.width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
+            let w = rows == 1 ? min(even, h * 1.25) : max(h * 0.95, min(even, h * 1.3))
+            return Layout(rows: rows, columns: columns, cell: CGSize(width: floor(w), height: floor(h)), spacing: spacing)
+        }
+    }
+
     var body: some View {
         GeometryReader { geo in
-            let shown = CGFloat(max(1, min(store.trees.count, 6)))
-            let plate: CGFloat = 140
-            let width = max(190, (geo.size.width - plate - shown * 12) / shown)
-            GroveScroll(axis: .horizontal, indicators: store.trees.count > 6) {
-                HStack(alignment: .bottom, spacing: 12) {
-                    ForEach(store.trees) { tree in
-                        SpecimenPlate(tree: tree, store: store, compact: true) {
-                            withAnimation(.easeInOut(duration: 0.25)) { model.page = .tree(tree.id) }
+            let plate: CGFloat = 150
+            let area = CGSize(width: geo.size.width - plate - 14, height: geo.size.height)
+            let trees = store.trees.sorted { $0.number < $1.number }
+            let L = Layout.make(count: trees.count, in: area)
+            let overflow = CGFloat(L.columns) * L.cell.width + CGFloat(L.columns - 1) * L.spacing > area.width + 1
+            HStack(alignment: .top, spacing: 14) {
+                GroveScroll(axis: .horizontal, indicators: overflow) {
+                    HStack(alignment: .top, spacing: L.spacing) {
+                        ForEach(0..<L.columns, id: \.self) { c in
+                            VStack(spacing: L.spacing) {
+                                ForEach(0..<L.rows, id: \.self) { r in
+                                    let i = c * L.rows + r
+                                    if i < trees.count {
+                                        let tree = trees[i]
+                                        SpecimenPlate(tree: tree, store: store, compact: true, tight: L.rows > 1) {
+                                            withAnimation(.easeInOut(duration: 0.25)) { model.page = .tree(tree.id) }
+                                        }
+                                        .frame(width: L.cell.width, height: L.cell.height)
+                                    } else {
+                                        Color.clear.frame(width: L.cell.width, height: L.cell.height)
+                                    }
+                                }
+                            }
                         }
-                        .frame(width: width, height: geo.size.height)
                     }
-                    PlantPlate { withAnimation(.easeInOut(duration: 0.25)) { model.page = .newTree } }
-                        .frame(width: plate, height: geo.size.height)
+                    .padding(.trailing, 2)
                 }
+                .frame(width: area.width, height: area.height)
+                PlantPlate { withAnimation(.easeInOut(duration: 0.25)) { model.page = .newTree } }
+                    .frame(width: plate, height: geo.size.height)
             }
         }
     }
@@ -159,6 +219,8 @@ struct SpecimenPlate: View {
     var tree: PaperTreeData
     @ObservedObject var store: TreeStore
     var compact: Bool
+    /// Short sheets (two rows in the grove): a smaller label, so the plant keeps the room.
+    var tight = false
     var onOpen: (() -> Void)? = nil
 
     var body: some View {
@@ -169,7 +231,7 @@ struct SpecimenPlate: View {
                 Text(String(format: "Sheet PT-%04d", tree.number))
                     .font(.typewriter(9.5)).foregroundColor(Palette.ink3)
                 Spacer()
-                HerbariumLabel(tree: tree, compact: compact)
+                HerbariumLabel(tree: tree, compact: compact, tight: tight)
                     .onTapGesture { onOpen?() }
             }
             .padding(.horizontal, 8)
@@ -190,8 +252,31 @@ struct SpecimenPlate: View {
 struct HerbariumLabel: View {
     var tree: PaperTreeData
     var compact: Bool
+    var tight = false
 
     var body: some View {
+        if tight { tightBody } else { fullBody }
+    }
+
+    private var tightBody: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(tree.displayName).font(.fell(14)).foregroundColor(Palette.ink).lineLimit(1)
+                Text("\(tree.papers.count) \(tree.papers.count == 1 ? "paper" : "papers")")
+                    .font(.typewriter(8.5)).foregroundColor(Palette.ink3).fixedSize()
+            }
+            Text(tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased())
+                .font(.hand(12)).foregroundColor(Color(hex: 0x23314A)).lineLimit(1)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .frame(maxWidth: 200, alignment: .leading)
+        .background(Color(hex: 0xFFFDF6))
+        .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.75), lineWidth: 0.9))
+        .rotationEffect(.degrees(-0.6))
+    }
+
+    private var fullBody: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Paper Tree Herbarium").font(.typewriter(compact ? 8 : 9)).foregroundColor(Palette.ink3)
             Text(tree.displayName).font(.fell(compact ? 15 : 19)).foregroundColor(Palette.ink).lineLimit(1)
@@ -318,6 +403,10 @@ struct TreeSheetPage: View {
     @ObservedObject var model: IslandModel
     @ObservedObject var store: TreeStore
     var tree: PaperTreeData
+    /// The paper whose match is being changed (its id), and, for snapshots, the matches to offer.
+    @State var rematching: String? = nil
+    var rematchPreset: [Paper]? = nil
+    @State private var hovered: String?
 
     var body: some View {
         HStack(alignment: .top, spacing: 22) {
@@ -342,18 +431,31 @@ struct TreeSheetPage: View {
                 }
                 Text("Papers").font(.fellItalic(18)).foregroundColor(Palette.ink).padding(.top, 4)
                 ForEach(Array(tree.papers.sorted { $0.addedAt < $1.addedAt }.enumerated()), id: \.element.id) { i, p in
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(String(format: "%02d", i + 1)).font(.typewriter(10)).foregroundColor(Palette.red)
-                        Button { if let u = p.openURL { NSWorkspace.shared.open(u) } } label: {
+                    if rematching == p.id {
+                        RematchPanel(paper: p, treeId: tree.id, store: store, done: { rematching = nil }, preset: rematchPreset)
+                    } else {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(String(format: "%02d", i + 1)).font(.typewriter(10)).foregroundColor(Palette.red)
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(p.title).font(.text(13)).foregroundColor(Palette.ink).multilineTextAlignment(.leading)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                Text([p.shortAuthors, p.year.map(String.init) ?? ""].filter { !$0.isEmpty }.joined(separator: ", "))
-                                    .font(.ui(11)).foregroundColor(Palette.ink3)
+                                Button { if let u = p.openURL { NSWorkspace.shared.open(u) } } label: {
+                                    VStack(alignment: .leading, spacing: 1) {
+                                        Text(p.title).font(.text(13)).foregroundColor(Palette.ink).multilineTextAlignment(.leading)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                        Text(p.isLocal ? "added as highlighted, not matched" : p.byline)
+                                            .font(.ui(11)).foregroundColor(Palette.ink3)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                if hovered == p.id || p.isLocal {
+                                    Button(p.isLocal ? "Find a match" : "Wrong paper? Change the match") { rematching = p.id }
+                                        .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
+                                }
                             }
                         }
-                        .buttonStyle(.plain)
+                        .contentShape(Rectangle())
+                        .onHover { inside in hovered = inside ? p.id : (hovered == p.id ? nil : hovered) }
                         .contextMenu {
+                            Button("Change the match...") { rematching = p.id }
                             Button("Remove from this tree") { store.remove(paperId: p.id, from: tree.id) }
                         }
                     }
@@ -470,7 +572,8 @@ struct AddChooser: View {
             VStack(alignment: .leading, spacing: 10) {
                 slip
                 Rectangle().fill(Palette.rule).frame(height: 1)
-                Text(store.plantingNewTree != nil ? "Plant it as a new tree, or add it to one you have:" : "Which tree gets it?")
+                Text(model.adding?.choosing == true ? "Pick the paper first, then the tree." :
+                        store.plantingNewTree != nil ? "Plant it as a new tree, or add it to one you have:" : "Which tree gets it?")
                     .font(.typewriter(10.5)).foregroundColor(Palette.ink3)
                 GroveScroll(axis: .horizontal) {
                     HStack(spacing: 10) {
@@ -493,21 +596,38 @@ struct AddChooser: View {
             switch req.lookup {
             case .looking:
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Looking it up in Semantic Scholar...").font(.hand(14.5)).foregroundColor(Palette.pencil)
+                    Text("Looking it up in Semantic Scholar, OpenAlex and Crossref...").font(.hand(14.5)).foregroundColor(Palette.pencil)
                     Text("\u{201C}\(req.highlighted)\u{201D}").font(.text(14)).foregroundColor(Palette.ink2).lineLimit(2)
                 }
-            case .found(let p):
-                HStack(alignment: .top, spacing: 12) {
-                    DrawnTitlePage(paper: p, size: CGSize(width: 48, height: 62))
-                        .background(Color(hex: 0xFCFAF3))
-                        .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.5), lineWidth: 0.6))
-                        .rotationEffect(.degrees(-2))
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(p.title).font(.textMedium(15)).foregroundColor(Palette.ink).lineLimit(3)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text([p.authors.prefix(3).joined(separator: ", "), p.venue, p.year.map(String.init) ?? ""]
-                                .filter { !$0.isEmpty }.joined(separator: ", "))
-                            .font(.ui(11.5)).foregroundColor(Palette.ink3).lineLimit(2)
+            case .found(let list, _):
+                if req.choosing {
+                    MatchPicker(question: req.showAll ? "Pick the right one" : "Is this it?",
+                                highlighted: req.highlighted,
+                                candidates: Array(list.prefix(req.showAll ? 6 : 3)),
+                                pick: { p in model.adding?.chosen = p },
+                                none: { model.adding?.asHighlighted = true })
+                } else if let p = req.paper {
+                    HStack(alignment: .top, spacing: 12) {
+                        DrawnTitlePage(paper: p, size: CGSize(width: 48, height: 62))
+                            .background(Color(hex: 0xFCFAF3))
+                            .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.5), lineWidth: 0.6))
+                            .rotationEffect(.degrees(-2))
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(p.title).font(.textMedium(15)).foregroundColor(Palette.ink).lineLimit(3)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text([p.authors.prefix(3).joined(separator: ", "), p.venue, p.year.map(String.init) ?? ""]
+                                    .filter { !$0.isEmpty }.joined(separator: ", "))
+                                .font(.ui(11.5)).foregroundColor(Palette.ink3).lineLimit(2)
+                            if list.count > 1 || req.chosen != nil || req.asHighlighted {
+                                Button("Not this one? Pick another match") {
+                                    model.adding?.chosen = nil
+                                    model.adding?.asHighlighted = false
+                                    model.adding?.showAll = true
+                                }
+                                .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
+                                .padding(.top, 2)
+                            }
+                        }
                     }
                 }
             case .notFound(let why):
@@ -566,5 +686,106 @@ struct AddChooser: View {
         .disabled(!ready)
         .opacity(ready ? 1 : 0.5)
         .help(tree.look.commonName.isEmpty ? tree.displayName : tree.look.commonName)
+    }
+}
+
+// MARK: - Choosing between matches
+
+/// "Is this it?": the closest records for a highlighted title, each with who, where and when, so the
+/// right one is easy to tell from a namesake. Used when adding, and when fixing a match later.
+struct MatchPicker: View {
+    var question: String
+    var highlighted: String
+    var candidates: [Paper]
+    var pick: (Paper) -> Void
+    var none: (() -> Void)?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(question).font(.fell(18)).foregroundColor(Palette.ink)
+                Text("for \u{201C}\(highlighted)\u{201D}").font(.text(12.5)).foregroundColor(Palette.ink3).lineLimit(1)
+            }
+            ForEach(Array(candidates.enumerated()), id: \.element.id) { i, p in
+                Button { pick(p) } label: {
+                    HStack(alignment: .top, spacing: 9) {
+                        Text(String(format: "%d.", i + 1)).font(.typewriter(11)).foregroundColor(Palette.red).frame(width: 16, alignment: .leading)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(p.title).font(.text(13.5)).foregroundColor(Palette.ink).lineLimit(2).multilineTextAlignment(.leading)
+                            Text(details(p)).font(.ui(11)).foregroundColor(Palette.ink3).lineLimit(1)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.vertical, 3)
+                    .padding(.horizontal, 6)
+                    .background(Rectangle().fill(Color.white.opacity(0.35)))
+                    .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.15), lineWidth: 0.6))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            if let none {
+                Button("None of these. Add it as I highlighted it") { none() }
+                    .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
+                    .padding(.top, 2)
+            }
+        }
+    }
+
+    private func details(_ p: Paper) -> String {
+        var bits = [p.authors.prefix(2).joined(separator: ", ") + (p.authors.count > 2 ? " et al." : ""), p.venue, p.year.map(String.init) ?? ""]
+        if let c = p.cites, c > 0 { bits.append("cited \(c.formatted()) times") }
+        if let s = p.source { bits.append(s) }
+        return bits.filter { !$0.isEmpty }.joined(separator: ", ")
+    }
+}
+
+/// Fixing a paper that was matched to the wrong record: look its title up again and pick another.
+struct RematchPanel: View {
+    var paper: Paper
+    var treeId: UUID
+    @ObservedObject var store: TreeStore
+    var done: () -> Void
+    /// Set for design snapshots; otherwise the panel looks the title up itself.
+    var preset: [Paper]? = nil
+
+    @State private var candidates: [Paper]?
+    @State private var problem: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Change the match").font(.fellItalic(18)).foregroundColor(Palette.ink)
+            Text("Right now this branch holds:").font(.text(12.5)).foregroundColor(Palette.ink3)
+            Text(paper.title + (paper.byline.isEmpty ? "" : " (\(paper.byline))"))
+                .font(.text(13)).foregroundColor(Palette.ink2).fixedSize(horizontal: false, vertical: true)
+            if let list = candidates ?? preset {
+                if list.isEmpty {
+                    Text("No other records share this title.").font(.hand(14)).foregroundColor(Palette.pencil)
+                } else {
+                    MatchPicker(question: "Pick another match", highlighted: paper.title, candidates: Array(list.prefix(6))) { p in
+                        store.replace(paperId: paper.id, in: treeId, with: p)
+                        done()
+                    }
+                }
+            } else if let problem {
+                Text(problem).font(.hand(14)).foregroundColor(Palette.red)
+            } else {
+                Text("Looking it up again...").font(.hand(14)).foregroundColor(Palette.pencil)
+            }
+            Button("Keep it as it is") { done() }
+                .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
+        }
+        .padding(12)
+        .background(Rectangle().fill(Color.white.opacity(0.4)))
+        .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.25), lineWidth: 0.7))
+        .task {
+            guard preset == nil, candidates == nil else { return }
+            do {
+                let r = try await PaperLookup.find(paper.title)
+                candidates = r.candidates.filter { $0.id != paper.id && ($0.doi == nil || $0.doi != paper.doi) }
+            } catch {
+                problem = "I couldn't reach the paper databases. Try again in a moment."
+            }
+        }
     }
 }

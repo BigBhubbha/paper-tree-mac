@@ -152,13 +152,13 @@ function clientIp(req, context) {
   return req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 
-function rateLimited(ip) {
+function rateLimited(ip, max = MAX_PER_WINDOW) {
   const now = Date.now();
   const list = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
   list.push(now);
   hits.set(ip, list);
   if (hits.size > 5000) hits.clear();
-  return list.length > MAX_PER_WINDOW;
+  return list.length > max;
 }
 
 function clean(s, max) {
@@ -501,44 +501,240 @@ function tidyPartial(s) {
   return tidy(s).replace(/[,\s]+$/, "");
 }
 
-// MARK: Trees. Paper lookup and suggestions come from Semantic Scholar; the tree's species comes from Gemini.
+// MARK: Trees. Papers come from Semantic Scholar first, then OpenAlex, then Crossref (neither needs a key).
+// Front pages come from whatever open-access copy we can find: Semantic Scholar, OpenAlex, Unpaywall, arXiv.
+// The tree's species comes from Gemini.
 
 const S2 = "https://api.semanticscholar.org";
-const PAPER_FIELDS = "paperId,title,authors,year,venue,abstract,openAccessPdf,externalIds,url,fieldsOfStudy,s2FieldsOfStudy";
+const OPENALEX = "https://api.openalex.org";
+const CROSSREF = "https://api.crossref.org";
+const PAPER_FIELDS = "paperId,title,authors,year,venue,abstract,openAccessPdf,externalIds,url,fieldsOfStudy,s2FieldsOfStudy,citationCount";
+const OA_SELECT = "id,doi,title,display_name,publication_year,authorships,primary_location,best_oa_location,locations,open_access,cited_by_count,topics,abstract_inverted_index,ids,related_works";
 const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+const UA = "PaperTree/1.0 (https://github.com/BigBhubbha/paper-tree-mac)";
 
-/// Calls Semantic Scholar, with an API key if the Worker has one, retrying briefly when it is busy.
-async function s2(path, init = {}) {
-  const headers = { "Content-Type": "application/json", ...(ENV.S2_API_KEY ? { "x-api-key": ENV.S2_API_KEY } : {}) };
+// When Semantic Scholar says it is busy, every request on this isolate skips it for a while and
+// goes straight to the fallbacks, instead of piling more retries onto a rate limit.
+let s2CoolUntil = 0;
+
+/// Semantic Scholar, with the optional S2_API_KEY secret, backoff with jitter, and Retry-After respected.
+async function s2(path, init = {}, budgetMs = 6000) {
+  if (Date.now() < s2CoolUntil) return new Response(null, { status: 429 });
+  const headers = { "Content-Type": "application/json", "User-Agent": UA, ...(ENV.S2_API_KEY ? { "x-api-key": ENV.S2_API_KEY } : {}) };
+  const deadline = Date.now() + budgetMs;
   for (let attempt = 0; attempt < 3; attempt++) {
-    const r = await fetch(S2 + path, { ...init, headers, signal: AbortSignal.timeout(9000) });
-    if (r.status === 429 || r.status >= 500) { await sleepMs(900 * (attempt + 1)); continue; }
-    return r;
+    let r;
+    try {
+      r = await fetch(S2 + path, { ...init, headers, signal: AbortSignal.timeout(Math.max(1500, Math.min(8000, deadline - Date.now()))) });
+    } catch {
+      r = new Response(null, { status: 504 });
+    }
+    if (r.status !== 429 && r.status < 500) return r;
+    const retryAfter = Number(r.headers.get("retry-after")) || 0;
+    const wait = retryAfter ? Math.min(retryAfter * 1000, 3000) : 350 * 2 ** attempt + Math.random() * 250;
+    if (r.status === 429 && (attempt === 2 || Date.now() + wait > deadline)) {
+      s2CoolUntil = Date.now() + Math.max(20_000, retryAfter * 1000);
+      return r;
+    }
+    if (Date.now() + wait > deadline) return r;
+    await sleepMs(wait);
   }
-  return new Response(null, { status: 503 });
+  return new Response(null, { status: 429 });
 }
 
-function slimPaper(p) {
+/// Last HTTP status per host, so a lookup can say which sources answered.
+const lastStatus = {};
+
+/// Plain GET with a timeout and one retry on a busy answer. Used for OpenAlex, Crossref, Unpaywall, arXiv.
+async function getJSON(url, { timeout = 7000, text = false } = {}) {
+  const host = new URL(url).hostname;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const r = await fetch(url, { headers: { "User-Agent": UA, Accept: text ? "application/atom+xml" : "application/json" }, signal: AbortSignal.timeout(timeout) });
+      lastStatus[host] = r.status;
+      if (r.status === 429 || r.status >= 500) { await sleepMs(400 + Math.random() * 300); continue; }
+      if (!r.ok) return null;
+      return text ? await r.text() : await r.json();
+    } catch { if (attempt === 1) return null; }
+  }
+  return null;
+}
+
+/// Optional secrets: CONTACT_EMAIL puts requests in OpenAlex's and Crossref's polite pools (and turns on
+/// Unpaywall); OPENALEX_API_KEY gives OpenAlex calls their own daily budget instead of the shared one.
+const politeParam = () => (ENV.CONTACT_EMAIL ? `&mailto=${encodeURIComponent(ENV.CONTACT_EMAIL)}` : "") +
+  (ENV.OPENALEX_API_KEY ? `&api_key=${encodeURIComponent(ENV.OPENALEX_API_KEY)}` : "");
+
+// MARK: Matching titles
+
+function normTitle(s) {
+  return String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/<[^>]+>/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+/// How alike two titles are, 0 to 1: character trigrams, so small differences in punctuation,
+/// plurals, or a missing word cost a little rather than everything.
+function titleSimilarity(a, b) {
+  const x = normTitle(a), y = normTitle(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  const grams = (s) => { const t = ` ${s} `; const m = new Map(); for (let i = 0; i < t.length - 2; i++) { const g = t.slice(i, i + 3); m.set(g, (m.get(g) || 0) + 1); } return m; };
+  const A = grams(x), B = grams(y);
+  let inter = 0, na = 0, nb = 0;
+  for (const [g, c] of A) { na += c; inter += Math.min(c, B.get(g) || 0); }
+  for (const c of B.values()) nb += c;
+  const grams3 = (2 * inter) / (na + nb);
+  // Word order matters too: "Is Attention All You Need?" is a different paper from "Attention Is All You Need".
+  const wa = x.split(" "), wb = y.split(" ");
+  const dp = Array.from({ length: wa.length + 1 }, () => new Array(wb.length + 1).fill(0));
+  for (let i = 1; i <= wa.length; i++) for (let j = 1; j <= wb.length; j++)
+    dp[i][j] = wa[i - 1] === wb[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+  const order = dp[wa.length][wb.length] / Math.max(wa.length, wb.length);
+  return Math.min(0.99, 0.5 * grams3 + 0.5 * order);
+}
+
+const isPdfUrl = (u) => /\.pdf($|[?#])|arxiv\.org\/pdf\/|\/pdf\/|\/pdfdirect\/|download|\/content\/pdf/i.test(u || "");
+const uniq = (list) => [...new Set(list.filter(Boolean))];
+
+function fromS2(p) {
   if (!p?.paperId || !p?.title) return null;
-  const arxiv = p.externalIds?.ArXiv;
-  let pdf = p.openAccessPdf?.url || "";
-  if (!/\.pdf($|\?)|arxiv\.org\/pdf|\/pdf\//i.test(pdf)) pdf = ""; // landing pages are not PDFs
-  if (!pdf && arxiv) pdf = `https://arxiv.org/pdf/${arxiv}`;
+  const arxiv = p.externalIds?.ArXiv || "";
+  const doi = (p.externalIds?.DOI || "").toLowerCase();
+  const oa = p.openAccessPdf?.url || "";
+  const pdfs = uniq([isPdfUrl(oa) ? oa : "", arxiv ? `https://arxiv.org/pdf/${arxiv}` : ""]);
   const fields = [...new Set([...(p.fieldsOfStudy || []), ...(p.s2FieldsOfStudy || []).map((f) => f.category)].filter(Boolean))];
   return {
-    id: p.paperId,
-    title: clean(p.title, 400).replace(/\.$/, ""),
+    id: p.paperId, title: clean(p.title, 400).replace(/\.$/, ""),
     authors: (p.authors || []).slice(0, 6).map((a) => a.name).filter(Boolean),
-    year: p.year || null,
-    venue: clean(p.venue, 160),
-    abstract: clean(p.abstract, 700),
-    pdf,
-    url: p.url || `https://www.semanticscholar.org/paper/${p.paperId}`,
-    fields: fields.slice(0, 5),
+    year: p.year || null, venue: clean(p.venue, 160), abstract: clean(p.abstract, 700),
+    pdf: pdfs[0] || "", pdfs, url: p.url || `https://www.semanticscholar.org/paper/${p.paperId}`,
+    fields: fields.slice(0, 5), doi, arxiv, cites: p.citationCount || 0, source: "Semantic Scholar",
   };
 }
 
-async function cached(key, ttl, waitUntil, make) {
+function oaAbstract(inv) {
+  if (!inv) return "";
+  const words = [];
+  for (const [w, idxs] of Object.entries(inv)) for (const i of idxs) words[i] = w;
+  return words.filter(Boolean).join(" ");
+}
+
+function fromOpenAlex(w) {
+  const title = w?.title || w?.display_name;
+  if (!w?.id || !title) return null;
+  const wid = String(w.id).replace("https://openalex.org/", "");
+  const doi = String(w.doi || "").replace(/^https?:\/\/doi\.org\//i, "").toLowerCase();
+  const arxivLoc = (w.locations || []).find((l) => /arxiv\.org/i.test(l?.landing_page_url || l?.pdf_url || ""));
+  const arxiv = (arxivLoc?.landing_page_url || "").match(/arxiv\.org\/abs\/([^v?#]+)/i)?.[1] || (doi.match(/^10\.48550\/arxiv\.(.+)$/)?.[1] || "");
+  const pdfs = uniq([w.best_oa_location?.pdf_url, ...(w.locations || []).map((l) => l?.pdf_url), arxiv ? `https://arxiv.org/pdf/${arxiv}` : ""]);
+  const fields = uniq((w.topics || []).flatMap((t) => [t?.field?.display_name, t?.domain?.display_name]));
+  return {
+    id: wid, title: clean(title, 400).replace(/\.$/, ""),
+    authors: (w.authorships || []).slice(0, 6).map((a) => a?.author?.display_name).filter(Boolean),
+    year: w.publication_year || null, venue: clean(w.primary_location?.source?.display_name, 160),
+    abstract: clean(oaAbstract(w.abstract_inverted_index), 700),
+    pdf: pdfs[0] || "", pdfs, url: doi ? `https://doi.org/${doi}` : String(w.id),
+    fields: fields.slice(0, 5), doi, arxiv, cites: w.cited_by_count || 0, source: "OpenAlex",
+    related: (w.related_works || []).map((r) => String(r).replace("https://openalex.org/", "")),
+  };
+}
+
+function fromCrossref(it) {
+  const title = Array.isArray(it?.title) ? it.title[0] : it?.title;
+  if (!it?.DOI || !title) return null;
+  const doi = String(it.DOI).toLowerCase();
+  const pdfs = uniq((it.link || []).filter((l) => /pdf/i.test(l["content-type"] || "") && l["intended-application"] !== "text-mining").map((l) => l.URL));
+  const year = it.issued?.["date-parts"]?.[0]?.[0] || it.published?.["date-parts"]?.[0]?.[0] || null;
+  return {
+    id: "doi:" + doi, title: clean(title, 400).replace(/\.$/, ""),
+    authors: (it.author || []).slice(0, 6).map((a) => [a.given, a.family].filter(Boolean).join(" ") || a.name).filter(Boolean),
+    year, venue: clean((it["container-title"] || [])[0], 160), abstract: clean(String(it.abstract || "").replace(/<[^>]+>/g, " "), 700),
+    pdf: pdfs[0] || "", pdfs, url: `https://doi.org/${doi}`, fields: (it.subject || []).slice(0, 5),
+    doi, arxiv: "", cites: it["is-referenced-by-count"] || 0, source: "Crossref",
+  };
+}
+
+async function s2Search(title) {
+  const out = [];
+  const m = await s2(`/graph/v1/paper/search/match?query=${encodeURIComponent(title)}&fields=${PAPER_FIELDS}`, {}, 4500);
+  if (m.ok) { const p = fromS2((await m.json())?.data?.[0]); if (p) out.push(p); }
+  if (m.status === 429) return { papers: out, busy: true };
+  const r = await s2(`/graph/v1/paper/search?query=${encodeURIComponent(title)}&limit=8&fields=${PAPER_FIELDS}`, {}, 4500);
+  if (r.ok) out.push(...((await r.json())?.data || []).map(fromS2).filter(Boolean));
+  return { papers: out, busy: r.status === 429 };
+}
+
+async function openAlexSearch(title) {
+  const q = encodeURIComponent(title.replace(/[,:;]/g, " "));
+  const d = await getJSON(`${OPENALEX}/works?search=${q}&per-page=8&select=${OA_SELECT}${politeParam()}`);
+  return (d?.results || []).map(fromOpenAlex).filter(Boolean);
+}
+
+async function crossrefSearch(title) {
+  const d = await getJSON(`${CROSSREF}/works?query.bibliographic=${encodeURIComponent(title)}&rows=6&select=DOI,title,author,issued,published,container-title,is-referenced-by-count,link,subject,abstract${politeParam()}`);
+  return (d?.message?.items || []).map(fromCrossref).filter(Boolean);
+}
+
+const surname = (p) => normTitle((p.authors?.[0] || "").split(" ").pop());
+
+/// Folds records of the same paper from different sources into one, keeping the Semantic Scholar id
+/// (suggestions work best with it) and every PDF link anyone knows.
+function mergeCandidates(list) {
+  const out = [];
+  for (const p of list) {
+    const same = out.find((q) => (p.doi && q.doi && p.doi === q.doi) || (p.id === q.id) ||
+      (normTitle(p.title) === normTitle(q.title) && (surname(p) && surname(p) === surname(q) || (p.year && q.year && Math.abs(p.year - q.year) <= 1 && (!surname(p) || !surname(q))))));
+    if (!same) { out.push({ ...p, pdfs: [...(p.pdfs || [])] }); continue; }
+    same.pdfs = uniq([...(same.pdfs || []), ...(p.pdfs || [])]);
+    same.pdf = same.pdfs[0] || "";
+    same.doi ||= p.doi; same.arxiv ||= p.arxiv; same.abstract ||= p.abstract; same.venue ||= p.venue;
+    if (!same.fields?.length) same.fields = p.fields;
+    same.cites = Math.max(same.cites || 0, p.cites || 0);
+    if (p.year && (!same.year || p.year < same.year)) same.year = p.year; // first publication, not a reprint
+    if (p.related?.length) same.related = p.related;
+    if (same.source !== "Semantic Scholar" && p.source === "Semantic Scholar") { same.id = p.id; same.url = p.url; same.source = p.source; }
+  }
+  return out;
+}
+
+/// Scores and orders candidates for a highlighted title, and says whether the best one is a clear match.
+function rankCandidates(title, list) {
+  const scored = mergeCandidates(list).map((p) => ({ ...p, match: titleSimilarity(title, p.title) }))
+    .filter((p) => p.match >= 0.45);
+  // Title closeness first; among near-equal titles, the more cited paper is far more likely the one meant.
+  scored.sort((a, b) => (b.match + 0.035 * Math.log10(1 + b.cites)) - (a.match + 0.035 * Math.log10(1 + a.cites)));
+  const best = scored[0];
+  if (!best) return { candidates: [], confident: false };
+  // Near-equal titles count as rivals unless the best one is cited at least 20 times as often.
+  const rivals = scored.slice(1).filter((p) => p.match >= best.match - 0.06 && (best.cites || 0) < 20 * Math.max(1, p.cites || 0));
+  // A short, generic title that only a little-cited record matches is a guess, so ask.
+  const words = normTitle(title).split(" ").length;
+  const evidence = (best.cites || 0) >= 25 || words >= 6;
+  const confident = best.match >= 0.92 && evidence && rivals.length === 0;
+  return { candidates: scored.slice(0, 8), confident };
+}
+
+/// A paper record the app fetched itself. Only known keys, sane sizes, http(s) links.
+function fromSeen(p) {
+  if (!p || typeof p !== "object") return null;
+  const id = String(p.id || "").replace(/[^A-Za-z0-9:._/-]/g, "").slice(0, 120);
+  const title = clean(p.title, 400);
+  if (!id || !title) return null;
+  const link = (u) => (/^https?:\/\//.test(String(u || "")) ? String(u).slice(0, 500) : "");
+  const list = (a, n, m) => (Array.isArray(a) ? a : []).slice(0, n).map((x) => clean(x, m)).filter(Boolean);
+  const pdfs = uniq((Array.isArray(p.pdfs) ? p.pdfs : [p.pdf]).slice(0, 6).map(link));
+  const source = ["Semantic Scholar", "OpenAlex"].includes(p.source) ? p.source : "OpenAlex";
+  return {
+    id, title, authors: list(p.authors, 6, 120), year: Number(p.year) || null, venue: clean(p.venue, 160), abstract: clean(p.abstract, 700),
+    pdf: pdfs[0] || "", pdfs, url: link(p.url), fields: list(p.fields, 5, 60), doi: clean(p.doi, 200).toLowerCase(),
+    arxiv: clean(p.arxiv, 40), cites: Math.max(0, Number(p.cites) || 0), source,
+  };
+}
+
+const PUBLIC_KEYS = ["id", "title", "authors", "year", "venue", "abstract", "pdf", "pdfs", "url", "fields", "doi", "arxiv", "cites", "source", "match"];
+const publicPaper = (p) => Object.fromEntries(PUBLIC_KEYS.filter((k) => p[k] !== undefined).map((k) => [k, p[k]]));
+
+async function cached(key, waitUntil, make) {
   const k = await cacheKey([key]);
   const hit = await cacheRead(k);
   if (hit) return hit;
@@ -556,47 +752,131 @@ async function readJSON(req) {
 async function lookupPaper(req, waitUntil) {
   let body;
   try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
-  const title = clean(body?.title, 400).replace(/^["'\u201C]+|["'\u201D]+$/g, "");
+  const title = clean(body?.title, 400).replace(/^["'\u201C\u2018]+|["'\u201D\u2019.]+$/g, "").trim();
   if (title.length < 4) return json(400, { error: "Highlight the paper's whole title first." });
-  const result = await cached("s2-match:" + title.toLowerCase(), 0, waitUntil, async () => {
-    let r = await s2(`/graph/v1/paper/search/match?query=${encodeURIComponent(title)}&fields=${PAPER_FIELDS}`);
-    let paper = null;
-    if (r.ok) paper = slimPaper((await r.json())?.data?.[0]);
-    if (!paper) {
-      r = await s2(`/graph/v1/paper/search?query=${encodeURIComponent(title)}&limit=1&fields=${PAPER_FIELDS}`);
-      if (r.ok) paper = slimPaper((await r.json())?.data?.[0]);
-    }
-    if (!paper && r.status === 503) return { ok: false, busy: true };
-    return { ok: !!paper, paper };
+  // The app may send what it fetched itself from Semantic Scholar or OpenAlex (from the Mac's own
+  // network, when the Worker's shared one is rate limited). Same shape as our papers; checked here.
+  const seen = (Array.isArray(body?.seen) ? body.seen : []).slice(0, 16).map(fromSeen).filter(Boolean);
+  const result = await cached("lookup-v2:" + normTitle(title) + (seen.length ? ":seen" : ""), waitUntil, async () => {
+    // All three sources race; Semantic Scholar's answer is preferred but never waited on forever.
+    const [s2r, oa, cr] = await Promise.all([
+      s2Search(title).catch(() => ({ papers: [], busy: true })),
+      openAlexSearch(title).catch(() => []),
+      crossrefSearch(title).catch(() => []),
+    ]);
+    const ranked = rankCandidates(title, [...seen, ...s2r.papers, ...oa, ...cr]);
+    const sawS2 = !s2r.busy || seen.some((p) => p.source === "Semantic Scholar");
+    const sources = { semanticScholar: s2r.busy ? (seen.some((p) => p.source === "Semantic Scholar") ? "from the app" : "busy") : s2r.papers.length, openAlex: oa.length || lastStatus["api.openalex.org"] || 0, crossref: cr.length };
+    // Only cache an answer that had Semantic Scholar's say, so a busy moment doesn't stick for a week.
+    return { ok: ranked.candidates.length > 0 && sawS2, partial: !sawS2, sources, ...ranked };
   });
-  if (result.busy) return json(503, { error: "Semantic Scholar is busy. Try again in a moment." });
-  if (!result.ok) return json(404, { error: "I couldn't find that title in Semantic Scholar." });
-  return json(200, { paper: result.paper });
+  if (!result.candidates?.length) return json(404, { error: "I couldn't find that title in Semantic Scholar, OpenAlex, or Crossref." });
+  const candidates = result.candidates.map(publicPaper);
+  return json(200, { paper: candidates[0], candidates, confident: !!result.confident, sources: result.sources });
+}
+
+async function openAlexWork(p) {
+  if (/^W\d+$/.test(p.id || "")) return getJSON(`${OPENALEX}/works/${p.id}?select=${OA_SELECT}${politeParam()}`);
+  if (p.doi) return getJSON(`${OPENALEX}/works/doi:${encodeURIComponent(p.doi)}?select=${OA_SELECT}${politeParam()}`);
+  if (p.title) {
+    const hits = await openAlexSearch(p.title);
+    const best = hits.find((h) => titleSimilarity(p.title, h.title) >= 0.92);
+    return best ? getJSON(`${OPENALEX}/works/${best.id}?select=${OA_SELECT}${politeParam()}`) : null;
+  }
+  return null;
 }
 
 async function recommendPapers(req, waitUntil) {
   let body;
   try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
-  const id = String(body?.paperId || "").replace(/[^A-Za-z0-9:._-]/g, "").slice(0, 80);
-  if (!id) return json(400, { error: "Missing paperId." });
+  const id = String(body?.paperId || "").replace(/[^A-Za-z0-9:._/-]/g, "").slice(0, 120);
+  const title = clean(body?.title, 400);
+  const doi = String(body?.doi || (id.startsWith("doi:") ? id.slice(4) : "")).toLowerCase().slice(0, 200);
+  if (!id && !title) return json(400, { error: "Missing paperId." });
   const exclude = new Set((Array.isArray(body?.exclude) ? body.exclude : []).map(String));
+  const excludeTitles = new Set([normTitle(title)]);
   const limit = Math.max(1, Math.min(10, Number(body?.limit) || 4));
-  const result = await cached("s2-rec:" + id, 0, waitUntil, async () => {
-    const tries = [
-      () => s2(`/recommendations/v1/papers/forpaper/${id}?limit=20&fields=${PAPER_FIELDS}`),
-      () => s2(`/recommendations/v1/papers?limit=20&fields=${PAPER_FIELDS}`, { method: "POST", body: JSON.stringify({ positivePaperIds: [id] }) }),
-      () => s2(`/recommendations/v1/papers/forpaper/${id}?from=all-cs&limit=20&fields=${PAPER_FIELDS}`),
-    ];
-    for (const t of tries) {
-      const r = await t();
-      if (!r.ok) continue;
-      const papers = ((await r.json())?.recommendedPapers || []).map(slimPaper).filter(Boolean);
-      if (papers.length) return { ok: true, papers };
+  const result = await cached("rec-v2:" + (id || normTitle(title)), waitUntil, async () => {
+    let busy = false;
+    // 1. Semantic Scholar recommendations, for its own ids and for DOIs.
+    const s2id = /^[0-9a-f]{40}$/i.test(id) ? id : doi ? `DOI:${doi}` : "";
+    if (s2id) {
+      const tries = [
+        () => s2(`/recommendations/v1/papers/forpaper/${encodeURIComponent(s2id)}?limit=20&fields=${PAPER_FIELDS}`),
+        () => s2(`/recommendations/v1/papers?limit=20&fields=${PAPER_FIELDS}`, { method: "POST", body: JSON.stringify({ positivePaperIds: [s2id] }) }),
+      ];
+      for (const t of tries) {
+        const r = await t();
+        if (r.status === 429) { busy = true; break; }
+        if (!r.ok) continue;
+        const papers = ((await r.json())?.recommendedPapers || []).map(fromS2).filter(Boolean);
+        if (papers.length) return { ok: true, papers, source: "Semantic Scholar" };
+      }
+    }
+    // 2. OpenAlex: the work's related works, else the most cited papers that cite it.
+    const work = await openAlexWork({ id, doi, title });
+    if (work?.id) {
+      const wid = String(work.id).replace("https://openalex.org/", "");
+      const related = (work.related_works || []).slice(0, 20).map((r) => String(r).replace("https://openalex.org/", ""));
+      let d = related.length ? await getJSON(`${OPENALEX}/works?filter=ids.openalex:${related.join("|")}&per-page=20&select=${OA_SELECT}${politeParam()}`) : null;
+      let papers = (d?.results || []).map(fromOpenAlex).filter(Boolean);
+      if (!papers.length) {
+        d = await getJSON(`${OPENALEX}/works?filter=cites:${wid}&sort=cited_by_count:desc&per-page=12&select=${OA_SELECT}${politeParam()}`);
+        papers = (d?.results || []).map(fromOpenAlex).filter(Boolean);
+      }
+      papers.sort((a, b) => (b.cites || 0) - (a.cites || 0));
+      if (papers.length) return { ok: true, papers, source: "OpenAlex" };
+    }
+    // 3. Crossref: works whose titles and subjects sit closest to this one.
+    if (title) {
+      const papers = (await crossrefSearch(title)).filter((p) => titleSimilarity(title, p.title) < 0.9);
+      if (papers.length) return { ok: !busy, papers, source: "Crossref" };
     }
     return { ok: false, papers: [] };
   });
-  const papers = (result.papers || []).filter((p) => !exclude.has(p.id)).slice(0, limit);
-  return json(200, { papers });
+  const papers = (result.papers || [])
+    .filter((p) => !exclude.has(p.id) && !(p.doi && exclude.has("doi:" + p.doi)) && !excludeTitles.has(normTitle(p.title)))
+    .slice(0, limit).map(publicPaper);
+  return json(200, { papers, source: result.source || "" });
+}
+
+/// Every open-access PDF we can find for one paper, best first: Semantic Scholar, OpenAlex's best
+/// location and the rest, Unpaywall (when the Worker has a CONTACT_EMAIL), and arXiv by id or title.
+async function paperPdfs(req, waitUntil) {
+  let body;
+  try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
+  const id = String(body?.id || "").replace(/[^A-Za-z0-9:._/-]/g, "").slice(0, 120);
+  const title = clean(body?.title, 400);
+  let doi = String(body?.doi || (id.startsWith("doi:") ? id.slice(4) : "")).toLowerCase().slice(0, 200);
+  let arxiv = String(body?.arxiv || "").replace(/[^0-9a-z./-]/gi, "").slice(0, 40);
+  const known = new Set((Array.isArray(body?.tried) ? body.tried : []).map(String));
+  if (!id && !title && !doi) return json(400, { error: "Missing paper." });
+  const result = await cached("pdfs-v1:" + (id || doi || normTitle(title)), waitUntil, async () => {
+    const found = [];
+    const [s2p, work] = await Promise.all([
+      /^[0-9a-f]{40}$/i.test(id) ? s2(`/graph/v1/paper/${id}?fields=${PAPER_FIELDS}`, {}, 4000).then(async (r) => (r.ok ? fromS2(await r.json()) : null)).catch(() => null) : null,
+      openAlexWork({ id, doi, title }).catch(() => null),
+    ]);
+    if (s2p) { found.push(...s2p.pdfs); doi ||= s2p.doi; arxiv ||= s2p.arxiv; }
+    const oa = work ? fromOpenAlex(work) : null;
+    if (oa) { found.push(...oa.pdfs); doi ||= oa.doi; arxiv ||= oa.arxiv; }
+    if (doi && ENV.CONTACT_EMAIL) {
+      const u = await getJSON(`https://api.unpaywall.org/v2/${encodeURIComponent(doi)}?email=${encodeURIComponent(ENV.CONTACT_EMAIL)}`);
+      if (u) found.push(u.best_oa_location?.url_for_pdf, ...(u.oa_locations || []).map((l) => l?.url_for_pdf));
+    }
+    if (!arxiv && title) {
+      const xml = await getJSON(`https://export.arxiv.org/api/query?search_query=${encodeURIComponent(`ti:"${title.replace(/["]/g, "")}"`)}&max_results=3`, { text: true });
+      for (const entry of String(xml || "").split("<entry>").slice(1)) {
+        const t = entry.match(/<title>([\s\S]*?)<\/title>/)?.[1] || "";
+        const abs = entry.match(/<id>https?:\/\/arxiv\.org\/abs\/([^<v]+)(v\d+)?<\/id>/)?.[1];
+        if (abs && titleSimilarity(title, t) >= 0.9) { arxiv = abs; break; }
+      }
+    }
+    if (arxiv) found.push(`https://arxiv.org/pdf/${arxiv}`);
+    const pdfs = uniq(found.filter((u) => /^https?:\/\//.test(u || "")).map((u) => u.replace(/^http:\/\//, "https://")));
+    return { ok: true, pdfs };
+  });
+  return json(200, { pdfs: (result.pdfs || []).filter((u) => !known.has(u)) });
 }
 
 const SPECIES = ["oak", "willow", "conifer", "flytrap", "alien", "coral"];
@@ -669,6 +949,7 @@ const ROUTES = {
   "/api/explain": handle,
   "/api/paper/lookup": lookupPaper,
   "/api/paper/recommend": recommendPapers,
+  "/api/paper/pdfs": paperPdfs,
   "/api/tree/species": treeSpecies,
 };
 
@@ -683,7 +964,8 @@ export default {
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: HEADERS });
     if (req.method !== "POST") return json(405, { error: "Use POST." });
     if (ENV.APP_TOKEN && req.headers.get("x-paper-tree-token") !== ENV.APP_TOKEN) return json(401, { error: "Missing or wrong app token." });
-    if (rateLimited(clientIp(req))) return json(429, { error: "Too many requests. Try again in a minute." });
+    // Tree calls get their own, roomier bucket: adding one paper makes several small requests.
+    if (rateLimited(clientIp(req) + ":trees", 60)) return json(429, { error: "Too many requests. Try again in a minute." });
     return route(req, waitUntil);
   },
 };

@@ -110,6 +110,15 @@ enum Snapshots {
         let full = CGSize(width: grove.width + 40, height: grove.height + 32 + 30)
 
         shoot(island { $0.mode = .expanded; $0.page = .grove }, "grove-overview", size: full)
+        // The same grove with fewer and with more trees: sheets stay big, New tree stays in view.
+        let all = store.trees
+        store.trees = Array(all.prefix(3))
+        shoot(island { $0.mode = .expanded; $0.page = .grove }, "grove-overview-3", size: full)
+        store.trees = Array(all.prefix(2))
+        shoot(island { $0.mode = .expanded; $0.page = .grove }, "grove-overview-2", size: full)
+        store.trees = all + SampleGrove.offshoots(of: all)
+        shoot(island { $0.mode = .expanded; $0.page = .grove }, "grove-overview-many", size: full)
+        store.trees = all
         if let cs = store.trees.first(where: { $0.number == 1 }) {
             shoot(island { $0.mode = .expanded; $0.page = .tree(cs.id) }, "grove-tree-grown", size: full)
             if let s = cs.suggestions.first {
@@ -125,10 +134,10 @@ enum Snapshots {
         }
         shoot(island { $0.mode = .expanded; $0.page = .newTree }, "grove-new-tree", size: full)
 
-        // The add chooser, half open, with a paper found (its details as Semantic Scholar has them).
+        // The add chooser, half open, with a paper found (as the server matched it).
         let adding = island {
             $0.mode = .adding
-            $0.adding = AddRequest(highlighted: SampleGrove.addedPaper.title, lookup: .found(SampleGrove.addedPaper))
+            $0.adding = AddRequest(highlighted: SampleGrove.addedPaper.title, lookup: .found(SampleGrove.photoCandidates, confident: true))
         }
         shoot(adding, "island-add-found", size: CGSize(width: 680, height: 32 + IslandModel.addingSize.height + 30))
         let looking = island { $0.mode = .adding; $0.adding = AddRequest(highlighted: SampleGrove.addedPaper.title) }
@@ -136,6 +145,60 @@ enum Snapshots {
         store.plantingNewTree = ""
         shoot(adding, "island-add-planting", size: CGSize(width: 680, height: 32 + IslandModel.addingSize.height + 30))
         store.plantingNewTree = nil
+
+        let tall = CGSize(width: 720, height: 32 + IslandModel.addingSize.height + 6 * 46 + 70 + 60)
+        // "Is this it?": real, ambiguous lookups.
+        shoot(island { $0.mode = .adding; $0.adding = AddRequest(highlighted: "Deep learning", lookup: .found(SampleGrove.deepCandidates, confident: false)) },
+              "island-add-is-this-it", size: tall)
+        shoot(island { $0.mode = .adding; $0.adding = AddRequest(highlighted: "Generative Adversarial Nets", lookup: .found(SampleGrove.ganCandidates, confident: false)) },
+              "island-add-is-this-it-gan", size: tall)
+        shoot(island {
+            $0.mode = .adding
+            var r = AddRequest(highlighted: SampleGrove.addedPaper.title, lookup: .found(SampleGrove.photoCandidates, confident: true))
+            r.showAll = true
+            $0.adding = r
+        }, "island-add-pick-another", size: tall)
+
+        // Changing a paper's match after it was added.
+        if let cs = store.trees.first(where: { $0.number == 1 }), let gan = cs.papers.first(where: { $0.title.lowercased().contains("adversarial") }) {
+            let m = island { $0.mode = .expanded }
+            save(TreeSheetPage(model: m, store: store, tree: cs, rematching: gan.id, rematchPreset: SampleGrove.ganCandidates)
+                    .padding(24).frame(width: 1312, height: 760).background(PaperSheet(corner: 18, graph: true)), "grove-change-match", to: dir)
+        }
+
+        // Every species with the same papers, as a chooser thumbnail and as a small sheet.
+        if let eco = store.trees.first(where: { $0.number == 3 }) {
+            let species = Species.allCases
+            func variant(_ sp: Species) -> PaperTreeData {
+                var t = eco
+                t.look = TreeLook(species: sp, commonName: sp.plainName, leafTone: eco.look.leafTone, vigor: 0.6, twist: 0.5, droop: 0.4)
+                t.suggestions = []
+                return t
+            }
+            let sampler = VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 14) {
+                    ForEach(species, id: \.self) { sp in
+                        VStack(spacing: 4) {
+                            TreeDrawing(tree: variant(sp), geometry: TreeGeometry.make(variant(sp), in: CGSize(width: 84, height: 70)), detail: 0.5)
+                                .frame(width: 84, height: 70).clipped()
+                                .background(Color(hex: 0xFBF8EE))
+                                .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.3), lineWidth: 0.7))
+                            Text(sp.plainName).font(.ui(11)).foregroundColor(Palette.ink)
+                        }
+                    }
+                }
+                HStack(spacing: 14) {
+                    ForEach(species, id: \.self) { sp in
+                        TreeCanvas(tree: variant(sp), store: store).frame(width: 200, height: 230).clipped()
+                            .background(Color(hex: 0xFBF8EE))
+                            .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.2), lineWidth: 0.7))
+                    }
+                }
+            }
+            .padding(16)
+            .background(Color(hex: 0xEFE9DA))
+            save(sampler, "species-sampler", to: dir)
+        }
 
         let note = island { $0.mode = .note("Added to Tree No. 3") }
         shoot(note, "island-note", size: CGSize(width: 460, height: 110))
@@ -168,20 +231,22 @@ enum Snapshots {
         }
     }
 
-    /// Downloads a paper's PDF and draws page 1, waiting for it (snapshots run synchronously).
+    /// Page 1 of a paper through the app's whole chain (known links, the server's search, OpenAlex),
+    /// waiting for it (snapshots run synchronously).
     private static func frontPage(_ paper: Paper) -> NSImage? {
-        guard let url = URL(string: paper.pdf), url.scheme == "https" else { return nil }
         let done = DispatchSemaphore(value: 0)
-        final class Box: @unchecked Sendable { var data: Data? }
+        final class Box: @unchecked Sendable { var hit: (Data, String)? }
         let box = Box()
+        let client = TreeClient.current
         Task.detached {
-            box.data = await TreeStore.renderFrontPage(url)
+            box.hit = await TreeStore.findFrontPage(for: paper, client: client)
             done.signal()
         }
-        guard done.wait(timeout: .now() + 40) == .success, let data = box.data else {
-            print("front page failed: \(paper.title)")
+        guard done.wait(timeout: .now() + 90) == .success, let hit = box.hit else {
+            print("front page: none for \(paper.title)")
             return nil
         }
-        return NSImage(data: data)
+        print("front page: \(paper.title) <- \(hit.1)")
+        return NSImage(data: hit.0)
     }
 }

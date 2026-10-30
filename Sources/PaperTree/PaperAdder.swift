@@ -39,15 +39,19 @@ final class PaperAdder {
         }
         island.openAdding(AddRequest(highlighted: title))
         do {
-            let paper = try await TreeClient.current.lookup(title: title)
+            let result = try await PaperLookup.find(title)
             guard !Task.isCancelled, island.model.adding?.highlighted == title else { return }
-            island.model.adding?.lookup = .found(paper)
+            if result.candidates.isEmpty {
+                island.model.adding?.lookup = .notFound("I couldn't find that title in Semantic Scholar, OpenAlex, or Crossref.")
+            } else {
+                island.model.adding?.lookup = .found(Array(result.candidates.prefix(8)), confident: result.confident)
+            }
         } catch let e as TreeClient.ServerError {
             guard !Task.isCancelled, island.model.adding?.highlighted == title else { return }
-            island.model.adding?.lookup = .notFound(e.status == 404 ? "I couldn't find that title in Semantic Scholar." : e.message)
+            island.model.adding?.lookup = .notFound(e.status == 404 ? "I couldn't find that title in Semantic Scholar, OpenAlex, or Crossref." : e.message)
         } catch {
             guard !Task.isCancelled, island.model.adding?.highlighted == title else { return }
-            island.model.adding?.lookup = .notFound("I couldn't reach Semantic Scholar.")
+            island.model.adding?.lookup = .notFound("I couldn't reach the paper databases.")
         }
     }
 

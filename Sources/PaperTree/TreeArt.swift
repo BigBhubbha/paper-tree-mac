@@ -46,12 +46,24 @@ enum PlantInk {
     static func bark(_ s: Species, tone: Color) -> Color {
         switch s {
         case .alien: return Color(hex: 0x56656B)
-        case .coral: return tone
-        case .flytrap: return Color(hex: 0x6F8A45)
+        case .coral: return Color(hex: 0xD9694F)
+        case .flytrap: return Color(hex: 0x7C9A3A)
         case .conifer: return Color(hex: 0x5E4632)
         default: return Color(hex: 0x6E553F)
         }
     }
+
+    /// Three species keep their own colour whatever the topics say, so they read at a glance even
+    /// as thumbnails: a flytrap is lime with red mouths, coral is coral, a conifer is dark spruce.
+    static func leaf(_ s: Species, toneName: String) -> Color {
+        switch s {
+        case .flytrap: return Color(hex: 0x95B23E)
+        case .coral: return Color(hex: 0xE58066)
+        case .conifer: return Color(hex: 0x2F5E4F)
+        default: return tone(toneName)
+        }
+    }
+    static let trapMouth = Color(hex: 0xB82A36)
     static let ink = Color(hex: 0x24211B)
     static let pencil = Color(hex: 0x8F887B)
 }
@@ -201,7 +213,7 @@ struct TreeGeometry {
 
         // Small twigs for fullness: more as the tree grows.
         var twigRnd = SeededRandom(tree.seed, "twigs")
-        let perLimb = species == .coral ? 3 : 2
+        let perLimb = species == .coral ? 4 : 2
         for limb in g.limbs where limb.points.count > 3 {
             let count = Int((CGFloat(perLimb) * (0.5 + stage)).rounded())
             for _ in 0..<count {
@@ -213,6 +225,17 @@ struct TreeGeometry {
                 let (twig, _) = TreeGeometry.grow(from: at, angleFromUp: a, length: len, width: max(1, limb.w1 * 1.2),
                                                   species: species, twist: twist, droop: CGFloat(tree.look.droop), rnd: &twigRnd, depth: 3)
                 g.twigs.append(twig)
+                // Coral forks again and again, into a dense fan.
+                if species == .coral, twig.points.count > 3 {
+                    for side in [-1.0, 1.0] {
+                        let p2 = twig.points.last!
+                        let d2 = direction(on: twig.points, at: 0.95)
+                        let a2 = atan2(Double(d2.dy), Double(d2.dx)) + .pi / 2 + side * twigRnd.range(0.35, 0.6)
+                        let (fork, _) = TreeGeometry.grow(from: p2, angleFromUp: a2, length: len * twigRnd.cg(0.45, 0.65), width: max(0.8, twig.w1),
+                                                          species: species, twist: twist, droop: 0, rnd: &twigRnd, depth: 3)
+                        g.twigs.append(fork)
+                    }
+                }
             }
         }
 
@@ -394,7 +417,7 @@ struct TreeDrawing: View {
 
     private func draw(_ ctx: inout GraphicsContext, _ size: CGSize) {
         let g = geometry
-        let tone = PlantInk.tone(tree.look.leafTone)
+        let tone = PlantInk.leaf(tree.look.species, toneName: tree.look.leafTone)
         let bark = PlantInk.bark(tree.look.species, tone: tone)
         var rnd = SeededRandom(tree.seed, "ink")
         let lw: CGFloat = max(0.7, min(1.4, g.height / 260))
@@ -403,7 +426,7 @@ struct TreeDrawing: View {
         if tree.papers.isEmpty { drawSeed(&ctx, g, lw: lw); return }
 
         // Back leaves first, so limbs sit in front of some of them.
-        if tree.look.species == .oak || tree.look.species == .conifer { foliage(&ctx, g, tone: tone, back: true, rnd: &rnd, lw: lw) }
+        if [Species.oak, .conifer, .coral].contains(tree.look.species) { foliage(&ctx, g, tone: tone, back: true, rnd: &rnd, lw: lw) }
 
         // Ghost branches sit behind the real ones.
         for ghost in g.ghosts { drawGhost(&ctx, ghost, lw: lw, rnd: &rnd) }
@@ -464,6 +487,17 @@ struct TreeDrawing: View {
         let (shape, _, right) = Pen.taper(limb.points, limb.w0, limb.w1, rnd: &rnd)
         ctx.fill(shape, with: .color(bark.opacity(tree.look.species == .alien ? 0.35 : 0.5)))
         Pen.ink(&ctx, shape, color: PlantInk.ink, width: lw * (limb.depth == 0 ? 1.2 : 1))
+        if tree.look.species == .coral {
+            // Polyp pits all along every branch, even the thinnest.
+            var pits = Path()
+            for i in stride(from: 1, to: limb.points.count, by: 1) {
+                let p = limb.points[i]
+                let r = max(0.8, min(2.2, limb.w0 * 0.12))
+                pits.addEllipse(in: CGRect(x: p.x - r + rnd.cg(-1, 1), y: p.y - r + rnd.cg(-1, 1), width: r * 2, height: r * 2))
+            }
+            ctx.fill(pits, with: .color(Color(hex: 0xFBE3D6).opacity(0.9)))
+            ctx.stroke(pits, with: .color(PlantInk.ink.opacity(0.45)), lineWidth: lw * 0.4)
+        }
         // Hatching along the shadow side of thicker wood.
         guard limb.w0 > 6 else { return }
         var hatch = Path()
@@ -477,7 +511,7 @@ struct TreeDrawing: View {
             }
         }
         ctx.stroke(hatch, with: .color(PlantInk.ink.opacity(0.3)), lineWidth: lw * 0.55)
-        if tree.look.species == .alien || tree.look.species == .coral {
+        if tree.look.species == .alien {
             // Suckers or polyps: small rings along the wood.
             var dots = Path()
             for i in stride(from: 1, to: limb.points.count - 1, by: 2) {
@@ -542,19 +576,12 @@ struct TreeDrawing: View {
                 }
             }
         case .conifer:
+            if back {
+                coniferSpire(&ctx, g, tone: tone, rnd: &rnd, lw: lw)
+                return
+            }
             for limb in g.limbs + g.twigs {
                 let pts = limb.points
-                if back {
-                    // A dark wash tier hanging from each limb.
-                    guard limb.depth == 1, let first = pts.first, let last = pts.last else { continue }
-                    var tier = Path()
-                    tier.move(to: first)
-                    tier.addLine(to: last)
-                    tier.addLine(to: CGPoint(x: (first.x + last.x) / 2, y: max(first.y, last.y) + 18 * scale))
-                    tier.closeSubpath()
-                    ctx.fill(tier, with: .color(tone.opacity(0.3)))
-                    continue
-                }
                 var needles = Path()
                 for i in 1..<pts.count {
                     let a = pts[i - 1], b = pts[i]
@@ -580,12 +607,14 @@ struct TreeDrawing: View {
                 leaf.move(to: s)
                 leaf.addQuadCurve(to: e, control: CGPoint(x: (s.x + e.x) / 2, y: min(s.y, e.y) - 8))
                 leaf.addQuadCurve(to: s, control: CGPoint(x: (s.x + e.x) / 2, y: max(s.y, e.y) + 2))
-                ctx.fill(leaf, with: .color(tone.opacity(0.35)))
+                ctx.fill(leaf, with: .color(tone.opacity(0.6)))
                 Pen.ink(&ctx, leaf, color: PlantInk.ink.opacity(0.7), width: lw * 0.8)
             }
-            // A trap at every paper (big and open) and every twig (small and shut).
-            for tip in g.tips { trap(&ctx, at: tip.point, angle: tip.angle, size: g.cardSize.height * 0.95, open: true, tone: tone, lw: lw, rnd: &rnd) }
-            for t in g.twigs { let p = t.points; trap(&ctx, at: p.last!, angle: atan2(Double(p.last!.y - p[p.count - 2].y), Double(p.last!.x - p[p.count - 2].x)), size: 14 * scale, open: false, tone: tone, lw: lw, rnd: &rnd) }
+            // A trap at every paper (big, open, red inside) and every twig (small and shut). Traps keep
+            // a good size even in a thumbnail: they are what makes it a flytrap.
+            let big = max(g.cardSize.height * 0.95, g.height * 0.2)
+            for tip in g.tips { trap(&ctx, at: tip.point, angle: tip.angle, size: big, open: true, tone: tone, lw: lw, rnd: &rnd) }
+            for t in g.twigs { let p = t.points; trap(&ctx, at: p.last!, angle: atan2(Double(p.last!.y - p[p.count - 2].y), Double(p.last!.x - p[p.count - 2].x)), size: max(14 * scale, big * 0.45), open: false, tone: tone, lw: lw, rnd: &rnd) }
         case .alien:
             guard !back else { return }
             for (i, e) in ends.enumerated() {
@@ -613,7 +642,30 @@ struct TreeDrawing: View {
                 }
             }
         case .coral:
-            guard !back else { return }
+            if back {
+                // The fan: a pale wash behind the branches, stippled like a sea fan.
+                guard let minX = ends.map(\.x).min(), let maxX = ends.map(\.x).max(), let minY = ends.map(\.y).min() else { return }
+                let pad = 10 * scale
+                let rect = CGRect(x: minX - pad, y: minY - pad, width: maxX - minX + pad * 2, height: (g.base.y - minY) * 1.6 + pad)
+                var fan = Path()
+                fan.move(to: CGPoint(x: g.base.x, y: g.base.y))
+                fan.addCurve(to: CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.25),
+                             control1: CGPoint(x: g.base.x - rect.width * 0.2, y: g.base.y - 4),
+                             control2: CGPoint(x: rect.minX, y: rect.minY + rect.height * 0.5))
+                fan.addQuadCurve(to: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.25), control: CGPoint(x: rect.midX, y: rect.minY - pad * 2))
+                fan.addCurve(to: CGPoint(x: g.base.x, y: g.base.y),
+                             control1: CGPoint(x: rect.maxX, y: rect.minY + rect.height * 0.5),
+                             control2: CGPoint(x: g.base.x + rect.width * 0.2, y: g.base.y - 4))
+                ctx.fill(fan, with: .color(tone.opacity(0.13)))
+                var stipple = Path()
+                for _ in 0..<Int(40 + 120 * g.growth) {
+                    let p = CGPoint(x: rnd.cg(rect.minX, rect.maxX), y: rnd.cg(rect.minY, g.base.y - 6))
+                    guard fan.contains(p) else { continue }
+                    stipple.addEllipse(in: CGRect(x: p.x - 0.7, y: p.y - 0.7, width: 1.4, height: 1.4))
+                }
+                ctx.fill(stipple, with: .color(Color(hex: 0xB2432C).opacity(0.35)))
+                return
+            }
             for e in ends {
                 let r = rnd.cg(3.5, 6.5) * scale
                 let knob = Path(ellipseIn: CGRect(x: e.x - r, y: e.y - r, width: r * 2, height: r * 2))
@@ -627,7 +679,59 @@ struct TreeDrawing: View {
                     polyps.addLine(to: p)
                 }
                 ctx.stroke(polyps, with: .color(tone.opacity(0.8)), lineWidth: lw * 0.6)
+                ctx.fill(Path(ellipseIn: CGRect(x: e.x - r * 0.35, y: e.y - r * 0.35, width: r * 0.7, height: r * 0.7)), with: .color(Color(hex: 0xFBE3D6)))
             }
+        }
+    }
+
+    /// A conifer's silhouette: stacked, jagged tiers of needles down the trunk, narrow at the top and
+    /// wide at the bottom, with chevron needle marks. It is the one tall triangle in the grove.
+    private func coniferSpire(_ ctx: inout GraphicsContext, _ g: TreeGeometry, tone: Color, rnd: inout SeededRandom, lw: CGFloat) {
+        guard let trunk = g.limbs.first(where: { $0.depth == 0 }), let top = trunk.points.last else { return }
+        let bottom = g.base.y - g.height * 0.1
+        let span = max(10, bottom - top.y)
+        let tiers = 3 + Int((5 * g.growth).rounded())
+        let maxHalf = max(g.height * 0.36, 14)
+        let scale = max(0.5, g.height / 300)
+        func trunkX(at y: CGFloat) -> CGFloat {
+            let pts = trunk.points
+            for i in 1..<pts.count where pts[i].y <= y { let a = pts[i - 1], b = pts[i]; let t = (a.y - y) / max(0.001, a.y - b.y); return a.x + (b.x - a.x) * t }
+            return top.x
+        }
+        for k in stride(from: tiers - 1, through: 0, by: -1) {
+            let t0 = CGFloat(k) / CGFloat(tiers)
+            let yTop = top.y - 6 * scale + span * t0 * 0.9
+            let yBot = top.y + span * min(1, (CGFloat(k) + 1.45) / CGFloat(tiers))
+            let half = maxHalf * ((yBot - top.y) / span) * rnd.cg(0.9, 1.05) + 4
+            let cx = trunkX(at: yTop)
+            var tier = Path()
+            tier.move(to: CGPoint(x: cx, y: yTop))
+            tier.addQuadCurve(to: CGPoint(x: cx - half, y: yBot), control: CGPoint(x: cx - half * 0.35, y: yTop + (yBot - yTop) * 0.55))
+            // The ragged lower edge: little drooping points of needles.
+            let teeth = max(4, Int(half / (6 * scale)))
+            for i in 1...teeth {
+                let x = cx - half + CGFloat(i) * (half * 2) / CGFloat(teeth)
+                tier.addLine(to: CGPoint(x: x - half / CGFloat(teeth), y: yBot - 5 * scale + rnd.cg(-1, 1)))
+                tier.addLine(to: CGPoint(x: x, y: yBot + rnd.cg(-1.5, 2) * scale))
+            }
+            tier.addQuadCurve(to: CGPoint(x: cx, y: yTop), control: CGPoint(x: cx + half * 0.35, y: yTop + (yBot - yTop) * 0.55))
+            ctx.fill(tier, with: .color(tone.opacity(0.78)))
+            Pen.ink(&ctx, tier, color: PlantInk.ink.opacity(0.8), width: lw * 0.85)
+            // Chevron needle marks inside the tier.
+            var chev = Path()
+            let rows = max(1, Int((yBot - yTop) / (9 * scale)))
+            for r in 0..<rows {
+                let y = yTop + (CGFloat(r) + 0.8) * (yBot - yTop) / CGFloat(rows + 1)
+                let w = half * ((y - yTop) / max(1, yBot - yTop)) * 0.8
+                var x = cx - w
+                while x < cx + w {
+                    chev.move(to: CGPoint(x: x - 2.5 * scale, y: y + 2.5 * scale))
+                    chev.addLine(to: CGPoint(x: x, y: y))
+                    chev.addLine(to: CGPoint(x: x + 2.5 * scale, y: y + 2.5 * scale))
+                    x += 7 * scale + rnd.cg(0, 2)
+                }
+            }
+            ctx.stroke(chev, with: .color(Color.white.opacity(0.32)), lineWidth: lw * 0.6)
         }
     }
 
@@ -656,8 +760,17 @@ struct TreeDrawing: View {
             let tipPt = CGPoint(x: s * w * spread, y: -h)
             lobe.addQuadCurve(to: tipPt, control: CGPoint(x: s * w * (spread + 0.55), y: -h * 0.25))
             lobe.addQuadCurve(to: .zero, control: CGPoint(x: s * w * spread * 0.2, y: -h * 0.65))
-            c.fill(lobe, with: .color(tone.opacity(0.55)))
-            c.fill(lobe, with: .color(Color(hex: 0xB2432C).opacity(open ? 0.25 : 0.12)))
+            c.fill(lobe, with: .color(tone.opacity(0.85)))
+            if open {
+                // The red mouth: the inner half of each lobe.
+                var mouth = Path()
+                mouth.move(to: CGPoint(x: s * w * spread * 0.1, y: -h * 0.2))
+                mouth.addQuadCurve(to: CGPoint(x: tipPt.x * 0.92, y: tipPt.y * 0.92), control: CGPoint(x: s * w * (spread + 0.25), y: -h * 0.35))
+                mouth.addQuadCurve(to: CGPoint(x: s * w * spread * 0.1, y: -h * 0.2), control: CGPoint(x: s * w * spread * 0.25, y: -h * 0.62))
+                c.fill(mouth, with: .color(PlantInk.trapMouth.opacity(0.85)))
+            } else {
+                c.fill(lobe, with: .color(PlantInk.trapMouth.opacity(0.25)))
+            }
             Pen.ink(&c, lobe, color: PlantInk.ink, width: lw * 0.9)
             // Teeth along the rim.
             var teeth = Path()
@@ -665,7 +778,7 @@ struct TreeDrawing: View {
                 let t = CGFloat(k) / 9
                 let rim = CGPoint(x: s * w * spread * 0.2 * (1 - t) + tipPt.x * t, y: -h * 0.65 * (1 - t) * (1 - t) + tipPt.y * t)
                 teeth.move(to: rim)
-                teeth.addLine(to: CGPoint(x: rim.x - s * size * 0.08, y: rim.y - size * 0.09))
+                teeth.addLine(to: CGPoint(x: rim.x - s * size * 0.1, y: rim.y - size * 0.16))
             }
             c.stroke(teeth, with: .color(PlantInk.ink.opacity(0.75)), lineWidth: lw * 0.6)
         }

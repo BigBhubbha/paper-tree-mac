@@ -93,6 +93,42 @@ enum SampleGrove {
         return out
     }
 
+    /// Real lookup results for a highlighted title (the server's ranking, confident: false).
+    static let deepCandidates: [Paper] = [
+        Paper(id: "W2919115771", title: "Deep learning", authors: ["Yann LeCun", "Yoshua Bengio", "Geoffrey E. Hinton"], year: 2015, venue: "Nature", pdf: "", url: "https://doi.org/10.1038/nature14539", fields: [], parentId: nil, addedAt: day(0), doi: "10.1038/nature14539", cites: 84105, source: "OpenAlex"),
+        Paper(id: "W2557283755", title: "Deep Learning", authors: ["Ian Goodfellow", "Yoshua Bengio", "Aaron C. Courville"], year: 2016, venue: "", pdf: "", url: "https://openalex.org/W2557283755", fields: [], parentId: nil, addedAt: day(0), cites: 11679, source: "OpenAlex"),
+        Paper(id: "23efeff4019b8b5ebfef54d25e669bc5c6a82054", title: "Deep Learning", authors: ["M. Martínez-Ramón", "Meenu Ajith", "A. Kurup"], year: 2024, venue: "", pdf: "", url: "https://www.semanticscholar.org/paper/23efeff4019b8b5ebfef54d25e669bc5c6a82054", fields: ["Computer Science"], parentId: nil, addedAt: day(0), doi: "10.1002/9781119861898", cites: 0, source: "Semantic Scholar"),
+        Paper(id: "W2311607323", title: "Deep learning in bioinformatics", authors: ["Seonwoo Min", "Byunghan Lee", "Sungroh Yoon"], year: 2016, venue: "Briefings in Bioinformatics", pdf: "", url: "https://doi.org/10.1093/bib/bbw068", fields: [], parentId: nil, addedAt: day(0), doi: "10.1093/bib/bbw068", cites: 1492, source: "OpenAlex"),
+        Paper(id: "W2892341857", title: "A Survey on Deep Learning", authors: ["Samira Pouyanfar", "Saad Sadiq", "Yilin Yan", "Haiman Tian", "Yudong Tao", "Maria Presa Reyes"], year: 2018, venue: "ACM Computing Surveys", pdf: "", url: "https://doi.org/10.1145/3234150", fields: [], parentId: nil, addedAt: day(0), doi: "10.1145/3234150", cites: 1413, source: "OpenAlex"),
+        Paper(id: "doi:10.4135/9781506368603.n4", title: "Deep Learning in Action", authors: [], year: 2018, venue: "Deep Learning", pdf: "", url: "https://doi.org/10.4135/9781506368603.n4", fields: [], parentId: nil, addedAt: day(0), doi: "10.4135/9781506368603.n4", cites: 0, source: "Crossref"),
+    ]
+    /// Real lookup results for a highlighted title (the server's ranking, confident: false).
+    static let ganCandidates: [Paper] = [
+        Paper(id: "c68796f833a7151f0a63d1d1608dc902b4fdc9b6", title: "GENERATIVE ADVERSARIAL NETS", authors: ["Individualized Treat", "Jinsung Yoon"], year: 2018, venue: "", pdf: "", url: "https://www.semanticscholar.org/paper/c68796f833a7151f0a63d1d1608dc902b4fdc9b6", fields: ["Computer Science"], parentId: nil, addedAt: day(0), cites: 45936, source: "Semantic Scholar"),
+        Paper(id: "W4320013936", title: "Generative Adversarial Nets", authors: ["Raphael Labaca-Castro"], year: 2023, venue: "Springer eBooks", pdf: "", url: "https://doi.org/10.1007/978-3-658-40442-0_9", fields: ["Computer Science"], parentId: nil, addedAt: day(0), doi: "10.1007/978-3-658-40442-0_9", cites: 19273, source: "OpenAlex"),
+        Paper(id: "W2099471712", title: "GAN（Generative Adversarial Nets）", authors: ["柴田 淳司"], year: 2017, venue: "Journal of Japan Society for Fuzzy Theory and Intelligent Informatics", pdf: "https://www.jstage.jst.go.jp/article/jsoft/29/5/29_177_2/_pdf", url: "https://doi.org/10.3156/jsoft.29.5_177_2", fields: ["Computer Science"], parentId: nil, addedAt: day(0), doi: "10.3156/jsoft.29.5_177_2", pdfs: ["https://www.jstage.jst.go.jp/article/jsoft/29/5/29_177_2/_pdf"], cites: 19268, source: "OpenAlex"),
+        Paper(id: "W2125389028", title: "Conditional Generative Adversarial Nets", authors: ["Mehdi Mirza", "Simon Osindero"], year: 2014, venue: "arXiv (Cornell University)", pdf: "https://arxiv.org/pdf/1411.1784", url: "https://doi.org/10.48550/arxiv.1411.1784", fields: ["Computer Science"], parentId: nil, addedAt: day(0), doi: "10.48550/arxiv.1411.1784", pdfs: ["https://arxiv.org/pdf/1411.1784"], cites: 8870, source: "OpenAlex"),
+        Paper(id: "W2596763562", title: "Triple Generative Adversarial Nets", authors: ["Chongxuan Li", "Kun Xu", "Jun Zhu", "Zhang, Bo"], year: 2017, venue: "arXiv (Cornell University)", pdf: "https://arxiv.org/pdf/1703.02291", url: "https://doi.org/10.48550/arxiv.1703.02291", fields: ["Computer Science"], parentId: nil, addedAt: day(0), doi: "10.48550/arxiv.1703.02291", pdfs: ["https://arxiv.org/pdf/1703.02291"], cites: 366, source: "OpenAlex"),
+        Paper(id: "W2750699642", title: "Dual Discriminator Generative Adversarial Nets", authors: ["Tu Dinh Nguyen", "Trung Le", "Hung Thanh Vu", "Dinh Phung"], year: 2017, venue: "arXiv (Cornell University)", pdf: "https://arxiv.org/pdf/1709.03831", url: "https://doi.org/10.48550/arxiv.1709.03831", fields: ["Computer Science"], parentId: nil, addedAt: day(0), doi: "10.48550/arxiv.1709.03831", pdfs: ["https://arxiv.org/pdf/1709.03831"], cites: 258, source: "OpenAlex"),
+    ]
+    /// Real lookup results for a highlighted title (the server's ranking, confident: true).
+    static let photoCandidates: [Paper] = [
+        Paper(id: "0ba70312960b9a2107c8194a43a999d0d5fb1532", title: "Photosynthesis under drought and salt stress: regulation mechanisms from whole plant to cell", authors: ["M. M. Chaves", "Jaume Flexas", "Carla Pinheiro"], year: 2008, venue: "Annals of Botany", pdf: "", url: "https://www.semanticscholar.org/paper/0ba70312960b9a2107c8194a43a999d0d5fb1532", fields: ["Agricultural and Biological Sciences", "Biochemistry, Genetics and Molecular Biology", "Environmental Science"], parentId: nil, addedAt: day(0), doi: "10.1093/aob/mcn125", cites: 4178, source: "Semantic Scholar"),
+        Paper(id: "doi:10.1016/j.plaphy.2022.03.003", title: "Regulation of photosynthesis under salt stress and associated tolerance mechanisms", authors: ["Noreen Zahra", "Marwa Sulaiman Al Hinai", "Muhammad Bilal Hafeez", "Abdul Rehman", "Abdul Wahid", "Kadambot H.M. Siddique"], year: 2022, venue: "Plant Physiology and Biochemistry", pdf: "", url: "https://doi.org/10.1016/j.plaphy.2022.03.003", fields: [], parentId: nil, addedAt: day(0), doi: "10.1016/j.plaphy.2022.03.003", cites: 370, source: "Crossref"),
+    ]
     /// The practice paper from setup, as Semantic Scholar has it.
     static let addedPaper = Paper(id: "0ba70312960b9a2107c8194a43a999d0d5fb1532", title: "Photosynthesis under drought and salt stress: regulation mechanisms from whole plant to cell", authors: ["M. Chaves", "J. Flexas", "C. Pinheiro"], year: 2009, venue: "Annals of Botany", pdf: "", url: "https://www.semanticscholar.org/paper/0ba70312960b9a2107c8194a43a999d0d5fb1532", fields: ["Biology", "Medicine", "Environmental Science"], parentId: nil, addedAt: day(0))
+
+    /// Three more trees for the "many trees" layout snapshot, each grown from papers of an existing
+    /// sample tree (same real papers and the same species as the tree they came from).
+    static func offshoots(of trees: [PaperTreeData]) -> [PaperTreeData] {
+        let picks: [(from: Int, keep: [Int], seed: UInt64)] = [(1, [0, 2, 9, 11], 0xA11), (2, [3, 4], 0xB22), (3, [3, 4, 5], 0xC33)]
+        var out: [PaperTreeData] = []
+        for (n, pick) in picks.enumerated() {
+            guard let src = trees.first(where: { $0.number == pick.from }) else { continue }
+            let papers = pick.keep.filter { $0 < src.papers.count }.map { i -> Paper in var p = src.papers[i]; p.parentId = nil; return p }
+            out.append(PaperTreeData(number: trees.count + n + 1, name: "", seed: pick.seed, look: src.look, papers: papers, lookCheckedAt: papers.count))
+        }
+        return out
+    }
 }

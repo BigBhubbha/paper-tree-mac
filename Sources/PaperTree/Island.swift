@@ -37,7 +37,7 @@ final class IslandModel: ObservableObject {
     /// A paper landed on a tree: show it there.
     var onAdded: (UUID) -> Void = { _ in }
 
-    static let addingSize = CGSize(width: 600, height: 300)
+    static let addingSize = CGSize(width: 640, height: 300)
     static let flashExtraWidth: CGFloat = 170
     static let flashExtraHeight: CGFloat = 30
 
@@ -52,7 +52,9 @@ final class IslandModel: ObservableObject {
             return CGSize(width: max(notchSize.width + IslandModel.flashExtraWidth, CGFloat(text.count) * 7.4 + 90),
                           height: notchSize.height + IslandModel.flashExtraHeight)
         case .adding:
-            return CGSize(width: IslandModel.addingSize.width, height: notchSize.height + IslandModel.addingSize.height)
+            // Taller while the list of possible matches is open.
+            let extra: CGFloat = adding?.choosing == true ? CGFloat(min(adding?.candidates.count ?? 3, adding?.showAll == true ? 6 : 3)) * 46 + 70 : 24
+            return CGSize(width: IslandModel.addingSize.width, height: notchSize.height + IslandModel.addingSize.height + extra)
         case .expanded:
             return CGSize(width: groveSize.width, height: notchSize.height + groveSize.height)
         }
