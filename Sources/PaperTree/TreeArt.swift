@@ -103,6 +103,13 @@ struct TreeGeometry {
     var crownRadius: CGFloat = 20
     var maxRadius: CGFloat = 1
 
+    // Where the cards sit once they've been spaced out (TreeLayout.swift), in drawing coordinates.
+    var cardCenters: [String: CGPoint] = [:]
+    /// Paper cards pushed away from their tip, which get a thin leader line back to it.
+    var leaders: Set<String> = []
+    /// Everything that gets drawn: wood, leaves, ground and cards. The camera fits this.
+    var contentBounds: CGRect = .zero
+
     /// How tall the tree is, as a share of the space, for a number of papers: a sapling at one, huge by twenty.
     static func growth(papers n: Int) -> CGFloat {
         n == 0 ? 0 : CGFloat(1 - exp(-Double(n) / 6.5))
@@ -192,6 +199,8 @@ struct TreeGeometry {
                     length = H * CGFloat(0.5 - 0.2 * t)
                 }
                 length *= rnd.cg(0.85, 1.1)
+                // Reach out wider than a real tree would, so papers have room between them.
+                if species != .conifer { angleFromUp = max(-1.5, min(1.5, angleFromUp * 1.18)); length *= 1.1 }
             }
             let (limb, tip) = TreeGeometry.grow(from: start, angleFromUp: angleFromUp, length: length,
                                    width: max(2.4, (fromBase ? 5 : 4) + 14 * stage * (fromBase ? 0.6 : 1) * CGFloat(1 - Double(jj) / Double(max(k, 1)) * 0.4)),
@@ -276,6 +285,7 @@ struct TreeGeometry {
         }
         g.fit(in: size)
         g.buildSkeleton(tree)
+        g.placeCards()
         return g
     }
 
@@ -497,6 +507,8 @@ struct DrawnTitlePage: View {
 struct GhostTipCard: View {
     var paper: Paper
     var size: CGSize
+    /// Close up: the whole title.
+    var full = false
 
     var body: some View {
         let s = size.width / 60
@@ -505,8 +517,8 @@ struct GhostTipCard: View {
                 .font(.custom(Typeface.hand, size: max(4, 6 * s)))
                 .foregroundColor(PlantInk.pencil)
                 .multilineTextAlignment(.center)
-                .lineLimit(5)
-                .minimumScaleFactor(0.6)
+                .lineLimit(full ? 9 : 5)
+                .minimumScaleFactor(full ? 0.5 : 0.6)
             Spacer(minLength: 0)
             Text("suggested").font(.custom(Typeface.type, size: max(3, 4 * s))).foregroundColor(PlantInk.pencil.opacity(0.9))
         }

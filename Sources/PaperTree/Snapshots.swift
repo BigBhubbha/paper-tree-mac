@@ -2,6 +2,8 @@
 // CI uses it so design changes can be reviewed without a Mac. Nothing here runs in normal use.
 // It writes sample answers into this Mac's Paper Tree settings, so only run it on a build machine.
 import AppKit
+import CoreText
+import PDFKit
 import SwiftUI
 
 @MainActor
@@ -18,6 +20,7 @@ enum Snapshots {
         isRendering = true
         render(to: dir)
         renderGrove(to: dir)
+        renderSpace(to: dir)
         return true
     }
 
@@ -345,5 +348,173 @@ struct IslandOpeningFrame: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+}
+
+// MARK: Room to read: a busy tree up close, and the paper reader
+
+extension Snapshots {
+    private static func shootIsland(_ m: IslandModel, _ store: TreeStore, _ name: String, to dir: URL) {
+        let size = CGSize(width: m.groveSize.width + 40, height: m.groveSize.height + 32 + 30)
+        save(IslandView(model: m, state: AppState.shared, store: store)
+                .frame(width: size.width, height: size.height).background(Color(hex: 0x6E7B86)), name, to: dir)
+    }
+
+    static func renderSpace(to dir: URL) {
+        TreeClock.frozen = Date()
+        TreeClock.sketchStart = nil
+        let store = TreeStore(persist: false)
+        let all = SampleGrove.trees()
+        guard let cs = all.first(where: { $0.number == 1 }) else { return }
+        // A busy willow like the one in the bug report: six papers and six suggestions.
+        var dense = cs
+        let kept = Array(cs.papers.sorted { $0.addedAt < $1.addedAt }.prefix(6))
+        dense.papers = kept.map { p in
+            var p = p
+            if let parent = p.parentId, !kept.contains(where: { $0.id == parent }) { p.parentId = nil }
+            return p
+        }
+        let extra = all.filter { $0.number != 1 }.flatMap(\.papers)
+        var sugg: [Suggestion] = []
+        for (k, p) in (cs.suggestions.map(\.paper) + extra).prefix(6).enumerated() {
+            sugg.append(Suggestion(paper: p, fromPaperId: kept[k % kept.count].id))
+        }
+        dense.suggestions = sugg
+        dense.look = TreeLook(species: .willow, commonName: "weeping reader", leafTone: "plum", vigor: 0.6, twist: 0.4, droop: 0.6)
+        store.trees = [dense] + all.filter { $0.number != 1 }
+        for p in dense.papers { if let img = frontPage(p) { store.thumbnails[p.id] = img } }
+
+        func island(_ configure: (IslandModel) -> Void) -> IslandModel {
+            let m = IslandModel()
+            m.notchSize = CGSize(width: 190, height: 32)
+            m.groveSize = CGSize(width: 1360, height: 800)
+            m.mode = .expanded
+            configure(m)
+            return m
+        }
+        shootIsland(island { $0.page = .tree(dense.id) }, store, "tree-fit", to: dir)
+        shootIsland(island { $0.page = .tree(dense.id); $0.treeStartZoom = 2.4; $0.treeStartPan = CGSize(width: 260, height: 300) }, store, "tree-zoomed-in", to: dir)
+        shootIsland(island { $0.page = .tree(dense.id); $0.treeStartZoom = 0.5 }, store, "tree-zoomed-out", to: dir)
+        shootIsland(island { $0.page = .grove }, store, "grove-spaced", to: dir)
+
+        // The reader, on a sample paper written for these snapshots.
+        var sample = Paper(id: "sample-dry-spell", title: "Leaves in a dry spell: how plants trade water for carbon",
+                           authors: ["Sample text", "written for Paper Tree design snapshots"], year: 2026, venue: "Paper Tree design notes")
+        sample.abstract = SamplePaper.abstract
+        sample.fields = ["Biology", "Environmental Science"]
+        var host = dense
+        host.papers.append(sample)
+        store.trees[0] = host
+
+        func reader(_ setup: (ReaderModel, PDFDocument) -> Void) -> ReaderModel {
+            let r = ReaderModel(paper: sample, persist: false)
+            if let doc = PDFDocument(data: SamplePaper.pdf()) {
+                r.setDocument(doc)
+                setup(r, doc)
+            }
+            return r
+        }
+        func rects(_ doc: PDFDocument, _ phrase: String) -> (Int, [CGRect])? {
+            guard let sel = doc.findString(phrase, withOptions: .caseInsensitive).first, let page = sel.pages.first else { return nil }
+            let lines = sel.selectionsByLine().map { $0.bounds(for: page) }
+            return (doc.index(for: page), lines.isEmpty ? [sel.bounds(for: page)] : lines)
+        }
+        let annotated = reader { r, doc in
+            var list: [PaperMark] = []
+            if let (p, rs) = rects(doc, "close their stomata to save water") { list.append(PaperMark(kind: .highlight, page: p, rects: rs, ink: .marigold, quote: "close their stomata to save water")) }
+            if let (p, rs) = rects(doc, "net carbon assimilation falls") { list.append(PaperMark(kind: .underline, page: p, rects: rs, ink: .rose, quote: "net carbon assimilation falls")) }
+            if let (p, rs) = rects(doc, "photorespiration increases") {
+                list.append(PaperMark(kind: .comment, page: p, rects: rs, ink: .sage, quote: "photorespiration increases",
+                                      note: "So the leaf wastes some of the light it catches? Compare with the C4 grasses in section 3."))
+            }
+            if let (p, rs) = rects(doc, "water use efficiency") {
+                list.append(PaperMark(kind: .comment, page: p, rects: rs, ink: .sky, quote: "water use efficiency", note: "Key term for my essay."))
+            }
+            list.append(PaperMark(kind: .sticky, page: 0, rects: [CGRect(x: 360, y: 120, width: 150, height: 112)], ink: .marigold,
+                                  note: "Ask in class: does this hold for desert plants too?"))
+            r.marks.preset(list)
+        }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = annotated }, store, "reader-annotated", to: dir)
+
+        let selecting = reader { r, doc in
+            r.marks.preset([])
+            r.rail = .pages
+            if let (p, rs) = rects(doc, "Rubisco also reacts with oxygen") {
+                r.pick = ReaderModel.Pick(text: "Rubisco also reacts with oxygen", page: p, rects: rs, anchor: .zero, context: "", screen: .zero)
+            }
+        }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = selecting }, store, "reader-selection", to: dir)
+
+        let editing = reader { r, doc in
+            if let (p, rs) = rects(doc, "photorespiration increases") {
+                let m = PaperMark(kind: .comment, page: p, rects: rs, ink: .sage, quote: "photorespiration increases",
+                                  note: "So the leaf wastes some of the light it catches?")
+                r.marks.preset([m])
+                r.editing = m.id
+            }
+        }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = editing }, store, "reader-editing", to: dir)
+
+        let missing = ReaderModel(paper: sample, persist: false)
+        missing.status = .unavailable
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = missing }, store, "reader-no-pdf", to: dir)
+    }
+}
+
+/// A two-page sample paper for snapshots, set with Core Text so it has real, selectable text.
+enum SamplePaper {
+    static let abstract = "This sample text stands in for a paper in design snapshots. It describes, in general terms, how leaves balance water loss against carbon uptake when soil dries: stomata close, leaf temperature rises, photorespiration increases, and net carbon assimilation falls."
+
+    static let body: [(String, String)] = [
+        ("Introduction", "Under drought, plants close their stomata to save water. That limits transpiration, so leaf temperature rises, and with less carbon dioxide reaching the chloroplasts, photorespiration increases and net carbon assimilation falls. How quickly a plant makes this trade, and how far, shapes its water use efficiency over a season."),
+        ("Why the trade costs carbon", "The enzyme that fixes carbon, Rubisco, works best when carbon dioxide is plentiful inside the leaf. Rubisco also reacts with oxygen, and that side reaction becomes more common as carbon dioxide inside the leaf drops. The plant then spends energy recovering carbon it had already fixed. Plants with C4 metabolism concentrate carbon dioxide around Rubisco and lose less this way, which is one reason many grasses of hot, dry places use it."),
+        ("Signals from the roots", "Stomata do not wait for the leaf to wilt. As soil dries, roots send chemical signals upward, and guard cells respond within hours. The result is a leaf that is cautious early, closing partly before damage occurs, and that recovers slowly after rain while the signals fade."),
+        ("What this means for growth", "A season of mild drought often costs more growth than a short severe one, because the leaf spends many days partly closed. Breeding for crops that keep stomata open a little longer, without running out of water, is an active line of work. The figures in a real paper would show these curves; this sample text has none."),
+    ]
+
+    static func pdf() -> Data {
+        let data = NSMutableData()
+        var box = CGRect(x: 0, y: 0, width: 612, height: 792)
+        guard let consumer = CGDataConsumer(data: data as CFMutableData),
+              let ctx = CGContext(consumer: consumer, mediaBox: &box, nil) else { return Data() }
+        func font(_ name: String, _ size: CGFloat) -> NSFont { NSFont(name: name, size: size) ?? .systemFont(ofSize: size) }
+        let justified = NSMutableParagraphStyle()
+        justified.alignment = .justified
+        justified.lineSpacing = 2.5
+        justified.paragraphSpacing = 8
+        let centered = NSMutableParagraphStyle()
+        centered.alignment = .center
+        centered.paragraphSpacing = 6
+
+        let first = NSMutableAttributedString()
+        first.append(NSAttributedString(string: "PAPER TREE DESIGN NOTES, SAMPLE TEXT\n", attributes: [.font: font(Typeface.text, 8.5), .paragraphStyle: centered, .foregroundColor: NSColor.darkGray]))
+        first.append(NSAttributedString(string: "Leaves in a dry spell: how plants trade water for carbon\n", attributes: [.font: font(Typeface.textMedium, 20), .paragraphStyle: centered]))
+        first.append(NSAttributedString(string: "Sample text written for Paper Tree design snapshots\n\n", attributes: [.font: font(Typeface.textItalic, 11), .paragraphStyle: centered]))
+        first.append(NSAttributedString(string: "Abstract. ", attributes: [.font: font(Typeface.textMedium, 10.5), .paragraphStyle: justified]))
+        first.append(NSAttributedString(string: abstract + "\n\n", attributes: [.font: font(Typeface.textItalic, 10.5), .paragraphStyle: justified]))
+        for (k, (head, text)) in body.enumerated() {
+            first.append(NSAttributedString(string: "\(k + 1). \(head)\n", attributes: [.font: font(Typeface.textMedium, 12), .paragraphStyle: justified]))
+            first.append(NSAttributedString(string: text + "\n", attributes: [.font: font(Typeface.text, 11), .paragraphStyle: justified]))
+        }
+        let setter = CTFramesetterCreateWithAttributedString(first as CFAttributedString)
+        var start = 0
+        var pages = 0
+        while start < first.length && pages < 4 {
+            ctx.beginPDFPage(nil)
+            let path = CGPath(rect: CGRect(x: 72, y: 80, width: 468, height: 640), transform: nil)
+            let frame = CTFramesetterCreateFrame(setter, CFRange(location: start, length: 0), path, nil)
+            CTFrameDraw(frame, ctx)
+            let page = NSAttributedString(string: "\(pages + 1)", attributes: [.font: font(Typeface.text, 9)])
+            let line = CTLineCreateWithAttributedString(page as CFAttributedString)
+            ctx.textPosition = CGPoint(x: 302, y: 50)
+            CTLineDraw(line, ctx)
+            ctx.endPDFPage()
+            let visible = CTFrameGetVisibleStringRange(frame)
+            if visible.length == 0 { break }
+            start += visible.length
+            pages += 1
+        }
+        ctx.closePDF()
+        return data as Data
     }
 }

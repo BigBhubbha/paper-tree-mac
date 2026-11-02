@@ -42,6 +42,15 @@ final class IslandModel: ObservableObject {
     var onAdded: (UUID) -> Void = { _ in }
     /// "Add this paper" on the highlight: look it up and choose a tree.
     var onAddHighlight: (String) -> Void = { _ in }
+    /// "Explain" in the paper reader: the same card as Research mode (text, context, where on screen).
+    var onExplain: (String, String, NSRect) -> Void = { _, _, _ in }
+    /// Where on the page the paper was clicked, so the reader opens out of it.
+    @Published var readerOrigin: UnitPoint = .center
+    /// For design snapshots: a reader with its document and notes already set.
+    var readerPreset: ReaderModel?
+    /// For design snapshots: how close a tree's page starts.
+    var treeStartZoom: CGFloat = 1
+    var treeStartPan: CGSize = .zero
 
     static let addingSize = CGSize(width: 640, height: 300)
     static let flashExtraWidth: CGFloat = 170
@@ -253,7 +262,7 @@ final class IslandController {
             let number = e.windowNumber
             let location = NSEvent.mouseLocation
             // Popovers (a suggestion slip, a menu) are their own windows but belong to the island.
-            let inPopover = e.window.map { NSStringFromClass(type(of: $0)).contains("Popover") || $0.level.rawValue > NSWindow.Level.popUpMenu.rawValue } ?? false
+            let inPopover = e.window.map { NSStringFromClass(type(of: $0)).contains("Popover") || $0.level.rawValue >= NSWindow.Level.popUpMenu.rawValue } ?? false
             Task { @MainActor in
                 guard let self, !inPopover else { return }
                 if number != self.panel.windowNumber || !self.pillFrameOnScreen.contains(location) { self.close() }

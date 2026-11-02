@@ -8,6 +8,8 @@ enum GrovePage: Equatable {
     case grove
     case tree(UUID)
     case newTree
+    /// A paper open in the reader: its tree, and its id.
+    case paper(UUID, String)
 }
 
 /// One paper someone highlighted and tapped to add, while we look it up.
@@ -146,13 +148,23 @@ struct GroveView: View {
                 .transition(.zoomIn)
         case .tree(let id):
             if let tree = store.trees.first(where: { $0.id == id }) {
-                TreeSheetPage(model: model, store: store, tree: tree)
+                TreeSheetPage(model: model, store: store, tree: tree, startZoom: model.treeStartZoom, startPan: model.treeStartPan)
                     .transition(.zoomIn)
             } else {
                 overview.transition(.opacity)
             }
         case .grove:
             overview.transition(.opacity)
+        case .paper(let treeId, let paperId):
+            if let tree = store.trees.first(where: { $0.id == treeId }), let paper = tree.papers.first(where: { $0.id == paperId }) {
+                // The front page flies out of its branch tip and opens up into the reader.
+                PaperReaderPage(model: model, store: store, tree: tree, paper: paper, preset: model.readerPreset)
+                    .transition(Motion.reduced ? .opacity : .asymmetric(
+                        insertion: .scale(scale: 0.08, anchor: model.readerOrigin).combined(with: .opacity),
+                        removal: .scale(scale: 0.08, anchor: model.readerOrigin).combined(with: .opacity)))
+            } else {
+                overview.transition(.opacity)
+            }
         }
     }
 
@@ -262,11 +274,21 @@ struct SpecimenPlate: View {
     /// Short sheets (two rows in the grove): a smaller label, so the plant keeps the room.
     var tight = false
     var onOpen: (() -> Void)? = nil
+    /// On the tree's own page: zoom and pan, and papers open in the reader.
+    var onOpenPaper: ((Paper, CGPoint) -> Void)? = nil
+    var startZoom: CGFloat = 1
+    var startPan: CGSize = .zero
 
     var body: some View {
         VStack(spacing: 0) {
-            TreeCanvas(tree: tree, store: store, lively: !compact)
-                .clipped()
+            Group {
+                if let open = onOpenPaper {
+                    TreeViewport(tree: tree, store: store, startZoom: startZoom, startPan: startPan, onOpenPaper: open)
+                } else {
+                    TreeCanvas(tree: tree, store: store, lively: !compact)
+                }
+            }
+            .clipped()
             HStack(alignment: .bottom) {
                 Text(String(format: "Sheet PT-%04d", tree.number))
                     .font(.typewriter(9.5)).foregroundColor(Palette.ink3)
@@ -366,20 +388,44 @@ struct TreeCanvas: View {
     @ObservedObject var store: TreeStore
     /// Big trees on their own page move at full frame rate; sheets in the grove sway more lazily.
     var lively = true
+    /// 1 is the whole tree fitted to the view; more is closer.
+    var zoom: CGFloat = 1
+    /// Sideways and up-down shift of the view, in points.
+    var pan: CGSize = .zero
+    /// On a tree's own page: papers open in the reader and get readable captions up close.
+    var onOpenPaper: ((Paper, CGPoint) -> Void)? = nil
     @State private var openGhost: String?
     @State private var appeared = Date()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// How much room a tree gets to spread out in, relative to the view: more for busy trees.
+    static func world(for tree: PaperTreeData, in size: CGSize) -> CGSize {
+        let busy = CGFloat(tree.papers.count + tree.suggestions.count)
+        let k = min(1.8, 1 + 0.07 * max(0, busy - 5))
+        return CGSize(width: max(200, size.width * k), height: max(200, size.height * k))
+    }
+
+    /// Drawing coordinates to view coordinates: fit everything drawn, then zoom and pan.
+    static func camera(_ g: TreeGeometry, in size: CGSize, zoom: CGFloat, pan: CGSize, pad: CGFloat) -> (CGAffineTransform, CGFloat) {
+        let b = g.contentBounds.isEmpty ? CGRect(origin: .zero, size: size) : g.contentBounds
+        let fit = min((size.width - pad * 2) / max(1, b.width), (size.height - pad * 2) / max(1, b.height))
+        let s = max(0.01, fit * zoom)
+        let t = CGAffineTransform(translationX: size.width / 2 + pan.width, y: size.height / 2 + pan.height)
+            .scaledBy(x: s, y: s)
+            .translatedBy(x: -b.midX, y: -b.midY)
+        return (t, s)
+    }
+
     var body: some View {
         GeometryReader { geo in
-            let g = TreeGeometry.cached(tree, in: geo.size)
+            let g = TreeGeometry.cached(tree, in: Self.world(for: tree, in: geo.size))
             TimelineView(.animation(minimumInterval: lively ? 1.0 / 30 : 1.0 / 12, paused: reduceMotion)) { timeline in
-                scene(g, now: TreeClock.frozen ?? timeline.date)
+                scene(g, size: geo.size, now: TreeClock.frozen ?? timeline.date)
             }
         }
     }
 
-    private func scene(_ g: TreeGeometry, now: Date) -> some View {
+    private func scene(_ g: TreeGeometry, size: CGSize, now: Date) -> some View {
         let still = reduceMotion
         let growing = still ? nil : TreeGrowth.current(tree, at: now)
         let pose = g.pose(time: still ? 0 : now.timeIntervalSinceReferenceDate, wind: still ? 0 : 1, growing: growing)
@@ -390,14 +436,16 @@ struct TreeCanvas: View {
                 sketch[gh.id] = CGFloat(max(0, min(1, (now.timeIntervalSince(sketchFrom) - 0.35 - Double(k) * 0.22) / 0.9)))
             }
         }
+        let (cam, scale) = Self.camera(g, in: size, zoom: zoom, pan: pan, pad: onOpenPaper == nil ? 6 : 18)
+        let card = CGSize(width: g.cardSize.width * scale, height: g.cardSize.height * scale)
         let papers = tree.papers.sorted { $0.addedAt < $1.addedAt }
         return ZStack(alignment: .topLeading) {
-            TreeDrawing(tree: tree, geometry: g, pose: pose, sketch: sketch)
+            TreeDrawing(tree: tree, geometry: g, pose: pose, sketch: sketch, camera: cam)
             ForEach(g.ghosts, id: \.id) { ghost in
                 if let s = tree.suggestions.first(where: { $0.id == ghost.id }) {
-                    GhostTipCard(paper: s.paper, size: g.cardSize)
+                    GhostTipCard(paper: s.paper, size: card, full: card.width > 90)
                         .opacity(Self.ghostOpacity(sketch[ghost.id] ?? 1))
-                        .position(Self.ghostSpot(ghost, pose: pose, card: g.cardSize))
+                        .position(Self.spot(ghost.id, node: ghost.node, home: ghost.from, g: g, pose: pose, cam: cam))
                         .onTapGesture { openGhost = s.id }
                         .help("Suggested: \(s.paper.title)")
                         .popover(isPresented: Binding(get: { openGhost == s.id }, set: { if !$0 { openGhost = nil } }), arrowEdge: .bottom) {
@@ -408,47 +456,233 @@ struct TreeCanvas: View {
             ForEach(Array(g.tips.enumerated()), id: \.element.id) { i, tip in
                 if let paper = tree.papers.first(where: { $0.id == tip.id }) {
                     tipCard(paper, tip: tip, index: i, owner: papers.firstIndex(where: { $0.id == paper.id }) ?? 0,
-                            g: g, pose: pose, growing: growing)
+                            g: g, pose: pose, cam: cam, card: card, growing: growing)
                 }
             }
         }
+        .frame(width: size.width, height: size.height)
+        .clipped()
     }
 
     private static func ghostOpacity(_ drawn: CGFloat) -> Double {
         Double(max(0, min(1, (drawn - 0.75) / 0.25)))
     }
 
-    private static func ghostSpot(_ ghost: TreeGeometry.Ghost, pose: TreeGeometry.Pose, card: CGSize) -> CGPoint {
-        let from: CGPoint = ghost.node < pose.p.count ? pose.p[ghost.node] : ghost.from
-        let x: CGFloat = ghost.to.x + from.x - ghost.from.x
-        let y: CGFloat = ghost.to.y + from.y - ghost.from.y - card.height * 0.4
-        return CGPoint(x: x, y: y)
+    /// Where a card sits on screen: its spaced-out place, carried along as its branch sways.
+    private static func spot(_ id: String, node: Int, home: CGPoint, g: TreeGeometry, pose: TreeGeometry.Pose, cam: CGAffineTransform) -> CGPoint {
+        let c = g.cardCenters[id] ?? home
+        let now: CGPoint = node < pose.p.count ? pose.p[node] : home
+        let rest: CGPoint = node < g.nodes.count ? g.nodes[node].p : home
+        return CGPoint(x: c.x + now.x - rest.x, y: c.y + now.y - rest.y).applying(cam)
     }
 
     private func tipCard(_ paper: Paper, tip: TreeGeometry.Tip, index i: Int, owner: Int, g: TreeGeometry,
-                         pose: TreeGeometry.Pose, growing: (owner: Int, progress: CGFloat)?) -> some View {
+                         pose: TreeGeometry.Pose, cam: CGAffineTransform, card: CGSize,
+                         growing: (owner: Int, progress: CGFloat)?) -> some View {
         // The newest paper's page drops onto its tip once the branch has grown out.
         var land: CGFloat = 1
         if let growing, growing.owner == owner { land = max(0, (growing.progress - 0.68) / 0.32) }
         let settle: CGFloat = TreeGrowth.spring(land)
-        let p: CGPoint = tip.node < pose.p.count ? pose.p[tip.node] : tip.point
-        let dx = CGFloat(cos(tip.angle)), dy = CGFloat(sin(tip.angle))
-        let lift: CGFloat = g.cardSize.height * (tree.look.species == .flytrap ? 0.32 : 0.42)
-        let sway: Double = Double(p.x - tip.point.x) * 0.8
-        let tilt: Double = Double((i * 37) % 11) - 5 + sway + Double(1 - settle) * 9
-        let x: CGFloat = p.x + dx * lift
-        let y: CGFloat = p.y + dy * lift - (1 - settle) * g.cardSize.height * 0.8
+        let at = Self.spot(tip.id, node: tip.node, home: tip.point, g: g, pose: pose, cam: cam)
+        let sway: Double = tip.node < pose.p.count ? Double(pose.p[tip.node].x - g.nodes[tip.node].p.x) * 0.8 : 0
+        let tilt: Double = (Double((i * 37) % 11) - 5) * (card.width > 90 ? 0.4 : 1) + sway + Double(1 - settle) * 9
         let opacity: Double = land <= 0 ? 0 : Double(min(1, land * 3))
         var help = paper.title
         if !paper.shortAuthors.isEmpty { help += ", " + paper.shortAuthors }
         if let y = paper.year { help += " (\(y))" }
-        return PaperTipCard(paper: paper, image: store.thumbnails[paper.id], size: g.cardSize, tilt: tilt)
+        let open = onOpenPaper
+        return TipCardWithCaption(paper: paper, image: store.thumbnails[paper.id], size: card, tilt: tilt,
+                                  caption: open != nil && card.width > 96)
             .scaleEffect(0.82 + 0.18 * settle)
             .opacity(opacity)
-            .position(x: x, y: y)
-            .onTapGesture { if let u = paper.openURL { NSWorkspace.shared.open(u) } }
-            .help(help)
+            .position(x: at.x, y: at.y - (1 - settle) * card.height * 0.8)
+            .onTapGesture { open?(paper, at) }
+            .help(open == nil ? help : help + "\nClick to read it here")
     }
+}
+
+/// A paper card, with its title and authors written underneath once there's room to read them.
+struct TipCardWithCaption: View {
+    var paper: Paper
+    var image: NSImage?
+    var size: CGSize
+    var tilt: Double
+    var caption: Bool
+
+    var body: some View {
+        PaperTipCard(paper: paper, image: image, size: size, tilt: tilt)
+            .overlay(alignment: .top) {
+                if caption {
+                    VStack(spacing: 2) {
+                        Text(paper.title)
+                            .font(.custom(Typeface.textMedium, size: min(15, max(10, size.width * 0.085))))
+                            .foregroundColor(PlantInk.ink)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                        Text([paper.shortAuthors, paper.year.map(String.init) ?? ""].filter { !$0.isEmpty }.joined(separator: ", "))
+                            .font(.custom(Typeface.textItalic, size: min(13, max(9, size.width * 0.07))))
+                            .foregroundColor(PlantInk.ink.opacity(0.7))
+                            .lineLimit(1)
+                    }
+                    .padding(.horizontal, 6).padding(.vertical, 4)
+                    .frame(width: size.width * 1.35)
+                    .background(Color(hex: 0xFCFAF3).opacity(0.92))
+                    .overlay(Rectangle().strokeBorder(PlantInk.ink.opacity(0.25), lineWidth: 0.5))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .offset(y: size.height + 8)
+                    .allowsHitTesting(false)
+                }
+            }
+    }
+}
+
+/// The tree on its own page: pinch, Command plus and minus, or the buttons to zoom; scroll or drag to move around.
+struct TreeViewport: View {
+    var tree: PaperTreeData
+    @ObservedObject var store: TreeStore
+    var onOpenPaper: (Paper, CGPoint) -> Void
+    @State private var zoom: CGFloat
+    @State private var pan: CGSize
+    @GestureState private var pinch: CGFloat = 1
+    @State private var dragFrom: CGSize?
+    @State private var box = ViewportBox()
+
+    static let zoomRange: ClosedRange<CGFloat> = 0.4...3
+
+    init(tree: PaperTreeData, store: TreeStore, startZoom: CGFloat = 1, startPan: CGSize = .zero,
+         onOpenPaper: @escaping (Paper, CGPoint) -> Void) {
+        self.tree = tree
+        self.store = store
+        self.onOpenPaper = onOpenPaper
+        _zoom = State(initialValue: startZoom)
+        _pan = State(initialValue: startPan)
+    }
+
+    private var liveZoom: CGFloat { clamp(zoom * pinch) }
+    private var livePan: CGSize { CGSize(width: pan.width * liveZoom / zoom, height: pan.height * liveZoom / zoom) }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .bottomTrailing) {
+                TreeCanvas(tree: tree, store: store, zoom: liveZoom, pan: livePan, onOpenPaper: onOpenPaper)
+                    .contentShape(Rectangle())
+                    .gesture(MagnificationGesture()
+                        .updating($pinch) { v, s, _ in s = v }
+                        .onEnded { v in setZoom(zoom * v, animated: false) })
+                    .simultaneousGesture(DragGesture(minimumDistance: 4)
+                        .onChanged { v in
+                            let from = dragFrom ?? pan
+                            if dragFrom == nil { dragFrom = pan }
+                            pan = CGSize(width: from.width + v.translation.width, height: from.height + v.translation.height)
+                        }
+                        .onEnded { _ in dragFrom = nil })
+                controls.padding(10)
+            }
+            .background(GeometryReader { g in
+                Color.clear
+                    .onAppear { box.frame = g.frame(in: .global) }
+                    .onChange(of: g.frame(in: .global)) { box.frame = $0 }
+            })
+            .onAppear { install() }
+            .onDisappear { box.remove() }
+            .frame(width: geo.size.width, height: geo.size.height)
+        }
+    }
+
+    private var controls: some View {
+        HStack(spacing: 0) {
+            zoomButton("minus", "Zoom out (Command minus)") { setZoom(zoom / 1.3) }
+            Text(String(format: "%d%%", Int((liveZoom * 100).rounded())))
+                .font(.typewriter(10.5)).foregroundColor(Palette.ink2).frame(width: 44)
+            zoomButton("plus", "Zoom in (Command plus)") { setZoom(zoom * 1.3) }
+            Rectangle().fill(Palette.ink.opacity(0.18)).frame(width: 1, height: 16).padding(.horizontal, 4)
+            Button { fit() } label: {
+                Text("Fit").font(.uiBold(11.5)).foregroundColor(Palette.ink2).padding(.horizontal, 8).frame(height: 26)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Fit the whole tree (Command 0)")
+        }
+        .padding(.horizontal, 4)
+        .background(Capsule().fill(Color(hex: 0xFCFAF3)).shadow(color: .black.opacity(0.12), radius: 2, y: 1))
+        .overlay(Capsule().strokeBorder(Palette.ink.opacity(0.2), lineWidth: 0.7))
+    }
+
+    private func zoomButton(_ icon: String, _ help: String, _ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: icon).font(.system(size: 11, weight: .semibold)).foregroundColor(Palette.ink2)
+                .frame(width: 26, height: 26).contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help(help)
+    }
+
+    private func clamp(_ z: CGFloat) -> CGFloat { min(Self.zoomRange.upperBound, max(Self.zoomRange.lowerBound, z)) }
+
+    private func setZoom(_ z: CGFloat, animated: Bool = true) {
+        let new = clamp(z)
+        let k = new / max(0.01, zoom)
+        let change = {
+            pan = CGSize(width: pan.width * k, height: pan.height * k)
+            zoom = new
+        }
+        if animated { withAnimation(Motion.pick(Motion.snappy), change) } else { change() }
+    }
+
+    private func fit() {
+        withAnimation(Motion.pick(Motion.page)) { zoom = 1; pan = .zero }
+    }
+
+    /// Two-finger scrolling pans, Command-scroll zooms, Command plus, minus and 0 zoom from the keyboard.
+    private func install() {
+        box.remove()
+        let frameBox = box
+        // Monitors decide right away whether the event is ours; the change itself happens on the main actor.
+        let scroll = NSEvent.addLocalMonitorForEvents(matching: [.scrollWheel]) { e in
+            guard e.window is IslandPanel, frameBox.contains(e) else { return e }
+            let k: CGFloat = e.hasPreciseScrollingDeltas ? 1 : 10
+            let dx = e.scrollingDeltaX * k, dy = e.scrollingDeltaY * k
+            let zooming = e.modifierFlags.contains(.command)
+            Task { @MainActor in
+                if zooming { setZoom(zoom * (1 + dy * 0.004), animated: false) }
+                else { pan = CGSize(width: pan.width + dx, height: pan.height + dy) }
+            }
+            return nil
+        }
+        let keys = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { e in
+            guard e.window is IslandPanel, e.modifierFlags.contains(.command) else { return e }
+            let key = e.charactersIgnoringModifiers ?? ""
+            guard ["=", "+", "-", "_", "0"].contains(key) else { return e }
+            Task { @MainActor in
+                switch key {
+                case "=", "+": setZoom(zoom * 1.3)
+                case "-", "_": setZoom(zoom / 1.3)
+                default: fit()
+                }
+            }
+            return nil
+        }
+        box.monitors = [scroll, keys].compactMap { $0 }
+    }
+}
+
+/// Where the viewport is in its window, and its event monitors, kept outside SwiftUI's view values.
+final class ViewportBox {
+    var frame: CGRect = .zero
+    var monitors: [Any] = []
+
+    func contains(_ e: NSEvent) -> Bool {
+        guard let h = e.window?.contentView?.bounds.height else { return false }
+        let p = CGPoint(x: e.locationInWindow.x, y: h - e.locationInWindow.y)
+        return frame.contains(p)
+    }
+
+    func remove() {
+        monitors.forEach { NSEvent.removeMonitor($0) }
+        monitors = []
+    }
+
+    deinit { monitors.forEach { NSEvent.removeMonitor($0) } }
 }
 
 /// What a pencil branch says when you click it.
@@ -501,17 +735,29 @@ struct TreeSheetPage: View {
     @State var rematching: String? = nil
     var rematchPreset: [Paper]? = nil
     @State private var hovered: String?
+    var startZoom: CGFloat = 1
+    var startPan: CGSize = .zero
 
     var body: some View {
-        HStack(alignment: .top, spacing: 22) {
-            ZStack(alignment: .topLeading) {
-                SpecimenPlate(tree: tree, store: store, compact: false)
-                Button("All trees") { withAnimation(Motion.pick(Motion.page)) { model.page = .grove } }
-                    .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
-                    .padding(12)
+        GeometryReader { geo in
+            HStack(alignment: .top, spacing: 18) {
+                ZStack(alignment: .topLeading) {
+                    SpecimenPlate(tree: tree, store: store, compact: false,
+                                  onOpenPaper: { paper, at in read(paper, at: at, in: geo.size) },
+                                  startZoom: startZoom, startPan: startPan)
+                    Button("All trees") { withAnimation(Motion.pick(Motion.page)) { model.page = .grove } }
+                        .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
+                        .padding(12)
+                }
+                notes.frame(width: 270)
             }
-            notes.frame(width: 300)
         }
+    }
+
+    /// Opens a paper in the reader, growing out of where it was clicked.
+    private func read(_ paper: Paper, at point: CGPoint, in size: CGSize) {
+        model.readerOrigin = UnitPoint(x: max(0, min(1, point.x / max(1, size.width))), y: max(0, min(1, point.y / max(1, size.height))))
+        withAnimation(Motion.pick(Motion.open)) { model.page = .paper(tree.id, paper.id) }
     }
 
     private var notes: some View {
@@ -534,7 +780,7 @@ struct TreeSheetPage: View {
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(String(format: "%02d", i + 1)).font(.typewriter(10)).foregroundColor(Palette.red)
                             VStack(alignment: .leading, spacing: 1) {
-                                Button { if let u = p.openURL { NSWorkspace.shared.open(u) } } label: {
+                                Button { read(p, at: CGPoint(x: 200, y: 200), in: CGSize(width: 1000, height: 700)) } label: {
                                     VStack(alignment: .leading, spacing: 1) {
                                         Text(p.title).font(.text(13)).foregroundColor(Palette.ink).multilineTextAlignment(.leading)
                                             .fixedSize(horizontal: false, vertical: true)

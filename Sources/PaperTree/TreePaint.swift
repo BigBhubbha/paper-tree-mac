@@ -220,9 +220,12 @@ struct TreeDrawing: View {
     var pose: TreeGeometry.Pose? = nil
     /// How far each pencil branch has drawn itself, 0...1 (missing means drawn).
     var sketch: [String: CGFloat] = [:]
+    /// Drawing coordinates to the view: the camera (fit, zoom and pan).
+    var camera: CGAffineTransform = .identity
 
     var body: some View {
         Canvas { ctx, size in
+            ctx.concatenate(camera)
             let painter = TreePainter(tree: tree, g: geometry,
                                       pose: pose ?? geometry.pose(time: 0, wind: 0, growing: nil),
                                       detail: detail, sketch: sketch)
@@ -245,6 +248,25 @@ struct TreePainter {
     private var fine: Bool { detail >= 1 }
 
     func paint(_ ctx: inout GraphicsContext, _ size: CGSize) {
+        paintPlant(&ctx, size)
+        leaderLines(&ctx)
+    }
+
+    /// Thin ink lines from a branch tip to its paper when the paper had to move aside to make room.
+    private func leaderLines(_ ctx: inout GraphicsContext) {
+        for t in g.tips where g.leaders.contains(t.id) && t.node < pose.p.count && pose.vis[t.node] > 0 {
+            guard let c = g.cardCenters[t.id] else { continue }
+            let p = pose.p[t.node]
+            let card = CGPoint(x: c.x + p.x - t.point.x, y: c.y + p.y - t.point.y)
+            var line = Path()
+            line.move(to: p)
+            line.addQuadCurve(to: card, control: CGPoint(x: (p.x + card.x) / 2, y: min(p.y, card.y) - 6))
+            ctx.stroke(line, with: .color(PlantInk.ink.opacity(0.45)), style: StrokeStyle(lineWidth: lw * 0.6, lineCap: .round))
+            ctx.fill(Path(ellipseIn: CGRect(x: p.x - 1.6, y: p.y - 1.6, width: 3.2, height: 3.2)), with: .color(PlantInk.ink.opacity(0.6)))
+        }
+    }
+
+    private func paintPlant(_ ctx: inout GraphicsContext, _ size: CGSize) {
         var rnd = SeededRandom(tree.seed, "ink")
         ground(&ctx, rnd: &rnd)
         if tree.papers.isEmpty || g.nodes.isEmpty { seed(&ctx); return }
@@ -436,8 +458,10 @@ struct TreePainter {
         path.applying(CGAffineTransform(translationX: c.x, y: c.y).rotated(by: rotate).scaledBy(x: rx, y: ry))
     }
 
-    private func leafMass(_ ctx: inout GraphicsContext, _ c: TreeGeometry.Clump, pass: Pass) {
+    private func leafMass(_ base: inout GraphicsContext, _ c: TreeGeometry.Clump, pass: Pass) {
         guard pose.vis[c.node] > 0 else { return }
+        var ctx = base
+        ctx.opacity = c.thin
         let s = pose.leafScale(g.nodes[c.node].owner)
         guard s > 0.01 else { return }
         let unfurl = (1 - min(1, s)) * 0.9

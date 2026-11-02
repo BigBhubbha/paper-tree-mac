@@ -75,6 +75,8 @@ extension TreeGeometry {
     enum ClumpKind { case leaves, polyp, orb }
     struct Dab { var p: CGPoint; var angle: Double; var len: CGFloat; var tint: Double }
     struct Clump {
+        /// 1 is full foliage; less where a paper card sits, so its page stays readable.
+        var thin: CGFloat = 1
         var node: Int
         var offset: CGPoint
         var rx: CGFloat

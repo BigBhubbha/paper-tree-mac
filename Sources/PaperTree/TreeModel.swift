@@ -378,7 +378,7 @@ final class TreeStore: ObservableObject {
         guard (response as? HTTPURLResponse)?.statusCode == 200, data.count < 40_000_000,
               data.starts(with: Array("%PDF".utf8)) || data.prefix(1024).range(of: Data("%PDF".utf8)) != nil,
               let doc = PDFDocument(data: data), let page = doc.page(at: 0) else { return nil }
-        let image = page.thumbnail(of: NSSize(width: 300, height: 400), for: .cropBox)
+        let image = page.thumbnail(of: NSSize(width: 600, height: 800), for: .cropBox)
         guard let tiff = image.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff) else { return nil }
         return rep.representation(using: .png, properties: [:])
     }
