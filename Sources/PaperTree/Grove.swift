@@ -83,13 +83,21 @@ struct GroveView: View {
     var body: some View {
         VStack(spacing: 10) {
             header
+            if let h = model.highlight {
+                AddHighlightBar(text: h) {
+                    model.onAddHighlight(h)
+                } dismiss: {
+                    withAnimation(Motion.pick(Motion.snappy)) { model.highlight = nil }
+                }
+                .transition(Motion.reduced ? .opacity : .move(edge: .top).combined(with: .opacity))
+            }
             ZStack {
                 PaperSheet(corner: 18, graph: true)
                 page
                     .padding(.horizontal, 24)
                     .padding(.vertical, 18)
             }
-            Text("tap right Option: add a highlighted paper     tap tap: open or close     tap tap tap: Research mode")
+            Text("tap right Option: open or close, with your highlight ready to add     tap tap: Research mode")
                 .font(.typewriter(9.5))
                 .foregroundColor(Color.white.opacity(0.5))
         }
@@ -118,7 +126,7 @@ struct GroveView: View {
                 .contentShape(Capsule())
             }
             .buttonStyle(.plain)
-            .help("Triple-tap right Option does this too")
+            .help("Double-tap right Option does this too")
             darkLink("Settings", model.onOpenSettings)
             darkLink("Check for Updates", model.onCheckForUpdates)
             darkLink("Quit", model.onQuit)
@@ -135,14 +143,16 @@ struct GroveView: View {
         switch model.page {
         case .newTree:
             NewTreePage(model: model, store: store)
+                .transition(.zoomIn)
         case .tree(let id):
             if let tree = store.trees.first(where: { $0.id == id }) {
                 TreeSheetPage(model: model, store: store, tree: tree)
+                    .transition(.zoomIn)
             } else {
-                overview
+                overview.transition(.opacity)
             }
         case .grove:
-            overview
+            overview.transition(.opacity)
         }
     }
 
@@ -152,6 +162,36 @@ struct GroveView: View {
         } else {
             GroveOverview(model: model, store: store)
         }
+    }
+}
+
+/// The highlight you had when you opened the island, offered as a paper to add.
+struct AddHighlightBar: View {
+    var text: String
+    var add: () -> Void
+    var dismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 14) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("You highlighted").font(.typewriter(10)).foregroundColor(Palette.ink3)
+                Text("\u{201C}\(text)\u{201D}")
+                    .font(.text(15)).foregroundColor(Palette.ink)
+                    .lineLimit(1).truncationMode(.middle)
+                    .padding(.horizontal, 3)
+                    .background(Palette.marker.opacity(0.5).padding(.vertical, 2))
+            }
+            Spacer(minLength: 10)
+            Button("Add this paper", action: add)
+                .buttonStyle(StampButtonStyle())
+                .keyboardShortcut(.defaultAction)
+                .help("Look it up and choose a tree for it (Return)")
+            Button("Not now", action: dismiss)
+                .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 11)
+        .background(PaperSheet(corner: 14))
     }
 }
 
@@ -194,7 +234,7 @@ struct GroveOverview: View {
                                     if i < trees.count {
                                         let tree = trees[i]
                                         SpecimenPlate(tree: tree, store: store, compact: true, tight: L.rows > 1) {
-                                            withAnimation(.easeInOut(duration: 0.25)) { model.page = .tree(tree.id) }
+                                            withAnimation(Motion.pick(Motion.page)) { model.page = .tree(tree.id) }
                                         }
                                         .frame(width: L.cell.width, height: L.cell.height)
                                     } else {
@@ -207,7 +247,7 @@ struct GroveOverview: View {
                     .padding(.trailing, 2)
                 }
                 .frame(width: area.width, height: area.height)
-                PlantPlate { withAnimation(.easeInOut(duration: 0.25)) { model.page = .newTree } }
+                PlantPlate { withAnimation(Motion.pick(Motion.page)) { model.page = .newTree } }
                     .frame(width: plate, height: geo.size.height)
             }
         }
@@ -243,6 +283,7 @@ struct SpecimenPlate: View {
                 .shadow(color: Palette.ink.opacity(0.1), radius: 2, x: 0, y: 1)
         )
         .contentShape(Rectangle())
+        .hoverLift(compact ? 1 : 0)
         .onTapGesture(count: 2) { onOpen?() }
         .help(onOpen == nil ? "" : "Click the label to look closer")
     }
@@ -354,11 +395,9 @@ struct TreeCanvas: View {
             TreeDrawing(tree: tree, geometry: g, pose: pose, sketch: sketch)
             ForEach(g.ghosts, id: \.id) { ghost in
                 if let s = tree.suggestions.first(where: { $0.id == ghost.id }) {
-                    let from = ghost.node < pose.p.count ? pose.p[ghost.node] : ghost.from
-                    let drawn = sketch[ghost.id] ?? 1
                     GhostTipCard(paper: s.paper, size: g.cardSize)
-                        .opacity(Double(max(0, min(1, (drawn - 0.75) / 0.25))))
-                        .position(x: ghost.to.x + from.x - ghost.from.x, y: ghost.to.y + from.y - ghost.from.y - g.cardSize.height * 0.4)
+                        .opacity(Self.ghostOpacity(sketch[ghost.id] ?? 1))
+                        .position(Self.ghostSpot(ghost, pose: pose, card: g.cardSize))
                         .onTapGesture { openGhost = s.id }
                         .help("Suggested: \(s.paper.title)")
                         .popover(isPresented: Binding(get: { openGhost == s.id }, set: { if !$0 { openGhost = nil } }), arrowEdge: .bottom) {
@@ -368,24 +407,47 @@ struct TreeCanvas: View {
             }
             ForEach(Array(g.tips.enumerated()), id: \.element.id) { i, tip in
                 if let paper = tree.papers.first(where: { $0.id == tip.id }) {
-                    let owner = papers.firstIndex(where: { $0.id == paper.id }) ?? 0
-                    // The newest paper's page drops onto its tip once the branch has grown out.
-                    let land: CGFloat = growing.map { $0.owner == owner ? max(0, ($0.progress - 0.68) / 0.32) : 1 } ?? 1
-                    let settle = TreeGrowth.spring(land)
-                    let p = tip.node < pose.p.count ? pose.p[tip.node] : tip.point
-                    let dx = CGFloat(cos(tip.angle)), dy = CGFloat(sin(tip.angle))
-                    let lift = g.cardSize.height * (tree.look.species == .flytrap ? 0.32 : 0.42)
-                    let sway = Double(p.x - tip.point.x) * 0.8
-                    PaperTipCard(paper: paper, image: store.thumbnails[paper.id], size: g.cardSize,
-                                 tilt: Double((i * 37) % 11) - 5 + sway + Double(1 - settle) * 9)
-                        .scaleEffect(0.82 + 0.18 * settle)
-                        .opacity(land <= 0 ? 0 : Double(min(1, land * 3)))
-                        .position(x: p.x + dx * lift, y: p.y + dy * lift - (1 - settle) * g.cardSize.height * 0.8)
-                        .onTapGesture { if let u = paper.openURL { NSWorkspace.shared.open(u) } }
-                        .help(paper.title + (paper.shortAuthors.isEmpty ? "" : ", " + paper.shortAuthors) + (paper.year.map { " (\($0))" } ?? ""))
+                    tipCard(paper, tip: tip, index: i, owner: papers.firstIndex(where: { $0.id == paper.id }) ?? 0,
+                            g: g, pose: pose, growing: growing)
                 }
             }
         }
+    }
+
+    private static func ghostOpacity(_ drawn: CGFloat) -> Double {
+        Double(max(0, min(1, (drawn - 0.75) / 0.25)))
+    }
+
+    private static func ghostSpot(_ ghost: TreeGeometry.Ghost, pose: TreeGeometry.Pose, card: CGSize) -> CGPoint {
+        let from: CGPoint = ghost.node < pose.p.count ? pose.p[ghost.node] : ghost.from
+        let x: CGFloat = ghost.to.x + from.x - ghost.from.x
+        let y: CGFloat = ghost.to.y + from.y - ghost.from.y - card.height * 0.4
+        return CGPoint(x: x, y: y)
+    }
+
+    private func tipCard(_ paper: Paper, tip: TreeGeometry.Tip, index i: Int, owner: Int, g: TreeGeometry,
+                         pose: TreeGeometry.Pose, growing: (owner: Int, progress: CGFloat)?) -> some View {
+        // The newest paper's page drops onto its tip once the branch has grown out.
+        var land: CGFloat = 1
+        if let growing, growing.owner == owner { land = max(0, (growing.progress - 0.68) / 0.32) }
+        let settle: CGFloat = TreeGrowth.spring(land)
+        let p: CGPoint = tip.node < pose.p.count ? pose.p[tip.node] : tip.point
+        let dx = CGFloat(cos(tip.angle)), dy = CGFloat(sin(tip.angle))
+        let lift: CGFloat = g.cardSize.height * (tree.look.species == .flytrap ? 0.32 : 0.42)
+        let sway: Double = Double(p.x - tip.point.x) * 0.8
+        let tilt: Double = Double((i * 37) % 11) - 5 + sway + Double(1 - settle) * 9
+        let x: CGFloat = p.x + dx * lift
+        let y: CGFloat = p.y + dy * lift - (1 - settle) * g.cardSize.height * 0.8
+        let opacity: Double = land <= 0 ? 0 : Double(min(1, land * 3))
+        var help = paper.title
+        if !paper.shortAuthors.isEmpty { help += ", " + paper.shortAuthors }
+        if let y = paper.year { help += " (\(y))" }
+        return PaperTipCard(paper: paper, image: store.thumbnails[paper.id], size: g.cardSize, tilt: tilt)
+            .scaleEffect(0.82 + 0.18 * settle)
+            .opacity(opacity)
+            .position(x: x, y: y)
+            .onTapGesture { if let u = paper.openURL { NSWorkspace.shared.open(u) } }
+            .help(help)
     }
 }
 
@@ -444,7 +506,7 @@ struct TreeSheetPage: View {
         HStack(alignment: .top, spacing: 22) {
             ZStack(alignment: .topLeading) {
                 SpecimenPlate(tree: tree, store: store, compact: false)
-                Button("All trees") { withAnimation(.easeInOut(duration: 0.25)) { model.page = .grove } }
+                Button("All trees") { withAnimation(Motion.pick(Motion.page)) { model.page = .grove } }
                     .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
                     .padding(12)
             }
@@ -577,7 +639,7 @@ struct NewTreePage: View {
                     if !store.trees.isEmpty {
                         Button("Never mind") {
                             store.plantingNewTree = nil
-                            withAnimation(.easeInOut(duration: 0.25)) { model.page = .grove }
+                            withAnimation(Motion.pick(Motion.page)) { model.page = .grove }
                         }
                         .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
                     }

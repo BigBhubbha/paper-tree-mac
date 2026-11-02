@@ -140,7 +140,7 @@ struct TreeGeometry {
                 trunk.append(CGPoint(x: x, y: g.base.y - H * t))
             }
             let baseW = (species == .conifer ? 7 : 9) + (species == .conifer ? 20 : 34) * stage
-            g.limbs.append(Limb(points: trunk, w0: baseW, w1: max(1.6, baseW * 0.14), depth: 0, owner: order[roots.first?.id ?? ""] ?? 0))
+            g.limbs.append(Limb(points: trunk, w0: baseW, w1: max(1.6, baseW * 0.14), depth: 0))
         }
 
         // Papers, oldest first. Roots grow from the trunk (or the crown); others from their parent.
@@ -149,6 +149,7 @@ struct TreeGeometry {
         let roots = papers.filter { $0.parentId == nil || !ids.contains($0.parentId!) }
         var order: [String: Int] = [:]
         for (i, p) in papers.enumerated() where order[p.id] == nil { order[p.id] = i }
+        if let first = roots.first, let k = g.limbs.firstIndex(where: { $0.depth == 0 }) { g.limbs[k].owner = order[first.id] ?? 0 }
         var tipOf: [String: TreeGeometry.Tip] = [:]
         var lengthOf: [String: CGFloat] = [:]
 
