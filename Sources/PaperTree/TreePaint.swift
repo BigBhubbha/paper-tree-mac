@@ -132,8 +132,9 @@ enum TreeGrowth {
     static func current(_ tree: PaperTreeData, at now: Date) -> (owner: Int, progress: CGFloat)? {
         guard let newest = tree.papers.max(by: { $0.addedAt < $1.addedAt }) else { return nil }
         let dt = now.timeIntervalSince(newest.addedAt)
-        guard dt >= 0, dt < duration else { return nil }
-        return (tree.papers.count - 1, CGFloat(dt / duration))
+        // A paper stamped a moment in the future (a clock nudge, or a rendered sequence) waits as a bud.
+        guard dt > -2, dt < duration else { return nil }
+        return (tree.papers.count - 1, CGFloat(max(0, dt) / duration))
     }
 
     static func easeOut(_ t: CGFloat) -> CGFloat { let u = 1 - max(0, min(1, t)); return 1 - u * u * u }
