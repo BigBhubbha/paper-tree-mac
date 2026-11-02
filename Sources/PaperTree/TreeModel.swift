@@ -393,6 +393,9 @@ final class TreeStore: ObservableObject {
         Task { await suggest(from: paper, in: treeId) }
     }
 
+    /// Suggestions waiting on a tree: two per paper, so a big tree keeps all its pencil branches.
+    static func suggestionsKept(papers: Int) -> Int { max(8, papers * 2) }
+
     /// The tree customizer is asked when a tree is planted, when its topic shifts (the local topic
     /// signature changes), and for trees that have no AI recipe yet. Never just because a paper landed.
     static func needsRecipe(papers n: Int, look: TreeLook, storedTopic: String?, topic: String) -> Bool {
