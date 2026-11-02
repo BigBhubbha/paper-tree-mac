@@ -642,6 +642,140 @@ extension Snapshots {
         save(IslandView(model: m, state: AppState.shared, store: store)
                 .frame(width: grove.width + 40, height: grove.height + 32 + 30).background(desk), "grove-many-topics", to: dir)
         print("grove trees: \(many.count)")
+        renderRecipes(to: dir, topicLooks: looks)
+    }
+
+    // MARK: Tree customizer recipes
+
+    static let oakTopics: [Topic] = [
+        Topic(name: "Pollination", fields: ["Biology"], titles: ["Bumblebee visits and seed set in wildflowers", "Floral scent and pollinator choice", "Pollinator decline in farmland"]),
+        Topic(name: "Autumn color", fields: ["Biology"], titles: ["Anthocyanins and red leaves in autumn", "Leaf senescence timing in temperate trees", "Warming delays autumn leaf fall"]),
+        Topic(name: "Orchards", fields: ["Agricultural Science"], titles: ["Apple breeding for disease resistance", "Fruit set and thinning in pear orchards", "Pollination of cherry orchards by mason bees"]),
+        Topic(name: "Old growth", fields: ["Environmental Science"], titles: ["Carbon storage in ancient oak forests", "Veteran trees as habitat for beetles", "Centuries of growth from tree rings"]),
+        Topic(name: "Glowing life", fields: ["Biology"], titles: ["Bioluminescent fungi on forest floors", "Firefly flash signals and mate choice", "Luciferase chemistry in glowing organisms"]),
+        Topic(name: "Seed banks", fields: ["Biology"], titles: ["Seed dormancy and long term storage", "Seed pods and dispersal by wind", "The Svalbard global seed vault"]),
+        Topic(name: "City trees", fields: ["Environmental Science"], titles: ["Street trees cool urban heat islands", "Air pollution uptake by city canopies", "Tree cover and wellbeing in neighborhoods"]),
+        Topic(name: "Drought", fields: ["Biology"], titles: ["Xylem embolism in drought stressed oaks", "Stomatal closure during heat waves", "Tree mortality after megadroughts"]),
+    ]
+
+    /// A recipe from the customizer with the plant body fixed, or a local one when it can't be reached.
+    private static func recipe(for topic: Topic, base: Species, seed: UInt64) -> TreeLook {
+        let done = DispatchSemaphore(value: 0)
+        final class Box: @unchecked Sendable { var look: TreeLook? }
+        let box = Box()
+        let client = TreeClient.current
+        let titles = topic.titles, fields = topic.fields
+        Task.detached {
+            box.look = try? await client.plant(titles: titles, fields: fields, current: nil, base: base)
+            done.signal()
+        }
+        if done.wait(timeout: .now() + 40) == .success, var look = box.look {
+            look.species = base
+            if let r = look.recipe {
+                print("recipe: \(topic.name) [\(r.model ?? "?")] bark \(r.bark) leaf \(r.leaf) accent \(r.accentColor) \(r.accent) \(r.leafShape) droop \(r.droop) spread \(r.spread) density \(r.density) height \(r.height) girth \(r.girth) twist \(r.twist)")
+            }
+            return look
+        }
+        print("recipe: \(topic.name) -> local")
+        var look = TreeLook(species: base)
+        look.grownFrom = topic.fields.map { $0.lowercased() }
+        look.recipe = TreeRecipe.local(for: look, seed: seed)
+        return look
+    }
+
+    /// One line under a plate: the recipe in plain words, with its three colors as swatches.
+    private struct RecipeLine: View {
+        var look: TreeLook
+        var body: some View {
+            let r = look.recipe
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 4) {
+                    ForEach([r?.bark, r?.leaf, r?.accentColor].compactMap { $0 }, id: \.self) { hex in
+                        Circle().fill(RGB(hex: hex).color()).frame(width: 11, height: 11)
+                            .overlay(Circle().stroke(Palette.ink.opacity(0.4), lineWidth: 0.6))
+                    }
+                    Text(r == nil ? "no recipe (older tree)" : "\(r!.accent == "none" ? "no accent" : r!.accent), \(r!.leafShape == "auto" ? "own leaf" : r!.leafShape + " leaf")")
+                        .font(.typewriter(10)).foregroundColor(Palette.ink2)
+                }
+                if let r {
+                    Text(String(format: "droop %.2f  spread %.2f  density %.2f  height %.2f  girth %.2f  twist %.2f", r.droop, r.spread, r.density, r.height, r.girth, r.twist))
+                        .font(.typewriter(9)).foregroundColor(Palette.ink3)
+                }
+            }
+        }
+    }
+
+    static func renderRecipes(to dir: URL, topicLooks: [TreeLook]) {
+        let store = TreeStore(persist: false)
+        let looks = oakTopics.enumerated().map { k, t in recipe(for: t, base: .oak, seed: UInt64(3100 + k * 13)) }
+        let oaks = oakTopics.enumerated().map { k, t in topicTree(t, look: looks[k], number: k + 1, seed: 4242, papers: 3) }
+        // Same plant body and the same branch seed, so only the recipe differs.
+        let more = oaks.map { t -> PaperTreeData in
+            var x = t
+            let extra = ["Field notes on the same subject", "A long term study, part two", "A review of the evidence"]
+            for (i, title) in extra.enumerated() {
+                x.papers.append(Paper(id: "x\(t.number)-\(i)", title: title, authors: ["A. Reader"], year: 2020 + i, fields: t.papers.first?.fields ?? [],
+                                      parentId: i == 0 ? nil : t.papers[i - 1].id, addedAt: Date(timeIntervalSince1970: 1_768_000_000 + Double(i) * 86_400)))
+            }
+            return x
+        }
+        let grid = VStack(alignment: .leading, spacing: 16) {
+            Text("Eight oaks, one branch seed, eight recipes").font(.fell(20)).foregroundColor(Palette.ink)
+            ForEach(0..<2, id: \.self) { r in
+                HStack(alignment: .top, spacing: 16) {
+                    ForEach(Array(more.enumerated()).filter { $0.offset / 4 == r }, id: \.offset) { _, tree in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(tree.name).font(.fell(16)).foregroundColor(Palette.ink)
+                            SpecimenPlate(tree: tree, store: store, compact: false).frame(width: 330, height: 400)
+                            RecipeLine(look: tree.look)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(hex: 0xEFE9DA))
+        save(grid, "recipe-oaks", to: dir)
+
+        // An older tree without a recipe draws as it always did; then a local recipe; then the customizer's.
+        var old = more[0]
+        old.look.recipe = nil
+        old.look.bloom = "blossom"
+        var local = more[0]
+        local.look.recipe = TreeRecipe.local(for: local.look, seed: 77)
+        local.look.recipe?.model = nil
+        let trio = HStack(alignment: .top, spacing: 16) {
+            ForEach(Array([("Older tree, no recipe", old), ("Local recipe (offline)", local), ("Customizer recipe", more[0])].enumerated()), id: \.offset) { _, pair in
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(pair.0).font(.fell(16)).foregroundColor(Palette.ink)
+                    SpecimenPlate(tree: pair.1, store: store, compact: false).frame(width: 330, height: 400)
+                    RecipeLine(look: pair.1.look)
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(hex: 0xEFE9DA))
+        save(trio, "recipe-fallback", to: dir)
+
+        // A grove: the eight oaks at two sizes, and every subject's plant with its own recipe.
+        var grove: [PaperTreeData] = []
+        for (k, t) in more.enumerated() {
+            var a = t; a.number = grove.count + 1; grove.append(a)
+            var b = oaks[k]; b.number = grove.count + 1; b.name = t.name + " 2"; b.seed = 4242 + UInt64(k); grove.append(b)
+        }
+        for (k, t) in topics.enumerated() where k < topicLooks.count {
+            grove.append(topicTree(t, look: topicLooks[k], number: grove.count + 1, seed: UInt64(8100 + k * 17), papers: 5))
+        }
+        store.trees = grove
+        let size = CGSize(width: 1360, height: 800)
+        let m = IslandModel()
+        m.notchSize = CGSize(width: 190, height: 32)
+        m.groveSize = size
+        m.mode = .expanded
+        m.page = .grove
+        save(IslandView(model: m, state: AppState.shared, store: store)
+                .frame(width: size.width + 40, height: size.height + 32 + 30).background(desk), "recipe-grove", to: dir)
+        print("recipe grove trees: \(grove.count)")
     }
 
     /// Frames of setup pages with the buddy acting, for a short video (15 frames a second).

@@ -130,20 +130,26 @@ struct TreeGeometry {
         let ground: CGFloat = max(22, size.height * 0.07)
         g.base = CGPoint(x: size.width * 0.5 + rnd.cg(-0.03, 0.03) * size.width, y: size.height - ground)
         let usable = size.height - ground - size.height * 0.06
-        g.height = usable * (0.24 + 0.74 * stage)
+        let habit = tree.look.habit
+        g.height = usable * (0.24 + 0.74 * stage) * CGFloat(habit.heightScale)
         let card = max(20, min(58, min(size.width, size.height) * 0.075)) * (0.75 + 0.25 * stage)
         g.cardSize = CGSize(width: card, height: card * 1.3)
         guard n > 0 else { return g }
 
         let H = g.height
-        let twist = CGFloat(tree.look.twist)
+        let twist = CGFloat(tree.look.twistValue)
+        let droop = CGFloat(tree.look.droopValue)
+        let girth = CGFloat(habit.girthScale)
+        let sag = habit.sag
+        // Wobble: how much a trunk or branch wanders, from the recipe's twist (1 at the middle).
+        let wobble = 0.4 + 1.2 * habit.twist
         let fromBase = real.fromBase
 
         // The trunk (or, for a flytrap or coral, nothing but a crown at the base).
         var trunk: [CGPoint] = []
         if !fromBase {
             let steps = 9
-            let sway: CGFloat = species == .alien ? (0.06 + 0.1 * twist) * H : 0.025 * H
+            let sway: CGFloat = species == .alien ? (0.06 + 0.1 * twist) * H : 0.025 * H * CGFloat(wobble)
             let phase = rnd.range(0, .pi * 2)
             for i in 0...steps {
                 let t = CGFloat(i) / CGFloat(steps)
@@ -153,10 +159,10 @@ struct TreeGeometry {
             }
             if real == .cactus {
                 // A saguaro column: thick, hardly tapering, rounded at the top.
-                let baseW = 14 + 30 * stage
+                let baseW = (14 + 30 * stage) * girth
                 g.limbs.append(Limb(points: trunk, w0: baseW, w1: baseW * 0.82, depth: 0))
             } else {
-                let baseW = (species == .conifer ? 7 : 9) + (species == .conifer ? 20 : 34) * stage
+                let baseW = ((species == .conifer ? 7 : 9) + (species == .conifer ? 20 : 34) * stage) * girth
                 g.limbs.append(Limb(points: trunk, w0: baseW, w1: max(1.6, baseW * 0.14), depth: 0))
             }
         }
@@ -197,7 +203,7 @@ struct TreeGeometry {
                 default: spread = 1.05
                 }
                 let u = k == 1 ? 0.0 : (Double(jj) / Double(k - 1) - 0.5) * 2 // -1...1
-                angleFromUp = u * spread + rnd.range(-0.08, 0.08)
+                angleFromUp = min(1.5, spread * habit.spreadScale) * u + rnd.range(-0.08, 0.08)
                 start = CGPoint(x: g.base.x + CGFloat(u) * 6, y: g.base.y - 2)
                 length = H * CGFloat(species == .flytrap ? (1.0 - 0.38 * abs(u)) : (0.92 - 0.3 * abs(u))) * rnd.cg(0.88, 1.04)
                 if real == .mushroom { length *= CGFloat(0.55 + 0.4 * (1 - abs(u))) * rnd.cg(0.8, 1.1) }
@@ -227,10 +233,12 @@ struct TreeGeometry {
                 length *= rnd.cg(0.85, 1.1)
                 // Reach out wider than a real tree would, so papers have room between them.
                 if species != .conifer && real != .crystal { angleFromUp = max(-1.5, min(1.5, angleFromUp * 1.18)); length *= 1.1 }
+                // The recipe opens the crown out or draws it in (a cactus keeps its sideways arms).
+                if real != .cactus { angleFromUp = max(-1.55, min(1.55, angleFromUp * habit.spreadScale)) }
             }
             let (limb, tip) = TreeGeometry.grow(from: start, angleFromUp: angleFromUp, length: length,
-                                   width: max(2.4, (fromBase ? 5 : 4) + 14 * stage * (fromBase ? 0.6 : 1) * CGFloat(1 - Double(jj) / Double(max(k, 1)) * 0.4)) * (real == .cactus ? 1.9 : real == .mushroom ? 1.5 : 1),
-                                   species: real, twist: twist, droop: CGFloat(tree.look.droop), rnd: &rnd, depth: 1)
+                                   width: max(2.4, (fromBase ? 5 : 4) + 14 * stage * (fromBase ? 0.6 : 1) * CGFloat(1 - Double(jj) / Double(max(k, 1)) * 0.4)) * (real == .cactus ? 1.9 : real == .mushroom ? 1.5 : 1) * (0.5 + 0.5 * girth),
+                                   species: real, twist: twist, droop: droop, rnd: &rnd, depth: 1, sag: sag, wobble: wobble)
             var owned = limb
             owned.owner = order[p.id] ?? 0
             g.limbs.append(owned)
@@ -250,13 +258,13 @@ struct TreeGeometry {
                 childCount[parentId] = c + 1
                 let side: Double = c % 2 == 0 ? 1 : -1
                 let parentUp = parent.angle + .pi / 2 // angle from straight up
-                let a = parentUp + side * rnd.range(0.4, 0.75)
+                let a = parentUp + side * rnd.range(0.4, 0.75) * habit.spreadScale
                 let len = (lengthOf[parentId] ?? H * 0.3) * rnd.cg(0.55, 0.7)
                 let back = (lengthOf[parentId] ?? H * 0.3) * 0.22
                 let start = CGPoint(x: parent.point.x - CGFloat(cos(parent.angle)) * back,
                                     y: parent.point.y - CGFloat(sin(parent.angle)) * back)
-                let (limb, tip) = TreeGeometry.grow(from: start, angleFromUp: a, length: len, width: max(1.8, 3 + 6 * stage) * (real == .cactus ? 2.2 : 1),
-                                       species: real, twist: twist, droop: CGFloat(tree.look.droop), rnd: &rnd, depth: 2)
+                let (limb, tip) = TreeGeometry.grow(from: start, angleFromUp: a, length: len, width: max(1.8, 3 + 6 * stage) * (real == .cactus ? 2.2 : 1) * (0.5 + 0.5 * girth),
+                                       species: real, twist: twist, droop: droop, rnd: &rnd, depth: 2, sag: sag, wobble: wobble)
                 var owned = limb
                 owned.owner = order[p.id] ?? 0
                 g.limbs.append(owned)
@@ -271,7 +279,7 @@ struct TreeGeometry {
         var twigRnd = SeededRandom(tree.seed, "twigs")
         let perLimb = 2
         for limb in g.limbs where limb.points.count > 3 && (real == .flytrap || real == .herb) {
-            let count = Int((CGFloat(perLimb) * (0.5 + stage)).rounded())
+            let count = Int((CGFloat(perLimb) * (0.5 + stage) * CGFloat(habit.countScale)).rounded())
             for _ in 0..<count {
                 let t = twigRnd.cg(0.35, 0.85)
                 let at = point(on: limb.points, at: t)
@@ -279,7 +287,7 @@ struct TreeGeometry {
                 let a = atan2(Double(dir.dy), Double(dir.dx)) + .pi / 2 + Double(twigRnd.sign()) * twigRnd.range(0.5, 0.9)
                 let len = pathLength(limb.points) * twigRnd.cg(0.16, 0.3)
                 let (twig, _) = TreeGeometry.grow(from: at, angleFromUp: a, length: len, width: max(1, limb.w1 * 1.2),
-                                                  species: real, twist: twist, droop: CGFloat(tree.look.droop), rnd: &twigRnd, depth: 3)
+                                                  species: real, twist: twist, droop: droop, rnd: &twigRnd, depth: 3, sag: sag, wobble: wobble)
                 var ownedTwig = twig
                 ownedTwig.owner = limb.owner
                 g.twigs.append(ownedTwig)
@@ -349,7 +357,8 @@ struct TreeGeometry {
 
     /// One branch: a gently bending curve from `start`, with species habits (droop, curl, kinks).
     static func grow(from start: CGPoint, angleFromUp: Double, length: CGFloat, width: CGFloat, species: Species,
-                     twist: CGFloat, droop: CGFloat, rnd: inout SeededRandom, depth: Int) -> (Limb, Tip) {
+                     twist: CGFloat, droop: CGFloat, rnd: inout SeededRandom, depth: Int,
+                     sag: Double = 0, wobble: Double = 1) -> (Limb, Tip) {
         var pts: [CGPoint] = [start]
         let steps = 8
         var a = angleFromUp
@@ -370,10 +379,14 @@ struct TreeGeometry {
             case .dendrite: a += rnd.range(-0.16, 0.16)
             case .willow: a += (angleFromUp >= 0 ? 1 : -1) * (0.05 + 0.12 * Double(droop)) * t * 2.2
             case .conifer: a += (angleFromUp >= 0 ? 1 : -1) * 0.025
-            case .oak: a += rnd.range(-0.22, 0.22)
+            case .oak: a += rnd.range(-0.22, 0.22) * wobble
             case .alien: a += curl * (1 + t * 2)
             case .flytrap: a += (angleFromUp >= 0 ? 1 : -1) * 0.03
-            case .coral: a += rnd.range(-0.12, 0.12)
+            case .coral: a += rnd.range(-0.12, 0.12) * wobble
+            }
+            // The recipe's droop: branches that hold themselves up sag, or lift, a little more.
+            if sag != 0, [.oak, .alien, .crystal, .herb, .conifer, .coral, .dendrite, .flytrap].contains(species) {
+                a += (angleFromUp >= 0 ? 1 : -1) * sag * t * 2
             }
             p = CGPoint(x: p.x + CGFloat(sin(a)) * seg + rnd.cg(-0.6, 0.6), y: p.y - CGFloat(cos(a)) * seg + rnd.cg(-0.6, 0.6))
             pts.append(p)

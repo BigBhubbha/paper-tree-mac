@@ -164,6 +164,9 @@ struct TreeLook: Codable, Hashable, Sendable {
     var tendrils: Bool? = nil
     /// The topics the plant was grown from, for the label ("grown from: animal behavior, ecology").
     var grownFrom: [String]? = nil
+    /// The full design from the tree customizer (or a local one). Nil on trees from older versions,
+    /// which then draw exactly as they always did.
+    var recipe: TreeRecipe? = nil
 
     /// "grown from: animal behavior, ecology"
     var grownFromLine: String? {
@@ -186,6 +189,7 @@ struct TreeLook: Codable, Hashable, Sendable {
         case .mushroom: look.leafTone = "rust"
         default: break
         }
+        look.recipe = TreeRecipe.local(for: look, seed: seed)
         return look
     }
 
@@ -195,6 +199,7 @@ struct TreeLook: Codable, Hashable, Sendable {
         out.vigor = vigor + (o.vigor - vigor) * k
         out.twist = twist + (o.twist - twist) * k
         out.droop = droop + (o.droop - droop) * k
+        if let a = recipe, let b = o.recipe { out.recipe = a.easing(toward: b, by: k) }
         return out
     }
 }
@@ -214,6 +219,8 @@ struct PaperTreeData: Codable, Identifiable, Hashable, Sendable {
     /// The plant it was before the last re-read, and when that changed: the drawing morphs across.
     var priorLook: TreeLook? = nil
     var lookChangedAt: Date? = nil
+    /// The topic signature the current recipe was designed for (see TreeLook.topicKey).
+    var recipeTopic: String? = nil
 
     var displayName: String { name.isEmpty ? "Tree No. \(number)" : name }
     var allFields: [String] {
@@ -386,29 +393,32 @@ final class TreeStore: ObservableObject {
         Task { await suggest(from: paper, in: treeId) }
     }
 
-    /// Paper counts at which the plant is looked at again: often while it is young, then every
-    /// four papers for as long as it keeps growing (no upper limit).
-    /// Suggestions waiting on a tree: two per paper, so a big tree keeps all its pencil branches.
-    static func suggestionsKept(papers: Int) -> Int { max(8, papers * 2) }
-
-    static func rereadsLook(at n: Int) -> Bool {
-        n >= 1 && ([1, 2, 3, 5, 8].contains(n) || (n >= 12 && n % 4 == 0))
+    /// The tree customizer is asked when a tree is planted, when its topic shifts (the local topic
+    /// signature changes), and for trees that have no AI recipe yet. Never just because a paper landed.
+    static func needsRecipe(papers n: Int, look: TreeLook, storedTopic: String?, topic: String) -> Bool {
+        guard n >= 1 else { return false }
+        if n == 1 { return true }
+        if look.recipe?.model == nil { return true }
+        return storedTopic != topic
     }
 
-    /// Ask the AI which plant this tree is, as it grows, so it comes to reflect what it holds.
+    /// Ask the customizer for this tree's recipe, so the plant comes to reflect what it holds.
     private func refreshLook(_ treeId: UUID) async {
         guard let tree = trees.first(where: { $0.id == treeId }) else { return }
         let n = tree.papers.count
-        guard Self.rereadsLook(at: n), tree.lookCheckedAt != n else { return }
+        let titles = tree.papers.map(\.title), fields = tree.allFields
+        let topic = TreeLook.topicKey(fields: fields, titles: titles, seed: tree.seed)
+        guard Self.needsRecipe(papers: n, look: tree.look, storedTopic: tree.recipeTopic, topic: topic), tree.lookCheckedAt != n else { return }
         // Locally first, so a new subject shows straight away even offline.
         if !tree.look.fromAI {
-            let local = TreeLook.guess(fields: tree.allFields, titles: tree.papers.map(\.title), seed: tree.seed)
-            if local.species != tree.look.species { setLook(local, on: treeId) }
+            let local = TreeLook.guess(fields: fields, titles: titles, seed: tree.seed)
+            if local.species != tree.look.species || tree.look.recipe == nil { setLook(local, on: treeId) }
         }
-        guard let look = try? await TreeClient.current.plant(titles: tree.papers.map(\.title), fields: tree.allFields,
+        guard let look = try? await TreeClient.current.plant(titles: titles, fields: fields,
                                                              current: tree.look.fromAI ? tree.look.species : nil) else { return }
         guard let i = trees.firstIndex(where: { $0.id == treeId }) else { return }
         trees[i].lookCheckedAt = n
+        trees[i].recipeTopic = topic
         setLook(look, on: treeId)
     }
 
@@ -422,7 +432,7 @@ final class TreeStore: ObservableObject {
         } else {
             trees[i].look = look
         }
-        if old.species != look.species || old.leafShape != look.leafShape || old.bloom != look.bloom {
+        if old.species != look.species || old.leafShape != look.leafShape || old.bloom != look.bloom || old.recipe != trees[i].look.recipe {
             trees[i].priorLook = old
             trees[i].lookChangedAt = Date()
         }
@@ -609,14 +619,25 @@ struct TreeClient {
     }
 
     /// The parametric plant for a tree's papers (Gemini, via the Worker).
-    func plant(titles: [String], fields: [String], current: Species?) async throws -> TreeLook {
+    /// The tree customizer: one call returns the plant and its whole recipe (see TreeRecipe).
+    /// `base` fixes the plant body and asks only for the rest.
+    func plant(titles: [String], fields: [String], current: Species?, base: Species? = nil) async throws -> TreeLook {
+        struct Wire: Decodable {
+            struct Palette: Decodable { var bark: String; var leaf: String; var accent: String }
+            struct Branches: Decodable { var droop: Double; var spread: Double; var density: Double }
+            struct Form: Decodable { var height: Double; var girth: Double; var twist: Double }
+            struct Accent: Decodable { var kind: String; var amount: Double }
+            var palette: Palette; var leafShape: String; var branches: Branches; var form: Form; var accent: Accent; var tendrils: Bool
+        }
         struct R: Decodable {
             var species: String; var commonName: String; var latinName: String; var note: String
             var leafTone: String; var vigor: Double; var twist: Double; var droop: Double
             var leafShape: String?; var bloom: String?; var bloomTone: String?; var tendrils: Bool?; var grownFrom: [String]?
+            var recipe: Wire?; var model: String?
         }
-        let r = try await post("/api/tree/plant", ["titles": Array(titles.suffix(16)), "fields": Array(fields.prefix(8)),
-                                                   "current": current?.rawValue ?? ""], as: R.self)
+        var body: [String: Any] = ["titles": Array(titles.suffix(16)), "fields": Array(fields.prefix(8)), "current": current?.rawValue ?? ""]
+        if let base { body["base"] = base.rawValue }
+        let r = try await post("/api/tree/recipe", body, as: R.self)
         var look = TreeLook(species: Species(rawValue: r.species) ?? .oak, commonName: r.commonName, latinName: r.latinName,
                             note: r.note, leafTone: r.leafTone, vigor: r.vigor, twist: r.twist, droop: r.droop, fromAI: true)
         look.leafShape = (r.leafShape == "auto" || r.leafShape?.isEmpty == true) ? nil : r.leafShape
@@ -624,6 +645,14 @@ struct TreeClient {
         look.bloomTone = r.bloomTone
         look.tendrils = r.tendrils
         look.grownFrom = r.grownFrom.map { Array($0.prefix(3)) }
+        if let w = r.recipe {
+            let made = TreeRecipe(bark: w.palette.bark, leaf: w.palette.leaf, accentColor: w.palette.accent, leafShape: w.leafShape,
+                                  droop: w.branches.droop, spread: w.branches.spread, density: w.branches.density,
+                                  height: w.form.height, girth: w.form.girth, twist: w.form.twist,
+                                  accent: w.accent.kind, amount: w.accent.amount, tendrils: w.tendrils, model: r.model ?? "gemini")
+            look.recipe = made.safe(for: look.species)
+            look.droop = made.droop; look.twist = made.twist; look.vigor = made.density
+        }
         return look
     }
 }

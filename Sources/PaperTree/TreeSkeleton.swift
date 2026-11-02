@@ -188,7 +188,7 @@ extension TreeGeometry {
         for i in ghosts.indices { ghosts[i].node = nearestNode(to: ghosts[i].from) }
 
         // 2. The crown fills in.
-        let vigor = CGFloat(tree.look.vigor)
+        let vigor = CGFloat(tree.look.recipe?.density ?? tree.look.vigor)
         let R = max(cardSize.height * 0.85, H * 0.15) * (0.85 + 0.3 * vigor)
         crownRadius = R
         var att: [CGPoint] = []
@@ -344,7 +344,7 @@ extension TreeGeometry {
                 let stride = max(1, terminals.count / 26)
                 for (k, t) in terminals.enumerated() where k % stride == 0 {
                     let p = nodes[t].p
-                    let len = min(base.y - 6 - p.y, R * fr.cg(1.0, 2.2) * (0.6 + CGFloat(tree.look.droop)))
+                    let len = min(base.y - 6 - p.y, R * fr.cg(1.0, 2.2) * (0.6 + CGFloat(tree.look.droopValue)))
                     guard len > R * 0.3 else { continue }
                     strands.append(Strand(node: t, length: len, lean: fr.cg(-0.12, 0.12), phase: fr.range(0, 6),
                                           leaves: max(4, Int(len / (D * 1.3))), tint: fr.range(0, 1)))
@@ -410,11 +410,11 @@ extension TreeGeometry {
         }
         clumps.sort { ($0.front ? 1 : 0, nodes[$0.node].p.y) < ($1.front ? 1 : 0, nodes[$1.node].p.y) }
         switch real {
-        case .oak: growLeaves(.oak, kids: kids, rnd: &fr, light: lightAt)
-        case .willow: growLeaves(.willow, kids: kids, rnd: &fr, light: lightAt)
-        case .crystal: growLeaves(.crystal, kids: kids, rnd: &fr, light: lightAt)
-        case .herb: growLeaves(.herb, kids: kids, rnd: &fr, light: lightAt)
-        case .kelp: growLeaves(.kelp, kids: kids, rnd: &fr, light: lightAt)
+        case .oak: growLeaves(.oak, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit)
+        case .willow: growLeaves(.willow, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit)
+        case .crystal: growLeaves(.crystal, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit)
+        case .herb: growLeaves(.herb, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit)
+        case .kelp: growLeaves(.kelp, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit)
         default: break
         }
         groundLayers = Wash.blob(sides: 11, layers: 4, squash: 1, rnd: &fr)
@@ -424,7 +424,7 @@ extension TreeGeometry {
     /// other leaf's center is closer than most of a leaf length, so there are gaps to see through.
     enum LeafPlan { case oak, willow, crystal, herb, kelp }
 
-    private mutating func growLeaves(_ plan: LeafPlan, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double) {
+    private mutating func growLeaves(_ plan: LeafPlan, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double, habit: TreeHabit) {
         let willow = plan == .willow
         let size: CGFloat
         let spacing: CGFloat
@@ -438,7 +438,9 @@ extension TreeGeometry {
         }
         let L = max(6, min(plan == .kelp ? 70 : 36, height * size))
         leafSize = L
-        let minD = L * spacing
+        // The recipe's density: closer leaves and more of them, or an airier crown.
+        let minD = L * spacing * CGFloat(habit.spacingScale)
+        let leafCap = Int(Double(cap) * habit.countScale)
         var grid: [Int64: [CGPoint]] = [:]
         func key(_ x: Int, _ y: Int) -> Int64 { (Int64(x) << 32) | Int64(UInt32(bitPattern: Int32(truncatingIfNeeded: y))) }
         func cell(_ p: CGPoint) -> (Int, Int) { (Int(floor(p.x / minD)), Int(floor(p.y / minD))) }
@@ -460,7 +462,7 @@ extension TreeGeometry {
         // Branch ends first, so every twig tip gets its leaf before the spaces fill in.
         order.sort { (kids[$0].isEmpty ? 0 : 1, $0) < (kids[$1].isEmpty ? 0 : 1, $1) }
         for i in order {
-            if leaves.count >= cap { break }
+            if leaves.count >= leafCap { break }
             let p = nodes[i].p, q = nodes[nodes[i].parent].p
             let dir = atan2(Double(p.y - q.y), Double(p.x - q.x))
             let side: Double = i % 2 == 0 ? 1 : -1

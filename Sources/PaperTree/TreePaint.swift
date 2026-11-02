@@ -50,6 +50,16 @@ extension PlantInk {
             }
         }
     }
+    static func bloomRGB(_ name: String?) -> RGB {
+        switch name ?? "" {
+        case "white": return RGB(0xF6F1E4)
+        case "red": return RGB(0xC8423B)
+        case "gold": return RGB(0xE8B53A)
+        case "violet": return RGB(0x9B7BC8)
+        case "blue": return RGB(0x6E93D6)
+        default: return RGB(0xE89AB0)
+        }
+    }
     static func barkRGB(_ s: Species) -> RGB {
         switch s {
         case .kelp: return RGB(0x8A6F2E)
@@ -257,8 +267,10 @@ struct TreePainter {
     var sketch: [String: CGFloat]
 
     private var species: Species { tree.look.species }
-    private var leaf: RGB { PlantInk.leafRGB(species, toneName: tree.look.leafTone) }
-    private var bark: RGB { PlantInk.barkRGB(species) }
+    // A recipe's palette when the tree has one; the plant's own colors otherwise.
+    private var leaf: RGB { tree.look.recipe.map { RGB(hex: $0.leaf) } ?? PlantInk.leafRGB(species, toneName: tree.look.leafTone) }
+    private var bark: RGB { tree.look.recipe.map { RGB(hex: $0.bark) } ?? PlantInk.barkRGB(species) }
+    var accentRGB: RGB { tree.look.recipe.map { RGB(hex: $0.accentColor) } ?? PlantInk.bloomRGB(tree.look.bloomTone) }
     private var lw: CGFloat { max(0.7, min(1.4, g.height / 260)) }
     private var fine: Bool { detail >= 1 }
 
@@ -302,10 +314,10 @@ struct TreePainter {
             rosette(&ctx, rnd: &rnd)
             for chain in g.chains { petiole(&ctx, chain) }
         case .herb:
-            for chain in g.chains { stem(&ctx, chain, color: RGB(0x6F8F45), widen: 1) }
+            for chain in g.chains { stem(&ctx, chain, color: bark, widen: 1) }
         case .kelp:
             holdfast(&ctx)
-            for chain in g.chains { stem(&ctx, chain, color: RGB(0x8A6F2E), widen: 1.1) }
+            for chain in g.chains { stem(&ctx, chain, color: bark, widen: 1.1) }
         case .fern:
             for (k, chain) in g.chains.enumerated() { frond(&ctx, chain, index: k) }
         case .mushroom:
@@ -356,7 +368,7 @@ struct TreePainter {
                      open: 0.14 + 0.5 * unfurl + 0.03 * CGFloat(sin(pose.time * 0.7 + Double(o))), mouth: true)
             }
         }
-        if tree.look.tendrils == true { tendrils(&ctx) }
+        if tree.look.hasTendrils { tendrils(&ctx) }
         blooms(&ctx)
     }
 
@@ -897,7 +909,7 @@ extension TreePainter {
         case .kelp: return Self.kelpUnit
         case .crystal: return Self.shardUnit
         case .oak, .willow, .herb:
-            switch tree.look.leafShape ?? "" {
+            switch tree.look.drawnLeafShape ?? "" {
             case "lobed": return Self.oakUnit
             case "lance": return Self.lanceUnit
             case "oval": return Self.ovalUnit
@@ -1138,9 +1150,10 @@ extension TreePainter {
         let (pts, rr) = points(chain)
         guard pts.count >= 2 else { return }
         let body = Pen.ribbon(pts, rr.map { max(1, $0 * 0.9) })
-        ctx.fill(body, with: .color(RGB(0xEFE5CF).color(0.98)))
+        let stalkInk = bark.mix(RGB(0xF6EEDC), 0.25)
+        ctx.fill(body, with: .color(stalkInk.color(0.98)))
         let shade = Pen.ribbon(pts.map { CGPoint(x: $0.x + 0.6, y: $0.y) }, rr.map { max(0.4, $0 * 0.35) })
-        ctx.fill(shade, with: .color(RGB(0xCDBE9C).color(0.6)))
+        ctx.fill(shade, with: .color(stalkInk.shade.color(0.45)))
         ctx.stroke(body, with: .color(PlantInk.ink.opacity(0.55)), lineWidth: lw * 0.6)
     }
 
@@ -1302,7 +1315,7 @@ extension TreePainter {
             let q = pts[min(pts.count - 1, Int(f * Double(pts.count - 1)))]
             let r = max(2, g.height / 120)
             ctx.fill(Path(ellipseIn: CGRect(x: q.x - r * 2.5, y: q.y - r * 2.5, width: r * 5, height: r * 5)),
-                     with: .radialGradient(Gradient(colors: [RGB(0xFFE7A0).color(0.8), RGB(0xFFE7A0).color(0)]), center: q, startRadius: 0, endRadius: r * 2.5))
+                     with: .radialGradient(Gradient(colors: [accentRGB.lit.color(0.8), accentRGB.lit.color(0)]), center: q, startRadius: 0, endRadius: r * 2.5))
         }
     }
 
@@ -1314,7 +1327,7 @@ extension TreePainter {
         let r = c.rx * s
         let glow = 0.25 + 0.25 * sin(pose.time * 2 + c.phase) * Double(pose.wind)
         ctx.fill(Path(ellipseIn: CGRect(x: o.x - r * 3, y: o.y - r * 3, width: r * 6, height: r * 6)),
-                 with: .radialGradient(Gradient(colors: [RGB(0xF2C14E).color(glow), RGB(0xF2C14E).color(0)]), center: o, startRadius: 0, endRadius: r * 3))
+                 with: .radialGradient(Gradient(colors: [accentRGB.color(glow), accentRGB.color(0)]), center: o, startRadius: 0, endRadius: r * 3))
         let knob = Path(ellipseIn: CGRect(x: o.x - r, y: o.y - r, width: r * 2, height: r * 2))
         ctx.fill(knob, with: .color(leaf.lit.color(0.95)))
         ctx.stroke(knob, with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.45)
@@ -1379,20 +1392,13 @@ extension TreePainter {
 
     // MARK: Flowers, berries, fruit
 
-    func bloomRGB(_ name: String?) -> RGB {
-        switch name ?? "" {
-        case "white": return RGB(0xF6F1E4)
-        case "red": return RGB(0xC8423B)
-        case "gold": return RGB(0xE8B53A)
-        case "violet": return RGB(0x9B7BC8)
-        case "blue": return RGB(0x6E93D6)
-        default: return RGB(0xE89AB0)
-        }
-    }
 
     func blooms(_ ctx: inout GraphicsContext) {
-        guard let kind = tree.look.bloom, kind != "none", ![.mushroom, .kelp, .dendrite].contains(species) else { return }
-        let color = bloomRGB(tree.look.bloomTone)
+        guard let kind = tree.look.accentKind else { return }
+        // Flowers and fruit only on plants that could carry them; glow and pods go anywhere.
+        if ["blossom", "berry", "fruit"].contains(kind) && [.mushroom, .kelp, .dendrite].contains(species) { return }
+        let color = accentRGB
+        let many = Int(10 + 32 * tree.look.accentAmount)
         var spots: [(Int, CGPoint)] = []
         if species == .cactus {
             for chain in g.chains where chain.ids.count > 3 {
@@ -1404,7 +1410,7 @@ extension TreePainter {
             var isParent = [Bool](repeating: false, count: g.nodes.count)
             for n in g.nodes where n.parent >= 0 { isParent[n.parent] = true }
             let ends = g.nodes.indices.filter { !isParent[$0] && g.nodes[$0].parent >= 0 }
-            let stride = max(1, ends.count / 26)
+            let stride = max(1, ends.count / many)
             let card = g.cardSize
             for (k, i) in ends.enumerated() where k % stride == 0 {
                 let rest = g.nodes[i].p
@@ -1418,6 +1424,34 @@ extension TreePainter {
             guard s > 0.05 else { continue }
             let r = size * s
             switch kind {
+            case "glow":
+                // A soft lamp at the branch end, breathing slowly.
+                let breathe = 0.8 + 0.2 * sin(pose.time * 1.6 + Double(k) * 1.3) * Double(pose.wind)
+                let halo = r * 3.2
+                ctx.fill(Path(ellipseIn: CGRect(x: at.x - halo, y: at.y - halo, width: halo * 2, height: halo * 2)),
+                         with: .radialGradient(Gradient(colors: [color.lit.color(0.55 * breathe), color.color(0.18 * breathe), color.color(0)]),
+                                               center: at, startRadius: 0, endRadius: halo))
+                let core = Path(ellipseIn: CGRect(x: at.x - r * 0.55, y: at.y - r * 0.55, width: r * 1.1, height: r * 1.1))
+                ctx.fill(core, with: .color(color.lit.mix(RGB(0xFFFBEA), 0.5).color(0.95)))
+                ctx.stroke(core, with: .color(color.shade.color(0.5)), lineWidth: lw * 0.35)
+            case "pods":
+                // A seed pod hanging on a thread, swinging a little.
+                let swing = CGFloat(sin(pose.time * 0.9 + Double(k)) * 0.08 * Double(pose.wind))
+                let top = CGPoint(x: at.x + swing * r * 4, y: at.y + r * 1.4)
+                var thread = Path(); thread.move(to: at); thread.addQuadCurve(to: top, control: CGPoint(x: at.x, y: at.y + r * 0.9))
+                ctx.stroke(thread, with: .color(bark.color(0.85)), lineWidth: lw * 0.5)
+                let len = r * 2.9, wid = r * 1.05
+                var pod = Path()
+                pod.move(to: top)
+                pod.addCurve(to: CGPoint(x: top.x + swing * r, y: top.y + len),
+                             control1: CGPoint(x: top.x + wid, y: top.y + len * 0.2), control2: CGPoint(x: top.x + wid * 0.9, y: top.y + len * 0.8))
+                pod.addCurve(to: top,
+                             control1: CGPoint(x: top.x - wid * 0.9, y: top.y + len * 0.8), control2: CGPoint(x: top.x - wid, y: top.y + len * 0.2))
+                ctx.fill(pod, with: .linearGradient(Gradient(colors: [color.lit.color(0.97), color.color(0.97), color.mix(bark, 0.35).color(0.97)]),
+                                                    startPoint: CGPoint(x: top.x - wid, y: top.y), endPoint: CGPoint(x: top.x + wid, y: top.y + len)))
+                ctx.stroke(pod, with: .color(PlantInk.ink.opacity(0.55)), lineWidth: lw * 0.45)
+                var seam = Path(); seam.move(to: CGPoint(x: top.x, y: top.y + len * 0.12)); seam.addLine(to: CGPoint(x: top.x + swing * r * 0.8, y: top.y + len * 0.9))
+                ctx.stroke(seam, with: .color(color.shade.color(0.55)), lineWidth: lw * 0.35)
             case "berry":
                 for j in 0..<3 {
                     let a = Double(j) * 2.1 + Double(k)
