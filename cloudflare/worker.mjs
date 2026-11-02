@@ -4,22 +4,55 @@
 
 let ENV = {};
 
-// Models, fastest first. The pinned Flash Lite answers in about a second. If it is slow we also ask
-// the next one (a "hedge") and use whichever answers first. Gemini sometimes returns a brief
-// "high demand" 503, so the fast models get a second try after a short pause before we fall back
-// to slower ones. If a pinned model is ever retired, the "latest" alias at the end keeps things
-// working with no code change.
-const FAST = ["gemini-3.1-flash-lite", "gemini-3.1-flash-lite-preview"];
-const SLOW = ["gemini-3.5-flash", "gemini-flash-lite-latest"];
-const HEDGE_MS = 2000;      // no first byte from a model by then: start the next one too
+// Models, fastest first. Each answers in under a second when healthy. If one is slow we also ask
+// the next one (a "hedge") and use whichever answers first. Gemini often returns "high demand" 503s
+// (3.1 Flash-Lite did so on nearly every call in early November 2026, so 3.5 Flash-Lite leads) or a quota 429, so a model that
+// just failed is benched for a short while and the healthy ones go first. That way a busy model costs
+// one failed call per cool-down instead of seconds on every highlight. If a pinned model is retired,
+// the "latest" alias keeps things working.
+const FAST = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-lite-latest"];
+const SLOW = ["gemini-3.5-flash"];
+const HEDGE_MS = 1200;      // healthy first bytes arrive in ~0.7s; no first byte by then: start the next one too
 const RETRY_PAUSE_MS = 350; // breather before asking a model that just said "busy" again
 const TOTAL_MS = 18_000;    // give up on the whole request after this
 const CACHE_VERSION = "v1"; // bump to drop every cached answer
 const CACHE_TTL_S = 60 * 60 * 24 * 30;
-/// The order we try models in, as [model, pause before asking].
+
+// MARK: Model health. A model that just answered 429/5xx sits out for a while, in this isolate and
+// (via the colo cache) in its neighbours, so the next request skips it instead of waiting on it.
+const BENCH_MS = { 429: 10 * 60_000, default: 90_000 };
+const benched = new Map(); // model -> until (ms)
+const healthUrl = (m) => `https://health.paper-tree.internal/${m}`;
+function bench(model, status) {
+  const ms = BENCH_MS[status] || BENCH_MS.default;
+  const until = Date.now() + ms;
+  if ((benched.get(model) || 0) >= until) return;
+  benched.set(model, until);
+  try {
+    const p = caches.default.put(healthUrl(model), new Response(String(until), { headers: { "Cache-Control": `max-age=${Math.ceil(ms / 1000)}` } }));
+    WAIT?.(p.catch(() => {}));
+  } catch { /* no cache here */ }
+}
+async function loadHealth(models) {
+  await Promise.all(models.map(async (m) => {
+    if ((benched.get(m) || 0) > Date.now()) return;
+    try {
+      const r = await caches.default.match(healthUrl(m));
+      if (r) benched.set(m, Number(await r.text()) || 0);
+    } catch { /* ignore */ }
+  }));
+}
+const isBenched = (m) => (benched.get(m) || 0) > Date.now();
+/// Healthy models keep their order; benched ones move to the end (still tried as a last resort).
+const byHealth = (models) => [...models.filter((m) => !isBenched(m)), ...models.filter(isBenched)];
+let WAIT = null;
+
+/// The order we try models in, as [model, pause before asking]. Only a healthy first choice gets a
+/// quick second try; benched models are not retried.
 const plan = () => {
-  const fast = [...new Set([ENV.GEMINI_MODEL, ENV.GEMINI_FALLBACK_MODEL, ...FAST].filter(Boolean))];
-  return [...fast.map((m) => [m, 0]), ...fast.map((m) => [m, RETRY_PAUSE_MS]), ...SLOW.map((m) => [m, 0])];
+  const fast = byHealth([...new Set([ENV.GEMINI_MODEL, ENV.GEMINI_FALLBACK_MODEL, ...FAST].filter(Boolean))]);
+  const retry = fast.filter((m) => !isBenched(m)).slice(0, 1);
+  return [...fast.map((m) => [m, 0]), ...retry.map((m) => [m, RETRY_PAUSE_MS]), ...byHealth(SLOW).map((m) => [m, 0])];
 };
 const sleep = (ms, signal) => new Promise((resolve, reject) => {
   if (!ms) return resolve();
@@ -288,6 +321,7 @@ async function postGemini(model, body, signal, stream) {
   if (!r.ok) {
     const detail = await r.text().catch(() => "");
     console.error("Gemini error", model, r.status, detail.slice(0, 300));
+    if (r.status === 429 || r.status >= 500) bench(model, r.status);
     throw new GeminiError(r.status, detail);
   }
   return r;
@@ -414,6 +448,7 @@ async function handle(req, waitUntil) {
   if (rateLimited(clientIp(req))) return json(429, { error: "Too many requests. Try again in a minute." });
 
   const geminiBody = requestBody(prompt, mode);
+  await loadHealth([...FAST, ...SLOW]);
   const outer = new AbortController();
   const overall = setTimeout(() => outer.abort(), TOTAL_MS);
 
@@ -1216,7 +1251,8 @@ async function treeRecipe(req, waitUntil) {
   // TREE_MODELS (comma separated) replaces the list; TREE_MODEL puts one model first.
   const list = ENV.TREE_MODELS ? String(ENV.TREE_MODELS).split(",").map((m) => m.trim()) : TREE_MODELS;
   const models = [...new Set([ENV.TREE_MODEL, ...list].filter(Boolean))];
-  const order = models.map((m) => [m, 0]);
+  await loadHealth(models);
+  const order = byHealth(models).map((m) => [m, 0]);
   try {
     const { out, model } = await hedged(order.map(([m, pause]) => wholeAttempt([m, pause], bodyFor(m))), outer.signal, TREE_HEDGE_MS);
     let parsed;
@@ -1249,6 +1285,7 @@ export default {
     const route = ROUTES[url.pathname];
     if (!route) return json(404, { error: "Not found." });
     const waitUntil = (p) => ctx.waitUntil(p);
+    WAIT = waitUntil;
     if (route === handle) return handle(req, waitUntil);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: HEADERS });
     if (req.method !== "POST") return json(405, { error: "Use POST." });
