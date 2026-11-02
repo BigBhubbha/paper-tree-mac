@@ -403,7 +403,7 @@ struct BuddyScene {
         case .peer where k > 1.8 && k < 3.5:
             // A little explanation card pops up beside the word.
             let a = Keys.smooth((k - 1.8) / 0.3) * (1 - Keys.smooth((k - 3.2) / 0.3))
-            let r = CGRect(x: size.width * 0.04, y: groundY - 188 * u, width: 92 * u, height: 34 * u)
+            let r = CGRect(x: size.width * 0.04 + 52 * u, y: groundY - 180 * u, width: 92 * u, height: 34 * u)
             var c = ctx
             c.opacity = a
             c.fill(Path(roundedRect: r, cornerRadius: 4 * u), with: .color(Color(hex: 0xFFFDF6)))
@@ -501,8 +501,20 @@ struct BuddyScene {
 
     private func island(_ ctx: inout GraphicsContext, open: CGFloat) {
         let w = (46 + 110 * open) * u, h = (13 + 34 * open) * u
-        let r = CGRect(x: size.width / 2 - w / 2, y: 4 * u, width: w, height: h)
-        ctx.fill(Path(roundedRect: r, cornerRadius: h / 2), with: .color(.black))
+        // A pencil sketch of the top of a screen, so the island has somewhere to hang from.
+        let top = groundY - 206 * u
+        let screen = CGRect(x: size.width * 0.12, y: top, width: size.width * 0.76, height: 58 * u)
+        var bezel = Path()
+        bezel.move(to: CGPoint(x: screen.minX, y: screen.maxY))
+        bezel.addLine(to: CGPoint(x: screen.minX, y: screen.minY + 6 * u))
+        bezel.addQuadCurve(to: CGPoint(x: screen.minX + 6 * u, y: screen.minY), control: CGPoint(x: screen.minX, y: screen.minY))
+        bezel.addLine(to: CGPoint(x: screen.maxX - 6 * u, y: screen.minY))
+        bezel.addQuadCurve(to: CGPoint(x: screen.maxX, y: screen.minY + 6 * u), control: CGPoint(x: screen.maxX, y: screen.minY))
+        bezel.addLine(to: CGPoint(x: screen.maxX, y: screen.maxY))
+        ctx.stroke(bezel, with: .color(Palette.ink.opacity(0.4)), style: StrokeStyle(lineWidth: 1.1, lineCap: .round, dash: [5 * u, 3 * u]))
+        label(&ctx, "your screen", at: CGPoint(x: screen.maxX - 26 * u, y: screen.minY - 8 * u), color: Palette.pencil)
+        let r = CGRect(x: size.width / 2 - w / 2, y: top, width: w, height: h)
+        ctx.fill(Path(roundedRect: r, cornerRadius: min(h / 2, 10 * u)), with: .color(.black))
         if open > 0.6 {
             var c = ctx
             c.opacity = Double((open - 0.6) / 0.4)
