@@ -250,8 +250,17 @@ enum Snapshots {
 
         // A paper is added to Tree No. 3: its branch reaches out, leaves unfurl, the page lands,
         // then the pencil branches sketch themselves in. 24 frames a second.
-        if let eco = store.trees.first(where: { $0.number == 3 }) {
-            var t = eco
+        if let cs = store.trees.first(where: { $0.number == 1 }) {
+            // A young oak with five papers, so the new branch is easy to follow.
+            var t = cs
+            let kept = Array(cs.papers.sorted { $0.addedAt < $1.addedAt }.prefix(5))
+            t.papers = kept.map { p in
+                var p = p
+                if let parent = p.parentId, !kept.contains(where: { $0.id == parent }) { p.parentId = nil }
+                return p
+            }
+            t.suggestions = Array(cs.suggestions.filter { s in kept.contains { $0.id == s.fromPaperId } }.prefix(2))
+            t.look = TreeLook(species: .oak, commonName: "oak", leafTone: "moss", vigor: 0.6, twist: 0.4, droop: 0.4)
             let born = start.addingTimeInterval(0.4)
             if let k = t.papers.indices.max(by: { t.papers[$0].addedAt < t.papers[$1].addedAt }) { t.papers[k].addedAt = born }
             TreeClock.sketchStart = born.addingTimeInterval(TreeGrowth.duration - 0.2)

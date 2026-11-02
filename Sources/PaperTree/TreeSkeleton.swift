@@ -147,7 +147,7 @@ extension TreeGeometry {
             if isRoot {
                 nodes.append(Node(p: pts[0], parent: -1, owner: limb.owner, along: 0))
                 parent = nodes.count - 1
-                rootTarget[parent] = max(1, limb.w0 / 2)
+                rootTarget[parent] = max(1, limb.w0 / 2 * (species == .coral ? 0.55 : 1))
                 if limb.depth == 0 { trunkNodes.append(parent) }
             } else {
                 parent = nearestNode(to: pts[0])
@@ -180,15 +180,22 @@ extension TreeGeometry {
         var bias = CGVector(dx: 0, dy: 0)
         var swirl = 0.0
         var step = D
+        // The crown: one envelope over all the paper tips (and the top of the trunk), plus a cloud
+        // around each tip so every paper sits in leaves.
+        var hull = tips.reduce(CGRect.null) { $0.union(CGRect(origin: $1.point, size: .zero)) }
+        if let top = trunkNodes.last { hull = hull.union(CGRect(origin: nodes[top].p, size: .zero)) }
+        if hull.isNull { hull = CGRect(x: base.x, y: base.y - H, width: 0, height: 0) }
         switch species {
         case .oak:
-            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.2), R * 1.15, R * 0.85, 36) }
+            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), hull.width / 2 + R * 0.95, hull.height / 2 + R * 0.85, 260 + 22 * tips.count)
+            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.2), R * 1.1, R * 0.8, 24) }
             bias = CGVector(dx: 0, dy: -0.15)
         case .willow:
-            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.05), R * 1.05, R * 0.6, 24) }
+            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.2), hull.width / 2 + R * 0.9, hull.height / 2 + R * 0.5, 200 + 16 * tips.count)
+            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.05), R * 1.05, R * 0.6, 18) }
             bias = CGVector(dx: 0, dy: 0.2)
         case .alien:
-            for t in tips { scatter(t.point, R * 0.85, R * 0.85, 14) }
+            for t in tips { scatter(t.point, R * 1.0, R * 1.0, 22) }
             swirl = 0.42
             step = D * 1.2
         case .coral:
@@ -203,7 +210,7 @@ extension TreeGeometry {
         case .conifer, .flytrap:
             break
         }
-        if att.count > 560 { att = Array(att.prefix(560)) }
+        if att.count > 640 { att = Array(att.prefix(640)) }
         if !att.isEmpty { colonize(&att, step: step, influence: R * 1.3, kill: step * 1.7, bias: bias, swirl: swirl, maxNodes: 1200) }
 
         // 3. Pull new nodes a little toward their parent: softer branching angles.
@@ -217,7 +224,7 @@ extension TreeGeometry {
         var kids = [[Int]](repeating: [], count: nodes.count)
         for i in nodes.indices where nodes[i].parent >= 0 { kids[nodes[i].parent].append(i) }
         var raw = [CGFloat](repeating: 1, count: nodes.count)
-        let n: CGFloat = 2.3
+        let n: CGFloat = 2.0
         for i in nodes.indices.reversed() where !kids[i].isEmpty {
             raw[i] = pow(kids[i].reduce(CGFloat(0)) { $0 + pow(raw[$1], n) }, 1 / n)
         }
@@ -297,9 +304,9 @@ extension TreeGeometry {
         switch species {
         case .oak, .willow:
             let willow = species == .willow
-            let cell = R * (willow ? 0.5 : 0.62)
+            let cell = R * (willow ? 0.6 : 0.78)
             for (k, (anchor, mean, count)) in grouped(cell).enumerated() {
-                let rx = min(cell * 1.35, max(cell * 0.55, cell * (0.6 + 0.16 * CGFloat(count).squareRoot())))
+                let rx = min(cell * 1.45, max(cell * 0.62, cell * (0.72 + 0.14 * CGFloat(count).squareRoot())))
                 clumps.append(Clump(node: anchor, offset: CGPoint(x: mean.x - nodes[anchor].p.x, y: mean.y - nodes[anchor].p.y),
                                     rx: rx, ry: rx * (willow ? 0.55 : 0.8), light: lightAt(mean), kind: .leaves,
                                     layers: Wash.blob(layers: 5, squash: 1, rnd: &fr), dabs: dabs(willow ? 6 : 14),
@@ -316,8 +323,8 @@ extension TreeGeometry {
                 }
             }
         case .alien:
-            for (k, t) in terminals.enumerated() where k % 3 == 0 || tips.contains(where: { $0.node == t }) {
-                let rx = R * fr.cg(0.16, 0.28)
+            for (k, t) in terminals.enumerated() where k % 2 == 0 || tips.contains(where: { $0.node == t }) {
+                let rx = R * fr.cg(0.18, 0.36)
                 clumps.append(Clump(node: t, offset: .zero, rx: rx, ry: rx * 1.18, light: lightAt(nodes[t].p), kind: .orb,
                                     layers: Wash.blob(layers: 4, rnd: &fr), dabs: [], front: true, phase: fr.range(0, 6)))
             }

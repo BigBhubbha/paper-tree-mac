@@ -259,7 +259,7 @@ struct TreePainter {
             rosette(&ctx, rnd: &rnd)
             for chain in g.chains { petiole(&ctx, chain) }
         } else {
-            for (k, chain) in g.chains.enumerated() { wood(&ctx, chain, index: k) }
+            woods(&ctx)
             if species != .coral { roots(&ctx, rnd: &rnd) }
         }
 
@@ -343,21 +343,33 @@ struct TreePainter {
         return (pts, rr)
     }
 
-    private func wood(_ ctx: inout GraphicsContext, _ chain: TreeGeometry.Chain, index: Int) {
-        let (pts, rr) = points(chain)
-        guard pts.count >= 2 else { return }
-        let shape = Pen.ribbon(pts, rr)
-        let thick = rr.max() ?? 1
-        ctx.fill(shape, with: .color(bark.color(0.95)))
-        if thick > 1.1 {
+    /// All the wood as one silhouette: every limb's ink outline first, then every fill on top, so
+    /// only the outside edge of the whole tree is inked (no seams where limbs join).
+    private func woods(_ ctx: inout GraphicsContext) {
+        var limbs: [(Path, [CGPoint], [CGFloat])] = []
+        for chain in g.chains {
+            let (pts, rr) = points(chain)
+            guard pts.count >= 2 else { continue }
+            limbs.append((Pen.ribbon(pts, rr), pts, rr))
+        }
+        for (shape, _, rr) in limbs {
+            let thick = rr.max() ?? 1
+            ctx.stroke(shape, with: .color(PlantInk.ink.opacity(thick > 2.5 ? 0.6 : 0.42)), lineWidth: lw * (thick > 2.5 ? 1.3 : 0.8))
+        }
+        for (shape, _, _) in limbs { ctx.fill(shape, with: .color(bark.color(1))) }
+        for (_, pts, rr) in limbs where (rr.max() ?? 0) > 1.1 {
             // The lit side: a narrower, lighter ribbon nudged toward the light.
-            let lit = Pen.ribbon(zip(pts, rr).map { CGPoint(x: $0.x - $1 * 0.32, y: $0.y - $1 * 0.18) }, rr.map { $0 * 0.42 })
-            ctx.fill(lit, with: .color(bark.lit.color(0.5)))
+            let lit = Pen.ribbon(zip(pts, rr).map { CGPoint(x: $0.x - $1 * 0.34, y: $0.y - $1 * 0.16) }, rr.map { $0 * 0.4 })
+            ctx.fill(lit, with: .color(bark.lit.color(0.42)))
         }
-        if thick > 0.9 || fine {
-            ctx.stroke(shape, with: .color(PlantInk.ink.opacity(thick > 3 ? 0.55 : 0.4)), lineWidth: lw * (thick > 3 ? 0.7 : 0.45))
+        if fine {
+            for (k, (_, pts, rr)) in limbs.enumerated() { barkDetail(&ctx, pts, rr, index: k) }
         }
-        guard fine, thick > 3, pts.count > 3 else { return }
+    }
+
+    private func barkDetail(_ ctx: inout GraphicsContext, _ pts: [CGPoint], _ rr: [CGFloat], index: Int) {
+        let thick = rr.max() ?? 1
+        guard thick > 3, pts.count > 3 else { return }
         var rnd = SeededRandom(tree.seed &+ UInt64(index), "bark")
         switch species {
         case .coral:
@@ -368,12 +380,14 @@ struct TreePainter {
             }
             ctx.fill(pits, with: .color(RGB(0xFBE3D6).color(0.85)))
         case .alien:
-            var rings = Path()
-            for i in stride(from: 2, to: pts.count - 1, by: 3) {
-                let r = rr[i] * 0.5
-                rings.addEllipse(in: CGRect(x: pts[i].x - r, y: pts[i].y - r * 0.6, width: r * 2, height: r * 1.2))
+            // Faint glowing freckles along the wood.
+            var dots = Path()
+            for i in stride(from: 2, to: pts.count - 1, by: 2) {
+                let r = max(0.6, rr[i] * 0.09)
+                let u = rnd.cg(-0.5, 0.5) * rr[i]
+                dots.addEllipse(in: CGRect(x: pts[i].x + u - r, y: pts[i].y - r, width: r * 2, height: r * 2))
             }
-            ctx.stroke(rings, with: .color(RGB(0x9FD9D0).color(0.45)), lineWidth: lw * 0.5)
+            ctx.fill(dots, with: .color(RGB(0xB8F0E4).color(0.55)))
         default:
             // Bark: long wavy ridges running with the grain, darker on the shadow side.
             var ridges = Path()
@@ -446,7 +460,7 @@ struct TreePainter {
                 if fine {
                     var gctx = ctx
                     gctx.blendMode = .multiply
-                    gctx.opacity = 0.55
+                    gctx.opacity = 0.3
                     gctx.fill(e, with: .tiledImage(Grain.image, origin: .zero, sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1), scale: 1))
                 }
             }
@@ -479,7 +493,7 @@ struct TreePainter {
         var stem = Path()
         stem.move(to: p)
         stem.addQuadCurve(to: end, control: ctrl)
-        ctx.stroke(stem, with: .color(bark.color(0.55)), lineWidth: lw * 0.45)
+        ctx.stroke(stem, with: .color(leaf.shade.color(0.5)), lineWidth: lw * 0.5)
         let L = leaf
         for k in 1...s.leaves {
             let t = CGFloat(k) / CGFloat(s.leaves + 1)
@@ -487,8 +501,8 @@ struct TreePainter {
             let q = CGPoint(x: u * u * p.x + 2 * u * t * ctrl.x + t * t * end.x, y: u * u * p.y + 2 * u * t * ctrl.y + t * t * end.y)
             let side: Double = k % 2 == 0 ? 1 : -1
             let tint = (s.tint + Double(k) * 0.13).truncatingRemainder(dividingBy: 1)
-            let path = Pen.leaf(at: q, angle: .pi / 2 + side * 0.55, length: max(3, g.crownRadius * 0.16) * (0.7 + 0.3 * u), width: 0.3)
-            ctx.fill(path, with: .color(L.shade.mix(L.lit, tint).color(0.75)))
+            let path = Pen.leaf(at: q, angle: .pi / 2 + side * 0.6, length: max(4, g.crownRadius * 0.24) * (0.7 + 0.3 * u), width: 0.28)
+            ctx.fill(path, with: .color(L.shade.mix(L.lit, tint).color(0.85)))
         }
     }
 
@@ -507,7 +521,7 @@ struct TreePainter {
             if fine {
                 var gctx = ctx
                 gctx.blendMode = .multiply
-                gctx.opacity = 0.5
+                gctx.opacity = 0.3
                 gctx.fill(e, with: .tiledImage(Grain.image, origin: .zero, sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1), scale: 1))
             }
         }
@@ -555,7 +569,7 @@ struct TreePainter {
         guard s > 0.01 else { return }
         let o = center(c)
         let L = leaf
-        let glowR = c.rx * 2.4 * s
+        let glowR = c.rx * 2.8 * s
         ctx.fill(Path(ellipseIn: CGRect(x: o.x - glowR, y: o.y - glowR, width: glowR * 2, height: glowR * 2)),
                  with: .radialGradient(Gradient(colors: [L.lit.color(0.42), L.lit.color(0)]), center: o, startRadius: 0, endRadius: glowR))
         for l in c.layers { ctx.fill(layer(l, at: o, rx: c.rx * s, ry: c.ry * s), with: .color(L.mix(RGB(0x7B5BA6), 0.25).color(0.2))) }
@@ -596,7 +610,7 @@ struct TreePainter {
         if fine, let e = g.fanLayers.first {
             var gctx = ctx
             gctx.blendMode = .multiply
-            gctx.opacity = 0.35
+            gctx.opacity = 0.16
             gctx.fill(e.applying(tr), with: .tiledImage(Grain.image, origin: .zero, sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1), scale: 1))
         }
     }
