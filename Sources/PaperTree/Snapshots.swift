@@ -428,10 +428,10 @@ extension Snapshots {
                 list.append(PaperMark(kind: .comment, page: p, rects: rs, ink: .sage, quote: "photorespiration increases",
                                       note: "So the leaf wastes some of the light it catches? Compare with the C4 grasses in section 3."))
             }
-            if let (p, rs) = rects(doc, "water use efficiency") {
-                list.append(PaperMark(kind: .comment, page: p, rects: rs, ink: .sky, quote: "water use efficiency", note: "Key term for my essay."))
+            if let (p, rs) = rects(doc, "chemical signals upward") {
+                list.append(PaperMark(kind: .comment, page: p, rects: rs, ink: .sky, quote: "chemical signals upward", note: "Which signal? Look up abscisic acid."))
             }
-            list.append(PaperMark(kind: .sticky, page: 0, rects: [CGRect(x: 360, y: 120, width: 150, height: 112)], ink: .marigold,
+            list.append(PaperMark(kind: .sticky, page: 0, rects: [CGRect(x: 618, y: 430, width: 150, height: 112)], ink: .marigold,
                                   note: "Ask in class: does this hold for desert plants too?"))
             r.marks.preset(list)
         }
