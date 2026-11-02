@@ -225,7 +225,7 @@ struct SpecimenPlate: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TreeCanvas(tree: tree, store: store)
+            TreeCanvas(tree: tree, store: store, lively: !compact)
                 .clipped()
             HStack(alignment: .bottom) {
                 Text(String(format: "Sheet PT-%04d", tree.number))
@@ -323,34 +323,66 @@ private struct PlantPlate: View {
 struct TreeCanvas: View {
     var tree: PaperTreeData
     @ObservedObject var store: TreeStore
+    /// Big trees on their own page move at full frame rate; sheets in the grove sway more lazily.
+    var lively = true
     @State private var openGhost: String?
+    @State private var appeared = Date()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GeometryReader { geo in
-            let g = TreeGeometry.make(tree, in: geo.size)
-            ZStack(alignment: .topLeading) {
-                TreeDrawing(tree: tree, geometry: g)
-                ForEach(g.ghosts, id: \.id) { ghost in
-                    if let s = tree.suggestions.first(where: { $0.id == ghost.id }) {
-                        GhostTipCard(paper: s.paper, size: g.cardSize)
-                            .position(x: ghost.to.x, y: ghost.to.y - g.cardSize.height * 0.4)
-                            .onTapGesture { openGhost = s.id }
-                            .help("Suggested: \(s.paper.title)")
-                            .popover(isPresented: Binding(get: { openGhost == s.id }, set: { if !$0 { openGhost = nil } }), arrowEdge: .bottom) {
-                                SuggestionSlip(suggestion: s, tree: tree, store: store) { openGhost = nil }
-                            }
-                    }
+            let g = TreeGeometry.cached(tree, in: geo.size)
+            TimelineView(.animation(minimumInterval: lively ? 1.0 / 30 : 1.0 / 12, paused: reduceMotion)) { timeline in
+                scene(g, now: TreeClock.frozen ?? timeline.date)
+            }
+        }
+    }
+
+    private func scene(_ g: TreeGeometry, now: Date) -> some View {
+        let still = reduceMotion
+        let growing = still ? nil : TreeGrowth.current(tree, at: now)
+        let pose = g.pose(time: still ? 0 : now.timeIntervalSinceReferenceDate, wind: still ? 0 : 1, growing: growing)
+        let sketchFrom = TreeClock.sketchStart ?? (TreeClock.frozen == nil ? appeared : nil)
+        var sketch: [String: CGFloat] = [:]
+        if let sketchFrom, !still {
+            for (k, gh) in g.ghosts.enumerated() {
+                sketch[gh.id] = CGFloat(max(0, min(1, (now.timeIntervalSince(sketchFrom) - 0.35 - Double(k) * 0.22) / 0.9)))
+            }
+        }
+        let papers = tree.papers.sorted { $0.addedAt < $1.addedAt }
+        return ZStack(alignment: .topLeading) {
+            TreeDrawing(tree: tree, geometry: g, pose: pose, sketch: sketch)
+            ForEach(g.ghosts, id: \.id) { ghost in
+                if let s = tree.suggestions.first(where: { $0.id == ghost.id }) {
+                    let from = ghost.node < pose.p.count ? pose.p[ghost.node] : ghost.from
+                    let drawn = sketch[ghost.id] ?? 1
+                    GhostTipCard(paper: s.paper, size: g.cardSize)
+                        .opacity(Double(max(0, min(1, (drawn - 0.75) / 0.25))))
+                        .position(x: ghost.to.x + from.x - ghost.from.x, y: ghost.to.y + from.y - ghost.from.y - g.cardSize.height * 0.4)
+                        .onTapGesture { openGhost = s.id }
+                        .help("Suggested: \(s.paper.title)")
+                        .popover(isPresented: Binding(get: { openGhost == s.id }, set: { if !$0 { openGhost = nil } }), arrowEdge: .bottom) {
+                            SuggestionSlip(suggestion: s, tree: tree, store: store) { openGhost = nil }
+                        }
                 }
-                ForEach(Array(g.tips.enumerated()), id: \.element.id) { i, tip in
-                    if let paper = tree.papers.first(where: { $0.id == tip.id }) {
-                        let dx = CGFloat(cos(tip.angle)), dy = CGFloat(sin(tip.angle))
-                        let lift = g.cardSize.height * (tree.look.species == .flytrap ? 0.32 : 0.42)
-                        PaperTipCard(paper: paper, image: store.thumbnails[paper.id], size: g.cardSize,
-                                     tilt: Double((i * 37) % 11) - 5)
-                            .position(x: tip.point.x + dx * lift, y: tip.point.y + dy * lift)
-                            .onTapGesture { if let u = paper.openURL { NSWorkspace.shared.open(u) } }
-                            .help(paper.title + (paper.shortAuthors.isEmpty ? "" : ", " + paper.shortAuthors) + (paper.year.map { " (\($0))" } ?? ""))
-                    }
+            }
+            ForEach(Array(g.tips.enumerated()), id: \.element.id) { i, tip in
+                if let paper = tree.papers.first(where: { $0.id == tip.id }) {
+                    let owner = papers.firstIndex(where: { $0.id == paper.id }) ?? 0
+                    // The newest paper's page drops onto its tip once the branch has grown out.
+                    let land: CGFloat = growing.map { $0.owner == owner ? max(0, ($0.progress - 0.68) / 0.32) : 1 } ?? 1
+                    let settle = TreeGrowth.spring(land)
+                    let p = tip.node < pose.p.count ? pose.p[tip.node] : tip.point
+                    let dx = CGFloat(cos(tip.angle)), dy = CGFloat(sin(tip.angle))
+                    let lift = g.cardSize.height * (tree.look.species == .flytrap ? 0.32 : 0.42)
+                    let sway = Double(p.x - tip.point.x) * 0.8
+                    PaperTipCard(paper: paper, image: store.thumbnails[paper.id], size: g.cardSize,
+                                 tilt: Double((i * 37) % 11) - 5 + sway + Double(1 - settle) * 9)
+                        .scaleEffect(0.82 + 0.18 * settle)
+                        .opacity(land <= 0 ? 0 : Double(min(1, land * 3)))
+                        .position(x: p.x + dx * lift, y: p.y + dy * lift - (1 - settle) * g.cardSize.height * 0.8)
+                        .onTapGesture { if let u = paper.openURL { NSWorkspace.shared.open(u) } }
+                        .help(paper.title + (paper.shortAuthors.isEmpty ? "" : ", " + paper.shortAuthors) + (paper.year.map { " (\($0))" } ?? ""))
                 }
             }
         }
@@ -677,7 +709,7 @@ struct AddChooser: View {
             model.onAdded(tree.id)
         } label: {
             VStack(spacing: 4) {
-                TreeDrawing(tree: tree, geometry: TreeGeometry.make(tree, in: CGSize(width: 84, height: 70)), detail: 0.5)
+                TreeDrawing(tree: tree, geometry: TreeGeometry.cached(tree, in: CGSize(width: 84, height: 70)), detail: 0.5)
                     .frame(width: 84, height: 70)
                     .clipped()
                     .background(Color(hex: 0xFBF8EE))
