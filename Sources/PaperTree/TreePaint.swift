@@ -273,8 +273,11 @@ struct TreePainter {
 
         if species == .coral { fan(&ctx) }
         if species == .oak || species == .willow {
-            for c in g.clumps where c.kind == .leaves { leafMass(&ctx, c, pass: .shadow) }
-            for c in g.clumps where c.kind == .leaves && !c.front { leafMass(&ctx, c, pass: .body) }
+            // Only a whisper of the old washes, so the crown has some shade behind the leaves.
+            var faint = ctx
+            faint.opacity = 0.22
+            for c in g.clumps where c.kind == .leaves { leafMass(&faint, c, pass: .shadow) }
+            for lf in g.leaves where lf.back { leafShape(&ctx, lf) }
         }
         for gh in g.ghosts { ghost(&ctx, gh, rnd: &rnd) }
 
@@ -289,8 +292,7 @@ struct TreePainter {
         switch species {
         case .oak, .willow:
             if species == .willow { for s in g.strands { strand(&ctx, s) } }
-            for c in g.clumps where c.kind == .leaves && c.front { leafMass(&ctx, c, pass: .body) }
-            for c in g.clumps where c.kind == .leaves { leafMass(&ctx, c, pass: .detail) }
+            for lf in g.leaves where !lf.back { leafShape(&ctx, lf) }
         case .conifer:
             for t in g.tiers { tier(&ctx, t) }
             sprays(&ctx)
@@ -506,6 +508,83 @@ struct TreePainter {
         }
     }
 
+    // MARK: Single leaves
+
+    /// An oak leaf one unit long, pointing along +x from its stalk: rounded lobes, a little uneven.
+    static let oakUnit: Path = {
+        var top: [CGPoint] = [], bottom: [CGPoint] = []
+        let n = 30
+        for i in 0...n {
+            let x = CGFloat(i) / CGFloat(n)
+            let env = 0.3 * CGFloat(pow(sin(Double.pi * min(1, Double(x) * 1.04)), 0.8)) * (1 - 0.25 * x)
+            let lobeA = 0.58 + 0.42 * CGFloat(pow(abs(sin(Double(x) * .pi * 3.2 + 0.35)), 0.6))
+            let lobeB = 0.58 + 0.42 * CGFloat(pow(abs(sin(Double(x) * .pi * 3.2 + 0.85)), 0.6))
+            top.append(CGPoint(x: x, y: -env * lobeA))
+            bottom.append(CGPoint(x: x, y: env * lobeB))
+        }
+        var p = Path()
+        p.move(to: .zero)
+        for q in top { p.addLine(to: q) }
+        for q in bottom.reversed() { p.addLine(to: q) }
+        p.closeSubpath()
+        return p
+    }()
+
+    /// A willow leaf: long, narrow and pointed at both ends.
+    static let lanceUnit: Path = {
+        var p = Path()
+        p.move(to: .zero)
+        p.addCurve(to: CGPoint(x: 1, y: 0), control1: CGPoint(x: 0.25, y: -0.16), control2: CGPoint(x: 0.7, y: -0.1))
+        p.addCurve(to: .zero, control1: CGPoint(x: 0.7, y: 0.1), control2: CGPoint(x: 0.25, y: 0.16))
+        p.closeSubpath()
+        return p
+    }()
+
+    /// The leaf's color: the tree's green (or plum, or rust) moved a little lighter or darker, warmer or cooler.
+    private func tone(value: Double, hue: Double) -> RGB {
+        let L = leaf
+        let v = max(-1, min(1, value))
+        var c = v >= 0 ? L.mix(L.lit, v * 0.75) : L.mix(L.shade, -v * 0.75)
+        c = hue >= 0 ? c.mix(RGB(0xC9A94A), hue * 0.16) : c.mix(RGB(0x4F6C8E), -hue * 0.14)
+        return c
+    }
+
+    private func drawLeaf(_ ctx: inout GraphicsContext, unit: Path, at base: CGPoint, angle: Double, length: CGFloat, color: RGB, alpha: Double) {
+        guard length > 0.5 else { return }
+        let t = CGAffineTransform(translationX: base.x, y: base.y).rotated(by: CGFloat(angle)).scaledBy(x: length, y: length)
+        let shape = unit.applying(t)
+        ctx.fill(shape, with: .color(color.color(0.96 * alpha)))
+        // The half away from the light, a shade darker, so each leaf has a fold.
+        var half = Path()
+        half.move(to: CGPoint(x: 0.02, y: 0))
+        half.addLine(to: CGPoint(x: 0.98, y: 0))
+        half.addLine(to: CGPoint(x: 0.98, y: 0.4))
+        half.addLine(to: CGPoint(x: 0.02, y: 0.4))
+        half.closeSubpath()
+        var folded = ctx
+        folded.clip(to: shape)
+        folded.fill(half.applying(t), with: .color(color.shade.color(0.28 * alpha)))
+        ctx.stroke(shape, with: .color(PlantInk.ink.opacity(0.55 * alpha)), lineWidth: max(0.35, lw * 0.5))
+        var rib = Path()
+        rib.move(to: CGPoint(x: -0.14, y: 0.02))
+        rib.addQuadCurve(to: CGPoint(x: 0.88, y: 0), control: CGPoint(x: 0.4, y: -0.03))
+        ctx.stroke(rib.applying(t), with: .color(color.shade.shade.color(0.75 * alpha)), lineWidth: max(0.3, lw * 0.42))
+    }
+
+    private func leafShape(_ ctx: inout GraphicsContext, _ lf: TreeGeometry.Leaf) {
+        guard lf.node < pose.p.count, pose.vis[lf.node] > 0 else { return }
+        let s = pose.leafScale(g.nodes[lf.node].owner)
+        guard s > 0.01 else { return }
+        let p = pose.p[lf.node]
+        let flex = Double(g.nodes[lf.node].flex)
+        let flutter = sin(pose.time * 1.7 + lf.phase) * 0.12 * Double(pose.wind) * (0.4 + flex)
+        let unit = species == .willow ? Self.lanceUnit : Self.oakUnit
+        // Unfurling: a new leaf turns into place as it grows.
+        let turn = Double(1 - min(1, s)) * 0.9
+        drawLeaf(&ctx, unit: unit, at: CGPoint(x: p.x + lf.offset.x, y: p.y + lf.offset.y), angle: lf.angle + flutter + turn,
+                 length: lf.length * s, color: tone(value: lf.value - (lf.back ? 0.45 : 0), hue: lf.hue), alpha: lf.dim ? 0.3 : 1)
+    }
+
     private func strand(_ ctx: inout GraphicsContext, _ s: TreeGeometry.Strand) {
         guard pose.vis[s.node] > 0 else { return }
         let sc = pose.leafScale(g.nodes[s.node].owner)
@@ -519,15 +598,18 @@ struct TreePainter {
         stem.move(to: p)
         stem.addQuadCurve(to: end, control: ctrl)
         ctx.stroke(stem, with: .color(leaf.shade.color(0.5)), lineWidth: lw * 0.5)
-        let L = leaf
+        var r = SeededRandom(tree.seed &+ UInt64(s.node), "strand")
         for k in 1...s.leaves {
             let t = CGFloat(k) / CGFloat(s.leaves + 1)
             let u = 1 - t
             let q = CGPoint(x: u * u * p.x + 2 * u * t * ctrl.x + t * t * end.x, y: u * u * p.y + 2 * u * t * ctrl.y + t * t * end.y)
+            let d = CGPoint(x: 2 * u * (ctrl.x - p.x) + 2 * t * (end.x - ctrl.x), y: 2 * u * (ctrl.y - p.y) + 2 * t * (end.y - ctrl.y))
+            let along = atan2(Double(d.y), Double(d.x))
             let side: Double = k % 2 == 0 ? 1 : -1
-            let tint = (s.tint + Double(k) * 0.13).truncatingRemainder(dividingBy: 1)
-            let path = Pen.leaf(at: q, angle: .pi / 2 + side * 0.6, length: max(4, g.crownRadius * 0.24) * (0.7 + 0.3 * u), width: 0.28)
-            ctx.fill(path, with: .color(L.shade.mix(L.lit, tint).color(0.85)))
+            let flutter = sin(pose.time * 1.9 + s.phase + Double(k)) * 0.1 * Double(pose.wind)
+            let value = (s.tint * 2 - 1) * 0.4 + r.range(-0.35, 0.35) - 0.3 * Double(t)
+            drawLeaf(&ctx, unit: Self.lanceUnit, at: q, angle: along + side * 0.5 + flutter,
+                     length: g.leafSize * (0.95 - 0.25 * t) * sc, color: tone(value: value, hue: r.range(-1, 1)), alpha: 1)
         }
     }
 

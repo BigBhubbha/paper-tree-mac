@@ -110,12 +110,24 @@ extension TreeGeometry {
             if rects.contains(where: { $0.insetBy(dx: -clumps[i].rx * 0.3, dy: -clumps[i].ry * 0.3).contains(o) }) { clumps[i].thin = 0.38 }
         }
 
+        for i in leaves.indices {
+            let lf = leaves[i]
+            let p = nodes[lf.node].p
+            let c = CGPoint(x: p.x + lf.offset.x + CGFloat(cos(lf.angle)) * lf.length * 0.5,
+                            y: p.y + lf.offset.y + CGFloat(sin(lf.angle)) * lf.length * 0.5)
+            if rects.contains(where: { $0.insetBy(dx: -lf.length * 0.3, dy: -lf.length * 0.3).contains(c) }) { leaves[i].dim = true }
+        }
+
         // Everything drawn, for the camera.
         var box = CGRect(x: base.x - max(60, height * 0.55 + 40), y: base.y - 8, width: max(60, height * 0.55 + 40) * 2, height: 24)
         for n in nodes { box = box.union(CGRect(x: n.p.x - n.r, y: n.p.y - n.r, width: n.r * 2, height: n.r * 2)) }
         for c in clumps {
             let p = nodes[c.node].p
             box = box.union(CGRect(x: p.x + c.offset.x - c.rx * 1.2, y: p.y + c.offset.y - c.ry * 1.2, width: c.rx * 2.4, height: c.ry * 2.4))
+        }
+        for lf in leaves {
+            let p = nodes[lf.node].p
+            box = box.union(CGRect(x: p.x + lf.offset.x - lf.length, y: p.y + lf.offset.y - lf.length, width: lf.length * 2, height: lf.length * 2))
         }
         for s in strands { box = box.union(CGRect(x: nodes[s.node].p.x - 4, y: nodes[s.node].p.y, width: 8, height: s.length)) }
         for c in cardCenters.values { box = box.union(CGRect(x: c.x - w * 0.7, y: c.y - h * 0.7, width: w * 1.4, height: h * 1.4)) }

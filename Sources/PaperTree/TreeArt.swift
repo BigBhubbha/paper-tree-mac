@@ -101,6 +101,9 @@ struct TreeGeometry {
     var fanLayers: [Path] = []
     var groundLayers: [Path] = []
     var crownRadius: CGFloat = 20
+    /// Individual leaves (oak and willow), spaced so they rarely touch, and their usual length.
+    var leaves: [Leaf] = []
+    var leafSize: CGFloat = 8
     var maxRadius: CGFloat = 1
 
     // Where the cards sit once they've been spaced out (TreeLayout.swift), in drawing coordinates.
