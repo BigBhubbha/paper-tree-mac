@@ -149,3 +149,71 @@ Rules applied to the other screens: color only means something (green on, red of
 31. Nova: An Editor with a Soul, Nathan A. King: https://www.nateking.dev/blog/nova-an-editor-with-a-soul
 32. Lost Post, Daydrift: https://daydrift.design/work/lostpost/
 33. Postpond, Lilith Yu: https://lilithyu.com/projects/postpond
+
+## Motion and painted trees (beauty-v1, October 2026)
+
+What we read, and what we took from each source.
+
+### Apple: springs, continuity, Reduce Motion
+- WWDC23 "Animate with springs": springs are the only kind of animation that stays continuous when it is interrupted or retargeted, because they carry their speed into the new target. Tune them with two numbers, a perceptual duration and a bounce. Bounce 0 is smooth, about 0.15 is a hint of give, and about 0.3 is clearly bouncy; avoid going above about 0.4. Duration is how fast it feels, not when it settles.
+- Use one family of springs across the app so everything moves alike. Ours is in `Motion.swift`: open (response 0.5, damping 0.76, a little give), close (0.34, 0.94, no bounce, since things tucking away should not wobble), snappy (0.26, 0.82) for presses and toggles, page (0.46, 0.88) for page turns, and land (0.4, 0.62) for stamps.
+- Continuity between states: content should not reflow while its container animates. The island now lays its content out once at the open size and lets the growing pill reveal it (clipped), so the grove fades up through a short blur instead of squeezing. A tree's own page zooms out of its sheet in the grove.
+- matchedGeometryEffect would also tie a sheet to its page, but our trees are grown for the size they are drawn at, so resizing every frame would regrow them. We use a zoom-and-fade instead and keep the drawing at one size.
+- Reduce Motion (`accessibilityDisplayShouldReduceMotion`, and `accessibilityReduceMotion` in SwiftUI): Apple recommends a crossfade in place of slides and zooms, not removing the change. With it on, every transition becomes a short fade, trees stand still (no wind, no growth), pencil branches appear already drawn, and the card shows its text at once.
+
+### Lauren Hom
+- She sketches loose in pencil on paper first, because an iPad makes it too easy to undo and tighten up too soon, then inks and finishes digitally, painting each shadow by hand layer by layer.
+- She works in playful, saturated palettes with dimension and texture. One botanical piece uses dusty rose, sage, deep green-grey and a warm coral (#E86F67), with neutrals between.
+- Taken: draw the pencil branch first and ink over it, keep a hand-wobble in every line, and use coral and dusty rose against greens instead of an all-green grove.
+
+### Studio Ghibli botanicals (Kazuo Oga)
+- Oga wets the paper, drops in broad soft color while it is wet, and puts the large soft passages in first and the details last.
+- Ghibli trees use a small number of tightly controlled shapes, not thousands of leaves. Start with two masses, one of light and one of shadow. Split each into medium shapes, then add a few small ones, so the sizes run big, medium, small. Vary the edges, some crisp and some lost.
+- Taken: every leaf mass is painted as a shadow wash (offset down and right), then a body wash, then a smaller lit wash toward the upper left, then a few crisp leaf dabs on the lit rim and in the shadow. Clumps group the crown into a handful of masses instead of one blob per twig.
+
+### Vintage botanical plates (Curtis's Botanical Magazine and others)
+- One specimen per plate, drawn accurately, often turned or cropped to fit the page, with generous bare paper around it.
+- Engraved line work carries the drawing, and transparent watercolor is laid over it by hand, sometimes on only some leaves or flowers.
+- Plates carry a plate number, the artist ("del.") and the engraver ("sculp."), with the plant's name below the image.
+- Taken: ink only the outside edge of the wood and a few edge accents on the foliage, so the color stays transparent wash. Light comes from the upper left, and the herbarium label and sheet number stay as they are.
+
+### Generative trees that look good
+- Space colonization (Runions, Lane and Prusinkiewicz, 2007):
+  - Scatter attraction points in a crown envelope. Each point pulls the nearest branch node within an influence radius, and each pulled node grows one step toward the average of its pulls. A point is used up once any node comes within the kill distance.
+  - A dense crown with a short kill distance looks busy. Fewer points, or a longer kill distance, gives smoother limbs.
+  - Afterward, move each node partway toward its parent. This softens the branching angles, which changes the look a lot.
+  - Our setup: the paper branches are the scaffold, and the crown fills in from an envelope over all the paper tips plus a cloud around each tip. Coral uses a fan-shaped envelope, alien trees curl each step slightly, and willows are biased downward.
+- Pipe model: a limb carries the cross-section of what it feeds, r^n = r1^n + r2^n, with n between 2 and 3. Lower n gives more contrast between trunk and twigs. We use n = 2 and map the result so the thinnest twig and the trunk land on fixed widths.
+- Filled tapered limbs, not strokes:
+  - Each chain follows its thickest child, and every other child starts its own chain, which avoids blobs at the joints.
+  - Each chain is a ribbon around a smoothed center line.
+  - All outlines are inked first and all fills go on top, so only the silhouette of the whole tree is inked.
+  - A narrower, lighter ribbon nudged toward the light makes the wood read as round.
+  - Wavy bark ridges follow the grain on thick wood.
+- Watercolor (Tyler Hobbs):
+  - Deform a polygon recursively: split each edge and push the midpoint by a Gaussian scaled to the edge length.
+  - Use a few rounds for a shared base shape, then a few more rounds per layer.
+  - Stack many nearly clear layers, so edges bloom softly while the overall shape holds.
+  - We use 4 to 5 layers per mass (the app redraws every frame), edge darkening on one layer, and paper grain multiplied into the wash so it granulates.
+- Growth over time:
+  - The new paper's branch extends node by node along its length.
+  - Then its crown twigs appear in the order they grew in the colonization.
+  - Then its leaves unfurl on a damped spring (scale, plus a small turn).
+  - Then its front page drops onto the tip with a little overshoot.
+  - Last, the pencil branches draw themselves on, with the softer passes trailing behind like a second pass of the pencil.
+- Wind: each node turns slightly around its parent, by an amount set by how thin it is (thin twigs flex and the trunk does not), with two slow sine waves at different speeds so it never loops visibly. The turns add up toward the tips.
+
+### Not done, and why
+- Painted texture assets: the plan was to commission hand-drawn SVG leaf, needle and blossom sets from QuiverAI. Its models were locked for this account and requests came back unauthorized, so every motif is still drawn in code. The shapes (almond leaves, trap lobes with cilia, needle chevrons, polyps) are procedural, and the noise grain is generated at launch.
+- Metal shaders: not needed. Core Graphics through SwiftUI Canvas handles the washes at 30 frames a second on a tree page. Sheets in the grove redraw at 12 frames a second to save power.
+
+### Sources for the motion and tree section
+34. Animate with springs, WWDC23: https://developer.apple.com/videos/play/wwdc2023/10158/
+35. Explore SwiftUI animation, WWDC23: https://developer.apple.com/videos/play/wwdc2023/10156/
+36. Human Interface Guidelines, Motion: https://developer.apple.com/design/human-interface-guidelines/motion
+37. Lauren Hom, process interviews and Daily Dishonesty: https://homsweethom.com/
+38. Kazuo Oga background painting, Ghibli Museum exhibition notes and Oga Kazuo Art Collection
+39. Curtis's Botanical Magazine, Biodiversity Heritage Library: https://www.biodiversitylibrary.org/bibliography/706
+40. Runions, Lane, Prusinkiewicz, Modeling Trees with a Space Colonization Algorithm (2007): http://algorithmicbotany.org/papers/colonization.egwnp2007.pdf
+41. Tyler Hobbs, A Guide to Simulating Watercolor Paint with Generative Art: https://www.tylerxhobbs.com/words/a-guide-to-simulating-watercolor-paint-with-generative-art
+42. Shinozaki et al., the pipe model theory of plant form (1964), and Leonardo's rule on branch area
