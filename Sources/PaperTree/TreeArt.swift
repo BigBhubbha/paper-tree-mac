@@ -98,6 +98,8 @@ struct TreeGeometry {
     var tiers: [Tier] = []
     var trunkNodes: [Int] = []
     var twigEnds: [Int] = []
+    /// Ends of structural limbs that carry no paper (recipe trees): the crown grows over them too.
+    var scaffoldEnds: [CGPoint] = []
     var fanLayers: [Path] = []
     var groundLayers: [Path] = []
     var crownRadius: CGFloat = 20
@@ -120,7 +122,9 @@ struct TreeGeometry {
 
     static func make(_ tree: PaperTreeData, in size: CGSize) -> TreeGeometry {
         var g = TreeGeometry()
-        var rnd = SeededRandom(tree.seed, "layout")
+        // A tree with a recipe has its own structure, seeded from its id, seed, crown and trunk.
+        let st = tree.structure
+        var rnd = SeededRandom(st?.seed ?? tree.seed, "layout")
         // The plant body, and the skeleton it grows on (new plants borrow one of the six).
         let real = tree.look.species
         let species = real.family
@@ -131,7 +135,18 @@ struct TreeGeometry {
         g.base = CGPoint(x: size.width * 0.5 + rnd.cg(-0.03, 0.03) * size.width, y: size.height - ground)
         let usable = size.height - ground - size.height * 0.06
         let habit = tree.look.habit
-        g.height = usable * (0.24 + 0.74 * stage) * CGFloat(habit.heightScale)
+        // Only woody, single-crowned plants take a crown and trunk shape (a cactus, conifer or
+        // a plant that grows from its base keeps its own build).
+        let shaped: TreeStructure? = (st != nil && !real.fromBase && real != .cactus && species != .conifer) ? st : nil
+        var crownTall: CGFloat = 1
+        switch shaped?.crown {
+        case .columnar?: crownTall = 1.14
+        case .spreading?: crownTall = 0.84
+        case .windswept?: crownTall = 0.9
+        case .vase?: crownTall = 1.05
+        default: break
+        }
+        g.height = usable * (0.24 + 0.74 * stage) * CGFloat(habit.heightScale) * crownTall
         let card = max(20, min(58, min(size.width, size.height) * 0.075)) * (0.75 + 0.25 * stage)
         g.cardSize = CGSize(width: card, height: card * 1.3)
         guard n > 0 else { return g }
@@ -144,26 +159,67 @@ struct TreeGeometry {
         // Wobble: how much a trunk or branch wanders, from the recipe's twist (1 at the middle).
         let wobble = 0.4 + 1.2 * habit.twist
         let fromBase = real.fromBase
+        let side0 = shaped?.side ?? 1
+        // Weeping crowns hang; windswept ones are pushed downwind.
+        let crownSag = sag + (shaped?.crown == .weeping ? 0.13 : 0)
+        let push = shaped?.crown == .windswept ? side0 * 0.045 : 0
+        let angleK = shaped.map { 0.7 + 0.6 * $0.angle } ?? 1
 
         // The trunk (or, for a flytrap or coral, nothing but a crown at the base).
         var trunk: [CGPoint] = []
         if !fromBase {
             let steps = 9
-            let sway: CGFloat = species == .alien ? (0.06 + 0.1 * twist) * H : 0.025 * H * CGFloat(wobble)
+            let gnarled = shaped?.trunk == .gnarled
+            let sway: CGFloat = (species == .alien ? (0.06 + 0.1 * twist) * H : 0.025 * H * CGFloat(wobble)) * (gnarled ? 2.4 : 1)
             let phase = rnd.range(0, .pi * 2)
+            // A lean: strong for a leaning trunk, gentle under a windswept crown; it eases back near the top.
+            let lean: CGFloat = shaped?.trunk == .leaning ? CGFloat(side0) * 0.34 : shaped?.crown == .windswept ? CGFloat(side0) * 0.16 : 0
             for i in 0...steps {
                 let t = CGFloat(i) / CGFloat(steps)
-                let bend = sin(Double(t) * .pi * (species == .alien ? 2.2 : 1.1) + phase)
-                let x = g.base.x + CGFloat(bend) * sway * t + rnd.cg(-1.5, 1.5)
+                let bend = sin(Double(t) * .pi * (species == .alien ? 2.2 : gnarled ? 2.7 : 1.1) + phase)
+                var x = g.base.x + CGFloat(bend) * sway * t + rnd.cg(-1.5, 1.5) + lean * H * (t - 0.4 * t * t)
+                if gnarled && i > 0 && i < steps { x += rnd.cg(-0.014, 0.014) * H }
                 trunk.append(CGPoint(x: x, y: g.base.y - H * t))
+            }
+            // A forked trunk: above the fork the main leader swings to one side and a second leader
+            // goes the other way.
+            var fork: (CGPoint, CGFloat)? = nil
+            if shaped?.trunk == .forked {
+                let f = rnd.cg(0.36, 0.52)
+                for i in trunk.indices {
+                    let t = CGFloat(i) / CGFloat(steps)
+                    if t > f { trunk[i].x += CGFloat(side0) * 0.3 * (t - f) * H }
+                }
+                fork = (point(on: trunk, at: f), f)
             }
             if real == .cactus {
                 // A saguaro column: thick, hardly tapering, rounded at the top.
                 let baseW = (14 + 30 * stage) * girth
                 g.limbs.append(Limb(points: trunk, w0: baseW, w1: baseW * 0.82, depth: 0))
             } else {
-                let baseW = ((species == .conifer ? 7 : 9) + (species == .conifer ? 20 : 34) * stage) * girth
+                let baseW = ((species == .conifer ? 7 : 9) + (species == .conifer ? 20 : 34) * stage) * girth * (gnarled ? 1.15 : 1)
                 g.limbs.append(Limb(points: trunk, w0: baseW, w1: max(1.6, baseW * 0.14), depth: 0))
+                if let fk = fork {
+                    let (fp, f) = fk
+                    let (leader, tip) = TreeGeometry.grow(from: fp, angleFromUp: -side0 * rnd.range(0.32, 0.48), length: H * (1 - f) * rnd.cg(0.85, 1.0),
+                                                          width: baseW * 0.55, species: real, twist: twist, droop: droop, rnd: &rnd, depth: 1,
+                                                          sag: crownSag * 0.5, wobble: wobble, push: push)
+                    g.limbs.append(leader)
+                    g.scaffoldEnds.append(tip.point)
+                }
+                if shaped?.trunk == .multi {
+                    // Two or three stems from the ground, like a coppiced tree.
+                    let extra = rnd.next() < 0.5 ? 1 : 2
+                    for e in 0..<extra {
+                        let sd: Double = e == 0 ? -side0 : side0
+                        let start = CGPoint(x: g.base.x + CGFloat(sd) * rnd.cg(4, 9), y: g.base.y)
+                        let (stem, tip) = TreeGeometry.grow(from: start, angleFromUp: sd * rnd.range(0.2, 0.36), length: H * rnd.cg(0.62, 0.86),
+                                                            width: baseW * 0.62, species: real, twist: twist, droop: droop, rnd: &rnd, depth: 0,
+                                                            sag: 0, wobble: wobble, push: push)
+                        g.limbs.append(stem)
+                        g.scaffoldEnds.append(tip.point)
+                    }
+                }
             }
         }
 
@@ -208,6 +264,14 @@ struct TreeGeometry {
                 length = H * CGFloat(species == .flytrap ? (1.0 - 0.38 * abs(u)) : (0.92 - 0.3 * abs(u))) * rnd.cg(0.88, 1.04)
                 if real == .mushroom { length *= CGFloat(0.55 + 0.4 * (1 - abs(u))) * rnd.cg(0.8, 1.1) }
                 if real == .kelp { length *= rnd.cg(0.85, 1.12) }
+            } else if let sh = shaped {
+                let (lo, hi) = Self.attach(sh.crown)
+                let t = k == 1 ? (lo + hi) / 2 : lo + (hi - lo) * Double(jj) / Double(k - 1) + rnd.range(-0.04, 0.04)
+                start = point(on: trunk, at: CGFloat(t))
+                let downwind = sh.crown == .windswept && rnd.next() < 0.75
+                let sd: Double = downwind ? sh.side : Double(side)
+                (angleFromUp, length) = Self.crownBranch(sh.crown, t: t, side: sd, H: H, angleK: angleK, rnd: &rnd)
+                if sh.crown == .windswept && sd != sh.side { length *= 0.55 }
             } else {
                 let t = real == .cactus ? (k == 1 ? 0.4 : 0.22 + 0.4 * Double(jj) / Double(k - 1))
                                         : (k == 1 ? 0.55 : 0.3 + 0.58 * Double(jj) / Double(k - 1))
@@ -238,7 +302,7 @@ struct TreeGeometry {
             }
             let (limb, tip) = TreeGeometry.grow(from: start, angleFromUp: angleFromUp, length: length,
                                    width: max(2.4, (fromBase ? 5 : 4) + 14 * stage * (fromBase ? 0.6 : 1) * CGFloat(1 - Double(jj) / Double(max(k, 1)) * 0.4)) * (real == .cactus ? 1.9 : real == .mushroom ? 1.5 : 1) * (0.5 + 0.5 * girth),
-                                   species: real, twist: twist, droop: droop, rnd: &rnd, depth: 1, sag: sag, wobble: wobble)
+                                   species: real, twist: twist, droop: droop, rnd: &rnd, depth: 1, sag: crownSag, wobble: wobble, push: push)
             var owned = limb
             owned.owner = order[p.id] ?? 0
             g.limbs.append(owned)
@@ -264,7 +328,7 @@ struct TreeGeometry {
                 let start = CGPoint(x: parent.point.x - CGFloat(cos(parent.angle)) * back,
                                     y: parent.point.y - CGFloat(sin(parent.angle)) * back)
                 let (limb, tip) = TreeGeometry.grow(from: start, angleFromUp: a, length: len, width: max(1.8, 3 + 6 * stage) * (real == .cactus ? 2.2 : 1) * (0.5 + 0.5 * girth),
-                                       species: real, twist: twist, droop: droop, rnd: &rnd, depth: 2, sag: sag, wobble: wobble)
+                                       species: real, twist: twist, droop: droop, rnd: &rnd, depth: 2, sag: crownSag, wobble: wobble, push: push)
                 var owned = limb
                 owned.owner = order[p.id] ?? 0
                 g.limbs.append(owned)
@@ -274,6 +338,59 @@ struct TreeGeometry {
             pending = pending.filter { tipOf[$0.id] == nil }
         }
         g.tips = papers.compactMap { tipOf[$0.id] }
+
+        // Recipe trees: structural limbs that carry no paper, then side branches of a few orders.
+        if let sh = shaped, trunk.count > 2 {
+            var sr = SeededRandom(sh.seed, "scaffold")
+            let (lo, hi) = Self.attach(sh.crown)
+            let count = Int(((1 + 6 * sh.count) * Double(0.45 + 0.55 * stage)).rounded())
+            let owner = g.limbs.first(where: { $0.depth == 0 })?.owner ?? 0
+            for q in 0..<count {
+                let t = lo + (hi - lo) * (Double(q) + sr.range(0.1, 0.9)) / Double(max(count, 1))
+                let sd: Double = sh.crown == .windswept ? (sr.next() < 0.8 ? sh.side : -sh.side) : (q % 2 == 0 ? -side0 : side0)
+                var (a, len) = Self.crownBranch(sh.crown, t: t, side: sd, H: H, angleK: angleK, rnd: &sr)
+                len *= sr.cg(0.7, 0.95)
+                if sh.crown == .windswept && sd != sh.side { len *= 0.5 }
+                a += sr.range(-0.1, 0.1)
+                let w = max(2, (3 + 10 * stage) * (0.5 + 0.5 * girth))
+                var (limb, tip) = TreeGeometry.grow(from: point(on: trunk, at: CGFloat(t)), angleFromUp: a, length: len, width: w,
+                                                    species: real, twist: twist, droop: droop, rnd: &sr, depth: 1, sag: crownSag, wobble: wobble, push: push)
+                limb.owner = owner
+                g.limbs.append(limb)
+                g.scaffoldEnds.append(tip.point)
+            }
+            // Side branches: one to four per limb, and on deep recipes their own side shoots.
+            var fr = SeededRandom(sh.seed, "forks")
+            let per = Int((1 + 3 * sh.depth).rounded())
+            let structural = g.limbs.filter { $0.depth >= 1 && $0.points.count > 3 }
+            for limb in structural {
+                let L = pathLength(limb.points)
+                for f in 0..<per {
+                    let t = fr.cg(0.3, 0.88)
+                    let at = point(on: limb.points, at: t)
+                    let d = direction(on: limb.points, at: t)
+                    let sd: Double = f % 2 == 0 ? 1 : -1
+                    let a = atan2(Double(d.dy), Double(d.dx)) + .pi / 2 + sd * fr.range(0.45, 0.85) * angleK
+                    let len = L * fr.cg(0.28, 0.48)
+                    var (twig, tip) = TreeGeometry.grow(from: at, angleFromUp: a, length: len, width: max(1, limb.w0 * 0.42),
+                                                        species: real, twist: twist, droop: droop, rnd: &fr, depth: 3, sag: crownSag, wobble: wobble, push: push)
+                    twig.owner = limb.owner
+                    g.twigs.append(twig)
+                    if sh.depth > 0.55 {
+                        for s2 in [-1.0, 1.0] where fr.next() < 0.4 + 0.6 * (sh.depth - 0.55) / 0.45 {
+                            let d2 = direction(on: twig.points, at: 0.7)
+                            let a2 = atan2(Double(d2.dy), Double(d2.dx)) + .pi / 2 + s2 * fr.range(0.4, 0.75)
+                            var (sub, _) = TreeGeometry.grow(from: point(on: twig.points, at: 0.7), angleFromUp: a2, length: len * fr.cg(0.35, 0.55),
+                                                             width: max(0.8, twig.w1), species: real, twist: twist, droop: droop, rnd: &fr, depth: 3,
+                                                             sag: crownSag, wobble: wobble, push: push)
+                            sub.owner = limb.owner
+                            g.twigs.append(sub)
+                        }
+                    }
+                    _ = tip
+                }
+            }
+        }
 
         // Small twigs for fullness: more as the tree grows.
         var twigRnd = SeededRandom(tree.seed, "twigs")
@@ -348,6 +465,7 @@ struct TreeGeometry {
         limbs = limbs.map(ml)
         twigs = twigs.map(ml)
         tips = tips.map { Tip(id: $0.id, point: m($0.point), angle: $0.angle) }
+        scaffoldEnds = scaffoldEnds.map(m)
         ghosts = ghosts.map { Ghost(id: $0.id, from: m($0.from), control: m($0.control), to: m($0.to)) }
         base = CGPoint(x: base.x + dx, y: base.y)
         height *= s
@@ -358,7 +476,7 @@ struct TreeGeometry {
     /// One branch: a gently bending curve from `start`, with species habits (droop, curl, kinks).
     static func grow(from start: CGPoint, angleFromUp: Double, length: CGFloat, width: CGFloat, species: Species,
                      twist: CGFloat, droop: CGFloat, rnd: inout SeededRandom, depth: Int,
-                     sag: Double = 0, wobble: Double = 1) -> (Limb, Tip) {
+                     sag: Double = 0, wobble: Double = 1, push: Double = 0) -> (Limb, Tip) {
         var pts: [CGPoint] = [start]
         let steps = 8
         var a = angleFromUp
@@ -388,6 +506,8 @@ struct TreeGeometry {
             if sag != 0, [.oak, .alien, .crystal, .herb, .conifer, .coral, .dendrite, .flytrap].contains(species) {
                 a += (angleFromUp >= 0 ? 1 : -1) * sag * t * 2
             }
+            // Wind: every branch is nudged the same way.
+            a += push
             p = CGPoint(x: p.x + CGFloat(sin(a)) * seg + rnd.cg(-0.6, 0.6), y: p.y - CGFloat(cos(a)) * seg + rnd.cg(-0.6, 0.6))
             pts.append(p)
         }
@@ -403,6 +523,33 @@ struct TreeGeometry {
         }
         let limb = Limb(points: pts, w0: width, w1: max(0.9, width * end), depth: depth)
         return (limb, Tip(id: "", point: last, angle: tipAngle))
+    }
+
+    /// Where along the trunk a crown's main limbs leave it.
+    static func attach(_ c: TreeStructure.Crown) -> (Double, Double) {
+        switch c {
+        case .round: return (0.4, 0.86)
+        case .columnar: return (0.18, 0.92)
+        case .vase: return (0.3, 0.5)
+        case .spreading: return (0.42, 0.66)
+        case .weeping: return (0.42, 0.88)
+        case .windswept: return (0.45, 0.88)
+        }
+    }
+
+    /// A main limb for a crown shape: its angle from straight up and its length.
+    static func crownBranch(_ c: TreeStructure.Crown, t: Double, side: Double, H: CGFloat, angleK: Double,
+                            rnd: inout SeededRandom) -> (Double, CGFloat) {
+        let a: Double, len: CGFloat
+        switch c {
+        case .round: a = rnd.range(0.65, 1.05); len = H * CGFloat(0.46 - 0.2 * t)
+        case .columnar: a = rnd.range(0.2, 0.38); len = H * CGFloat(0.3 - 0.12 * t)
+        case .vase: a = rnd.range(0.36, 0.6); len = H * CGFloat(0.66 - 0.1 * t)
+        case .spreading: a = rnd.range(1.1, 1.36); len = H * CGFloat(0.7 - 0.25 * t)
+        case .weeping: a = rnd.range(0.7, 1.0); len = H * CGFloat(0.5 - 0.12 * t)
+        case .windswept: a = rnd.range(0.95, 1.3); len = H * CGFloat(0.55 - 0.15 * t)
+        }
+        return (side * min(1.5, a * angleK), len * rnd.cg(0.88, 1.08))
     }
 
     static func point(on pts: [CGPoint], at t: CGFloat) -> CGPoint {

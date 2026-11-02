@@ -556,7 +556,8 @@ struct TreeClient {
 
     private func post<T: Decodable>(_ path: String, _ body: [String: Any], as: T.Type) async throws -> T {
         guard let u = url(path) else { throw ServerError(message: "No server address.", status: 0) }
-        var r = URLRequest(url: u, timeoutInterval: 25)
+        // The tree customizer runs in the background and its model is slow, so it gets longer.
+        var r = URLRequest(url: u, timeoutInterval: path == "/api/tree/recipe" ? 50 : 25)
         r.httpMethod = "POST"
         r.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if !token.isEmpty { r.setValue(token, forHTTPHeaderField: "X-Paper-Tree-Token") }
@@ -628,10 +629,12 @@ struct TreeClient {
     func plant(titles: [String], fields: [String], current: Species?, base: Species? = nil) async throws -> TreeLook {
         struct Wire: Decodable {
             struct Palette: Decodable { var bark: String; var leaf: String; var accent: String }
-            struct Branches: Decodable { var droop: Double; var spread: Double; var density: Double }
+            struct Branches: Decodable { var droop: Double; var spread: Double; var density: Double; var count: Double?; var angle: Double?; var depth: Double? }
+            struct Leaves: Decodable { var size: Double; var gap: Double }
             struct Form: Decodable { var height: Double; var girth: Double; var twist: Double }
             struct Accent: Decodable { var kind: String; var amount: Double }
             var palette: Palette; var leafShape: String; var branches: Branches; var form: Form; var accent: Accent; var tendrils: Bool
+            var crown: String?; var trunk: String?; var leaves: Leaves?
         }
         struct R: Decodable {
             var species: String; var commonName: String; var latinName: String; var note: String
@@ -653,7 +656,9 @@ struct TreeClient {
             let made = TreeRecipe(bark: w.palette.bark, leaf: w.palette.leaf, accentColor: w.palette.accent, leafShape: w.leafShape,
                                   droop: w.branches.droop, spread: w.branches.spread, density: w.branches.density,
                                   height: w.form.height, girth: w.form.girth, twist: w.form.twist,
-                                  accent: w.accent.kind, amount: w.accent.amount, tendrils: w.tendrils, model: r.model ?? "gemini")
+                                  accent: w.accent.kind, amount: w.accent.amount, tendrils: w.tendrils, model: r.model ?? "gemini",
+                                  crown: w.crown, trunk: w.trunk, branchCount: w.branches.count, branchAngle: w.branches.angle,
+                                  branchDepth: w.branches.depth, leafSize: w.leaves?.size, leafGap: w.leaves?.gap)
             look.recipe = made.safe(for: look.species)
             look.droop = made.droop; look.twist = made.twist; look.vigor = made.density
         }

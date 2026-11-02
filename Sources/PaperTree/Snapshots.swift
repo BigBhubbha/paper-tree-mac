@@ -558,7 +558,7 @@ extension Snapshots {
             box.look = try? await client.plant(titles: titles, fields: fields, current: nil)
             done.signal()
         }
-        if done.wait(timeout: .now() + 40) == .success, let look = box.look {
+        if done.wait(timeout: .now() + 55) == .success, let look = box.look {
             print("plant: \(topic.name) -> \(look.species.rawValue) (\(look.grownFromLine ?? ""))")
             return look
         }
@@ -581,8 +581,7 @@ extension Snapshots {
         TreeClock.frozen = Date()
         TreeClock.sketchStart = nil
         let store = TreeStore(persist: false)
-        var looks: [TreeLook] = []
-        for (k, t) in topics.enumerated() { looks.append(plant(for: t, seed: UInt64(900 + k))) }
+        let looks = Self.parallel(topics.count) { k in plant(for: topics[k], seed: UInt64(900 + k)) }
 
         // Each subject as its own plant, labelled with what it grew from.
         let trees = topics.enumerated().map { k, t in topicTree(t, look: looks[k], number: k + 1, seed: UInt64(5000 + k * 97), papers: 6) }
@@ -647,6 +646,17 @@ extension Snapshots {
 
     // MARK: Tree customizer recipes
 
+    /// Runs the slow server calls side by side (each waits on its own answer).
+    static func parallel<T>(_ n: Int, _ make: @escaping (Int) -> T) -> [T] {
+        final class Slots: @unchecked Sendable { var v: [T?]; let lock = NSLock(); init(_ n: Int) { v = Array(repeating: nil, count: n) } }
+        let slots = Slots(n)
+        DispatchQueue.concurrentPerform(iterations: n) { k in
+            let x = make(k)
+            slots.lock.lock(); slots.v[k] = x; slots.lock.unlock()
+        }
+        return slots.v.map { $0! }
+    }
+
     static let oakTopics: [Topic] = [
         Topic(name: "Pollination", fields: ["Biology"], titles: ["Bumblebee visits and seed set in wildflowers", "Floral scent and pollinator choice", "Pollinator decline in farmland"]),
         Topic(name: "Autumn color", fields: ["Biology"], titles: ["Anthocyanins and red leaves in autumn", "Leaf senescence timing in temperate trees", "Warming delays autumn leaf fall"]),
@@ -669,11 +679,11 @@ extension Snapshots {
             box.look = try? await client.plant(titles: titles, fields: fields, current: nil, base: base)
             done.signal()
         }
-        if done.wait(timeout: .now() + 40) == .success, var look = box.look {
+        if done.wait(timeout: .now() + 55) == .success, var look = box.look {
             look.species = base
             look.recipe = look.recipe?.personalized(seed: seed, species: base)
             if let r = look.recipe {
-                print("recipe: \(topic.name) [\(r.model ?? "?")] bark \(r.bark) leaf \(r.leaf) accent \(r.accentColor) \(r.accent) \(r.leafShape) droop \(r.droop) spread \(r.spread) density \(r.density) height \(r.height) girth \(r.girth) twist \(r.twist)")
+                print("recipe: \(topic.name) [\(r.model ?? "?")] crown \(r.crown ?? "-") trunk \(r.trunk ?? "-") limbs \(r.branchCount ?? -1) angle \(r.branchAngle ?? -1) depth \(r.branchDepth ?? -1) leaf \(r.leafSize ?? -1) gap \(r.leafGap ?? -1) bark \(r.bark) leaf \(r.leaf) accent \(r.accentColor) \(r.accent) \(r.leafShape) droop \(r.droop) spread \(r.spread) density \(r.density) height \(r.height) girth \(r.girth) twist \(r.twist)")
             }
             return look
         }
@@ -695,11 +705,12 @@ extension Snapshots {
                         Circle().fill(RGB(hex: hex).color()).frame(width: 11, height: 11)
                             .overlay(Circle().stroke(Palette.ink.opacity(0.4), lineWidth: 0.6))
                     }
-                    Text(r == nil ? "no recipe (older tree)" : "\(r!.accent == "none" ? "no accent" : r!.accent), \(r!.leafShape == "auto" ? "own leaf" : r!.leafShape + " leaf")")
+                    Text(r == nil ? "no recipe (older tree)" : "\(r!.crown ?? "?") crown, \(r!.trunk ?? "?") trunk, \(r!.accent == "none" ? "no accent" : r!.accent)")
                         .font(.typewriter(10)).foregroundColor(Palette.ink2)
                 }
                 if let r {
-                    Text(String(format: "droop %.2f  spread %.2f  density %.2f  height %.2f  girth %.2f  twist %.2f", r.droop, r.spread, r.density, r.height, r.girth, r.twist))
+                    Text(String(format: "limbs %.2f  angle %.2f  depth %.2f  leaf %.2f  gap %.2f  height %.2f  girth %.2f",
+                                r.branchCount ?? 0, r.branchAngle ?? 0, r.branchDepth ?? 0, r.leafSize ?? 0, r.leafGap ?? 0, r.height, r.girth))
                         .font(.typewriter(9)).foregroundColor(Palette.ink3)
                 }
             }
@@ -708,13 +719,9 @@ extension Snapshots {
 
     static func renderRecipes(to dir: URL, topicLooks: [TreeLook]) {
         let store = TreeStore(persist: false)
-        // A pause between asks keeps under the model's per-minute allowance.
-        let looks = oakTopics.enumerated().map { k, t -> TreeLook in
-            if k > 0 { Thread.sleep(forTimeInterval: 4.5) }
-            return recipe(for: t, base: .oak, seed: UInt64(3100 + k * 13))
-        }
-        let oaks = oakTopics.enumerated().map { k, t in topicTree(t, look: looks[k], number: k + 1, seed: 4242, papers: 3) }
-        // Same plant body and the same branch seed, so only the recipe differs.
+        let looks = Self.parallel(oakTopics.count) { k in recipe(for: oakTopics[k], base: .oak, seed: UInt64(3100 + k * 13)) }
+        // Each oak has its own seed and recipe, as real trees would.
+        let oaks = oakTopics.enumerated().map { k, t in topicTree(t, look: looks[k], number: k + 1, seed: 4242 + UInt64(k) * 7919, papers: 3) }
         let more = oaks.map { t -> PaperTreeData in
             var x = t
             let extra = ["Field notes on the same subject", "A long term study, part two", "A review of the evidence"]
@@ -725,7 +732,7 @@ extension Snapshots {
             return x
         }
         let grid = VStack(alignment: .leading, spacing: 16) {
-            Text("Eight oaks, one branch seed, eight recipes").font(.fell(20)).foregroundColor(Palette.ink)
+            Text("Eight oaks, eight seeds, eight recipes").font(.fell(20)).foregroundColor(Palette.ink)
             ForEach(0..<2, id: \.self) { r in
                 HStack(alignment: .top, spacing: 16) {
                     ForEach(Array(more.enumerated()).filter { $0.offset / 4 == r }, id: \.offset) { _, tree in

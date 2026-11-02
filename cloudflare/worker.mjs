@@ -229,7 +229,7 @@ class GeminiError extends Error {
 
 /// Runs attempts with hedging: the first starts now, the next starts if the current ones are
 /// slower than HEDGE_MS or fail. The first attempt to succeed wins and the rest are cancelled.
-function hedged(attempts, outer) {
+function hedged(attempts, outer, hedgeMs = HEDGE_MS) {
   return new Promise((resolve, reject) => {
     const ctrls = [];
     let running = 0, settled = false, lastErr = null, timer = null;
@@ -243,7 +243,7 @@ function hedged(attempts, outer) {
       outer.addEventListener("abort", () => c.abort(), { once: true });
       running++;
       clearTimeout(timer);
-      timer = setTimeout(startNext, HEDGE_MS);
+      timer = setTimeout(startNext, hedgeMs);
       attempts[i](c.signal).then(
         (r) => {
           if (settled) { r?.cancel?.(); return; }
@@ -966,12 +966,17 @@ async function treeSpecies(req, waitUntil) {
 // explain models) so it has its own free-tier allowance, and the app only asks when a tree is
 // planted or its subject shifts. Every field is checked and clamped here, so the app always gets
 // something it can draw.
-// Gemini 3.5 Flash-Lite first (its own free allowance, separate from the 3.1 Flash-Lite that explains),
-// then Gemma 4 (a large free allowance of its own), then whatever "flash-lite-latest" points to.
-const TREE_MODELS = ["gemini-3.5-flash-lite", "gemma-4-26b-a4b-it", "gemini-flash-lite-latest"];
+// Gemini 3.5 Flash-Lite designs trees: it has its own free allowance, separate from the 3.1 Flash-Lite
+// that explains. It is slow with this schema (about 20 to 25 seconds), which is fine for a call that
+// runs in the background, so the next model is only started early if it fails outright. Fallbacks:
+// 3.1 Flash-Lite, then Gemma 4 (its own allowance, but weaker at this).
+const TREE_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemma-4-26b-a4b-it"];
+const TREE_HEDGE_MS = 25_000;
 const PLANTS = ["oak", "willow", "conifer", "flytrap", "alien", "coral", "kelp", "dendrite", "crystal", "herb", "cactus", "fern", "mushroom"];
 const LEAF_SHAPES = ["auto", "lobed", "lance", "oval", "heart", "fan", "shard"];
 const ACCENTS = ["none", "blossom", "berry", "fruit", "glow", "pods"];
+const CROWNS = ["round", "columnar", "vase", "spreading", "weeping", "windswept"];
+const TRUNKS = ["single", "forked", "multi", "leaning", "gnarled"];
 
 // Each plant's own colors, used whenever the model's color is missing or unusable.
 const DEFAULT_PALETTE = {
@@ -1040,11 +1045,18 @@ const RECIPE_SCHEMA = {
       properties: { bark: { type: "STRING" }, leaf: { type: "STRING" }, accent: { type: "STRING" } },
       required: ["bark", "leaf", "accent"], propertyOrdering: ["bark", "leaf", "accent"],
     },
+    crown: { type: "STRING", enum: CROWNS },
+    trunk: { type: "STRING", enum: TRUNKS },
     leafShape: { type: "STRING", enum: LEAF_SHAPES },
+    leaves: {
+      type: "OBJECT",
+      properties: { size: UNIT, gap: UNIT },
+      required: ["size", "gap"], propertyOrdering: ["size", "gap"],
+    },
     branches: {
       type: "OBJECT",
-      properties: { droop: UNIT, spread: UNIT, density: UNIT },
-      required: ["droop", "spread", "density"], propertyOrdering: ["droop", "spread", "density"],
+      properties: { count: UNIT, angle: UNIT, depth: UNIT, droop: UNIT, spread: UNIT, density: UNIT },
+      required: ["count", "angle", "depth", "droop", "spread", "density"], propertyOrdering: ["count", "angle", "depth", "droop", "spread", "density"],
     },
     form: {
       type: "OBJECT",
@@ -1062,8 +1074,8 @@ const RECIPE_SCHEMA = {
     latinName: { type: "STRING" },
     note: { type: "STRING" },
   },
-  required: ["species", "palette", "leafShape", "branches", "form", "accent", "tendrils", "grownFrom", "commonName", "latinName", "note"],
-  propertyOrdering: ["species", "palette", "leafShape", "branches", "form", "accent", "tendrils", "grownFrom", "commonName", "latinName", "note"],
+  required: ["species", "crown", "trunk", "palette", "leafShape", "leaves", "branches", "form", "accent", "tendrils", "grownFrom", "commonName", "latinName", "note"],
+  propertyOrdering: ["species", "crown", "trunk", "palette", "leafShape", "leaves", "branches", "form", "accent", "tendrils", "grownFrom", "commonName", "latinName", "note"],
 };
 
 const PLANT_GUIDE =
@@ -1081,6 +1093,9 @@ const PLANT_GUIDE =
   "fern = evolution, genetics, genomics, paleontology\n" +
   "mushroom = microbiology, mycology, fungi, microbiomes, soil\n";
 
+/// Text the model got stuck repeating ("weeping weeping weeping") is dropped.
+const sane = (t) => (/\b(\w+)\b(?:\W+\1\b){2,}/i.test(t) ? "" : t);
+
 /// The model's answer, checked field by field. Anything missing or odd gets a safe default.
 function validRecipe(o, { current, base }) {
   o = o && typeof o === "object" ? o : {};
@@ -1090,6 +1105,9 @@ function validRecipe(o, { current, base }) {
   const br = o.branches && typeof o.branches === "object" ? o.branches : {};
   const form = o.form && typeof o.form === "object" ? o.form : {};
   const acc = o.accent && typeof o.accent === "object" ? o.accent : {};
+  const lv = o.leaves && typeof o.leaves === "object" ? o.leaves : {};
+  // No crown or trunk from the model: pick one from the papers' hash, so it is still not always the same.
+  const h = [...JSON.stringify(o.grownFrom || o.commonName || "")].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   // Plants with no leaves of their own keep their own body; the leaf shape only means something on leafy ones.
   const leafy = ["oak", "willow", "herb"].includes(species);
   let accent = pick(acc.kind, ACCENTS, "none");
@@ -1101,16 +1119,22 @@ function validRecipe(o, { current, base }) {
       leaf: safeColor(pal.leaf, "leaf", species),
       accent: safeColor(pal.accent, "accent", species),
     },
+    crown: pick(o.crown, CROWNS, CROWNS[h % CROWNS.length]),
+    trunk: pick(o.trunk, TRUNKS, TRUNKS[(h >> 3) % TRUNKS.length]),
     leafShape: leafy ? pick(o.leafShape, LEAF_SHAPES, "auto") : "auto",
-    branches: { droop: clamp01(br.droop), spread: clamp01(br.spread), density: clamp01(br.density) },
-    // Size stays within a band so no tree is a stub or a beanpole.
-    form: { height: r2(0.15 + 0.7 * clamp01(form.height)), girth: r2(0.15 + 0.7 * clamp01(form.girth)), twist: clamp01(form.twist) },
+    leaves: { size: clamp01(lv.size), gap: clamp01(lv.gap) },
+    branches: {
+      count: clamp01(br.count), angle: clamp01(br.angle), depth: clamp01(br.depth),
+      droop: clamp01(br.droop), spread: clamp01(br.spread), density: clamp01(br.density),
+    },
+    // Wide bands, just short of a stub or a beanpole.
+    form: { height: r2(0.05 + 0.9 * clamp01(form.height)), girth: r2(0.08 + 0.87 * clamp01(form.girth)), twist: clamp01(form.twist) },
     accent: { kind: accent, amount: accent === "none" ? 0 : r2(0.2 + 0.8 * clamp01(acc.amount)) },
     tendrils: o.tendrils === true,
-    grownFrom: (Array.isArray(o.grownFrom) ? o.grownFrom : []).map((t) => tidy(clean(t, 30)).toLowerCase()).filter(Boolean).slice(0, 3),
-    commonName: tidy(clean(o.commonName, 60)),
-    latinName: tidy(clean(o.latinName, 60)),
-    note: tidy(clean(o.note, 200)),
+    grownFrom: (Array.isArray(o.grownFrom) ? o.grownFrom : []).map((t) => sane(tidy(clean(t, 30)).toLowerCase())).filter((t) => /[a-z]/.test(t)).slice(0, 3),
+    commonName: sane(tidy(clean(o.commonName, 60))),
+    latinName: sane(tidy(clean(o.latinName, 60))),
+    note: sane(tidy(clean(o.note, 200))),
   };
 }
 
@@ -1155,10 +1179,17 @@ async function treeRecipe(req, waitUntil) {
         (current ? `It is currently a ${current}. Keep it unless the papers now clearly center on a different subject.\n` : "")) +
     "palette: three hex colors, bark (the trunk or stem; for a cactus, coral, mushroom or dendrite this is the main body), leaf, accent (flowers, fruit or glow). Muted, natural watercolor tones that look good " +
     "on cream paper: no neon, no pure black or white. Let the subject suggest them (sea greens and kelp browns for oceans, cool blues for computing, warm ochres for deserts).\n" +
+    "crown: the silhouette, the most important choice. round (a classic dome), columnar (tall and narrow like a cypress), vase (limbs rising from a low fork, wide on top), " +
+    "spreading (wide and flat, wider than tall), weeping (limbs arching and hanging), windswept (blown to one side, like a tree on a cliff). " +
+    "trunk: single, forked (splits into two leaders), multi (several stems from the ground), leaning, gnarled (twisting and knotted). " +
+    "Pick crown and trunk for the character of the subject, and be bold: round with single is the dull default, use it only when it truly fits.\n" +
     "leafShape: auto, or a leaf that suits the topic (lobed, lance, oval, heart, fan, shard). " +
+    "leaves: size (0 tiny, 1 large) and gap (0 close together, 1 far apart). Leaves always keep clear space between them. " +
+    "branches also: count (0 a few strong limbs, 1 many), angle (0 rising steeply, 1 level), depth (0 simple limbs, 1 branching again and again). " +
     "branches: droop (0 reaching up, 1 weeping), spread (0 narrow and tall, 1 wide and open), density (0 airy and sparse, 1 full). " +
     "form: height (0 short, 1 tall), girth (0 slender, 1 stout), twist (0 straight, 1 gnarled and twisting). " +
     "Give the plant a clear character and commit to it: use the whole 0 to 1 range, and do not settle on middling or habitual values. " +
+    "Two different subjects should never get the same silhouette: let the crown, trunk, height, girth and branch numbers all differ. " +
     "A field of quick, light ideas might be tall, slender and airy; old, deep work stout, spreading and gnarled; something fragile might weep. " +
     "Bark varies too: silver grey, charcoal, red brown, pale ash, warm umber, olive, chosen for the character, not always plain brown. " +
     "accent: kind is none, blossom, berry, fruit, glow (softly glowing tips, for space, light, energy or the brain) or pods (hanging seed pods); amount 0 to 1. " +
@@ -1167,25 +1198,27 @@ async function treeRecipe(req, waitUntil) {
     "commonName: a playful two or three word name. latinName: a made-up binomial in Latin style. " +
     "note: one plain sentence under 18 words saying why this plant fits the papers. Never use em dashes.\n\n" +
     `Fields: ${fields.join(", ") || "unknown"}\nPaper titles:\n- ${titles.join("\n- ")}`;
-  const key = await cacheKey(["recipe-v2", prompt]);
+  const key = await cacheKey(["recipe-v4", prompt]);
   const hit = await cacheRead(key);
   if (hit?.recipe) return json(200, { ...flatPlant(hit.recipe), recipe: hit.recipe, model: hit.model, cached: true });
   const outer = new AbortController();
-  const timer = setTimeout(() => outer.abort(), 15_000);
+  const timer = setTimeout(() => outer.abort(), (Number(ENV.TREE_TIMEOUT_MS) || 45_000));
   // Gemini models take a thinking level; Gemma takes none.
   const bodyFor = (model) => JSON.stringify({
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     generationConfig: {
-      temperature: 0.85, maxOutputTokens: model.startsWith("gemma") ? 1500 : 600, responseMimeType: "application/json", responseSchema: RECIPE_SCHEMA,
-      ...(model.startsWith("gemma") ? {} : { thinkingConfig: { thinkingLevel: "minimal" } }),
+      temperature: 0.8, maxOutputTokens: model.startsWith("gemma") ? 1500 : 800, responseMimeType: "application/json", responseSchema: RECIPE_SCHEMA,
+      ...(model.startsWith("gemma") || ENV.TREE_THINKING === "none" ? {} : {
+        thinkingConfig: ENV.TREE_THINKING === "budget0" ? { thinkingBudget: 0 } : { thinkingLevel: ENV.TREE_THINKING || "minimal" },
+      }),
     },
   });
   // TREE_MODELS (comma separated) replaces the list; TREE_MODEL puts one model first.
   const list = ENV.TREE_MODELS ? String(ENV.TREE_MODELS).split(",").map((m) => m.trim()) : TREE_MODELS;
   const models = [...new Set([ENV.TREE_MODEL, ...list].filter(Boolean))];
-  const order = [...models.map((m) => [m, 0]), [models[0], RETRY_PAUSE_MS]];
+  const order = models.map((m) => [m, 0]);
   try {
-    const { out, model } = await hedged(order.map(([m, pause]) => wholeAttempt([m, pause], bodyFor(m))), outer.signal);
+    const { out, model } = await hedged(order.map(([m, pause]) => wholeAttempt([m, pause], bodyFor(m))), outer.signal, TREE_HEDGE_MS);
     let parsed;
     try { parsed = JSON.parse(out.replace(/^```(?:json)?\s*|\s*```$/g, "")); } catch { parsed = {}; }
     const recipe = validRecipe(parsed, { current, base });

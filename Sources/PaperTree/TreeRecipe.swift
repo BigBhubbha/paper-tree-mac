@@ -26,8 +26,22 @@ struct TreeRecipe: Codable, Hashable, Sendable {
     var tendrils = false
     /// Which model designed it (nil for a local recipe).
     var model: String? = nil
+    // Structure. Optional so recipes saved before these existed still load (they get a seeded pick).
+    /// round, columnar, vase, spreading, weeping, windswept.
+    var crown: String? = nil
+    /// single, forked, multi, leaning, gnarled.
+    var trunk: String? = nil
+    /// How many main limbs (0 few, 1 many), how steeply they rise (0 upright, 1 level), how many orders of side branches.
+    var branchCount: Double? = nil
+    var branchAngle: Double? = nil
+    var branchDepth: Double? = nil
+    /// Leaf size (0 small, 1 large) and the gap between leaves (0 close, 1 wide; always some gap).
+    var leafSize: Double? = nil
+    var leafGap: Double? = nil
 
     static let shapes = ["auto", "lobed", "lance", "oval", "heart", "fan", "shard"]
+    static let crowns = ["round", "columnar", "vase", "spreading", "weeping", "windswept"]
+    static let trunks = ["single", "forked", "multi", "leaning", "gnarled"]
     static let accents = ["none", "blossom", "berry", "fruit", "glow", "pods"]
 
     /// The same checks the Worker makes, so a bad cache entry or an old file can't draw anything garish.
@@ -42,7 +56,11 @@ struct TreeRecipe: Codable, Hashable, Sendable {
         if ["blossom", "berry", "fruit"].contains(r.accent) && [.mushroom, .kelp, .dendrite].contains(species) { r.accent = "glow" }
         func unit(_ v: Double) -> Double { v.isFinite ? max(0, min(1, v)) : 0.5 }
         r.droop = unit(droop); r.spread = unit(spread); r.density = unit(density)
-        r.height = max(0.15, min(0.85, unit(height))); r.girth = max(0.15, min(0.85, unit(girth))); r.twist = unit(twist)
+        r.height = max(0.05, min(0.95, unit(height))); r.girth = max(0.08, min(0.95, unit(girth))); r.twist = unit(twist)
+        if let c = crown, !Self.crowns.contains(c) { r.crown = nil }
+        if let t = trunk, !Self.trunks.contains(t) { r.trunk = nil }
+        r.branchCount = branchCount.map(unit); r.branchAngle = branchAngle.map(unit); r.branchDepth = branchDepth.map(unit)
+        r.leafSize = leafSize.map(unit); r.leafGap = leafGap.map(unit)
         r.amount = r.accent == "none" ? 0 : max(0.2, unit(amount))
         return r
     }
@@ -84,6 +102,11 @@ struct TreeRecipe: Codable, Hashable, Sendable {
         r.girth = rnd.range(0.35, 0.65)
         r.twist = rnd.range(0.25, 0.7)
         r.tendrils = look.tendrils ?? false
+        let crowns = s == .willow ? ["weeping", "weeping", "spreading", "windswept"] : Self.crowns
+        r.crown = crowns[Int(rnd.next() * Double(crowns.count)) % crowns.count]
+        r.trunk = Self.trunks[Int(rnd.next() * Double(Self.trunks.count)) % Self.trunks.count]
+        r.branchCount = rnd.range(0.1, 0.9); r.branchAngle = rnd.range(0.1, 0.9); r.branchDepth = rnd.range(0.2, 0.9)
+        r.leafSize = rnd.range(0.15, 0.85); r.leafGap = rnd.range(0.2, 0.8)
         if let b = look.bloom, b != "none" {
             r.accent = b
             r.accentColor = PlantInk.bloomRGB(look.bloomTone).hex
@@ -106,6 +129,8 @@ struct TreeRecipe: Codable, Hashable, Sendable {
         r.bark = Hue.nudge(bark, hue: rnd.range(-6, 6), light: rnd.range(-0.03, 0.03))
         r.leaf = Hue.nudge(leaf, hue: rnd.range(-8, 8), light: rnd.range(-0.04, 0.04))
         r.accentColor = Hue.nudge(accentColor, hue: rnd.range(-6, 6), light: 0)
+        r.branchCount = branchCount.map { j($0) }; r.branchAngle = branchAngle.map { j($0) }; r.branchDepth = branchDepth.map { j($0) }
+        r.leafSize = leafSize.map { j($0, 0.06) }; r.leafGap = leafGap.map { j($0, 0.06) }
         return r.safe(for: species)
     }
 
@@ -115,11 +140,53 @@ struct TreeRecipe: Codable, Hashable, Sendable {
         func m(_ a: Double, _ b: Double) -> Double { a + (b - a) * k }
         out.droop = m(droop, o.droop); out.spread = m(spread, o.spread); out.density = m(density, o.density)
         out.height = m(height, o.height); out.girth = m(girth, o.girth); out.twist = m(twist, o.twist)
+        func mo(_ a: Double?, _ b: Double?) -> Double? { b.map { bv in a.map { m($0, bv) } ?? bv } }
+        out.branchCount = mo(branchCount, o.branchCount); out.branchAngle = mo(branchAngle, o.branchAngle)
+        out.branchDepth = mo(branchDepth, o.branchDepth); out.leafSize = mo(leafSize, o.leafSize); out.leafGap = mo(leafGap, o.leafGap)
         out.amount = accent == o.accent ? m(amount, o.amount) : o.amount
         out.bark = RGB(hex: bark).mix(RGB(hex: o.bark), k).hex
         out.leaf = RGB(hex: leaf).mix(RGB(hex: o.leaf), k).hex
         out.accentColor = RGB(hex: accentColor).mix(RGB(hex: o.accentColor), k).hex
         return out
+    }
+}
+
+/// The shape of a tree's skeleton from its recipe. Only trees with a recipe have one; older trees
+/// keep the skeleton they always had.
+struct TreeStructure {
+    enum Crown: String { case round, columnar, vase, spreading, weeping, windswept }
+    enum Trunk: String { case single, forked, multi, leaning, gnarled }
+    var crown: Crown
+    var trunk: Trunk
+    var count: Double, angle: Double, depth: Double
+    var leafSize: Double, leafGap: Double
+    /// Which way the tree leans or the wind blows: -1 left, 1 right.
+    var side: Double
+    /// Seeds the branch layout: the tree's own id and seed plus its crown and trunk, so every tree
+    /// has its own structure, and only a new crown or trunk (not a drifting number) reshuffles it.
+    var seed: UInt64
+}
+
+extension PaperTreeData {
+    var structure: TreeStructure? {
+        guard let r = look.recipe else { return nil }
+        var pick = SeededRandom(seed, id.uuidString)
+        let crown = TreeStructure.Crown(rawValue: r.crown ?? "") ?? {
+            let all: [TreeStructure.Crown] = [.round, .columnar, .vase, .spreading, .weeping, .windswept]
+            return all[Int(pick.next() * 6) % 6]
+        }()
+        let trunk = TreeStructure.Trunk(rawValue: r.trunk ?? "") ?? {
+            let all: [TreeStructure.Trunk] = [.single, .forked, .multi, .leaning, .gnarled]
+            return all[Int(pick.next() * 5) % 5]
+        }()
+        var h: UInt64 = 1469598103934665603
+        for b in (id.uuidString + crown.rawValue + trunk.rawValue).utf8 { h = (h ^ UInt64(b)) &* 1099511628211 }
+        let mix = seed ^ h
+        var rr = SeededRandom(mix, "side")
+        return TreeStructure(crown: crown, trunk: trunk,
+                             count: r.branchCount ?? pick.range(0.2, 0.8), angle: r.branchAngle ?? pick.range(0.2, 0.8),
+                             depth: r.branchDepth ?? pick.range(0.3, 0.8), leafSize: r.leafSize ?? 0.5, leafGap: r.leafGap ?? 0.5,
+                             side: rr.next() < 0.5 ? -1 : 1, seed: mix)
     }
 }
 
