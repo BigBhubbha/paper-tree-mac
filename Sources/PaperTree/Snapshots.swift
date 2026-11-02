@@ -431,7 +431,7 @@ extension Snapshots {
             if let (p, rs) = rects(doc, "chemical signals upward") {
                 list.append(PaperMark(kind: .comment, page: p, rects: rs, ink: .sky, quote: "chemical signals upward", note: "Which signal? Look up abscisic acid."))
             }
-            list.append(PaperMark(kind: .sticky, page: 0, rects: [CGRect(x: 618, y: 430, width: 150, height: 112)], ink: .marigold,
+            list.append(PaperMark(kind: .sticky, page: 0, rects: [CGRect(x: 618, y: 580, width: 150, height: 108)], ink: .marigold,
                                   note: "Ask in class: does this hold for desert plants too?"))
             r.marks.preset(list)
         }
