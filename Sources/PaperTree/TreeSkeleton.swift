@@ -75,6 +75,8 @@ extension TreeGeometry {
     enum ClumpKind { case leaves, polyp, orb }
     struct Dab { var p: CGPoint; var angle: Double; var len: CGFloat; var tint: Double }
     struct Clump {
+        /// 1 is full foliage; less where a paper card sits, so its page stays readable.
+        var thin: CGFloat = 1
         var node: Int
         var offset: CGPoint
         var rx: CGFloat
@@ -86,6 +88,21 @@ extension TreeGeometry {
         var dabs: [Dab]
         var front: Bool
         var phase: Double
+    }
+    /// One leaf on a twig: where it sits relative to its node, which way it points, and its color.
+    struct Leaf {
+        var node: Int
+        var offset: CGPoint
+        var angle: Double
+        var length: CGFloat
+        /// -1 dark to 1 light, and -1 cool to 1 warm: small shifts so a crown isn't one flat color.
+        var value: Double
+        var hue: Double
+        var phase: Double
+        /// Behind the branches.
+        var back: Bool
+        /// Under a paper card: drawn faint so the page stays readable.
+        var dim = false
     }
     struct Strand { var node: Int; var length: CGFloat; var lean: CGFloat; var phase: Double; var leaves: Int; var tint: Double }
     struct Tier { var node: Int; var offset: CGPoint; var layers: [Path]; var half: CGFloat; var height: CGFloat; var light: Double }
@@ -131,12 +148,16 @@ extension TreeGeometry {
     }
 
     mutating func buildSkeleton(_ tree: PaperTreeData) {
-        let species = tree.look.species
-        var rnd = SeededRandom(tree.seed, "skeleton")
+        let real = tree.look.species
+        let species = real.family
+        let st = tree.structure
+        var rnd = SeededRandom(st?.seed ?? tree.seed, "skeleton")
         let H = max(height, 24)
         let D = max(2.4, H / 34)
-        let fromBase = species == .flytrap || species == .coral
+        let fromBase = real.fromBase
         var rootTarget: [Int: CGFloat] = [:]
+        /// The width each node was laid out with, for plants whose arms stay thick (cactus).
+        var laid: [Int: CGFloat] = [:]
 
         // 1. The paper branches become chains of nodes.
         for limb in limbs + twigs {
@@ -153,9 +174,12 @@ extension TreeGeometry {
                 parent = nearestNode(to: pts[0])
             }
             let total = CGFloat(pts.count - 1)
+            if isRoot { laid[parent] = limb.w0 / 2 }
             for k in 1..<pts.count {
                 nodes.append(Node(p: pts[k], parent: parent, owner: limb.owner, along: CGFloat(k) / total))
                 parent = nodes.count - 1
+                let f = CGFloat(k) / total
+                laid[parent] = (limb.w0 + (limb.w1 - limb.w0) * f) / 2
                 if limb.depth == 0 { trunkNodes.append(parent) }
             }
             if limb.depth == 3 { twigEnds.append(parent) }
@@ -165,11 +189,11 @@ extension TreeGeometry {
         for i in ghosts.indices { ghosts[i].node = nearestNode(to: ghosts[i].from) }
 
         // 2. The crown fills in.
-        let vigor = CGFloat(tree.look.vigor)
+        let vigor = CGFloat(tree.look.recipe?.density ?? tree.look.vigor)
         let R = max(cardSize.height * 0.85, H * 0.15) * (0.85 + 0.3 * vigor)
         crownRadius = R
         var att: [CGPoint] = []
-        let floorY = base.y - H * (species == .coral ? 0.1 : 0.28)
+        let floorY = base.y - H * (species == .coral ? 0.1 : st?.crown == .weeping ? 0.08 : 0.28)
         func scatter(_ c: CGPoint, _ rx: CGFloat, _ ry: CGFloat, _ n: Int) {
             for _ in 0..<n {
                 let a = rnd.range(0, 2 * .pi), d = CGFloat(sqrt(rnd.next()))
@@ -185,15 +209,62 @@ extension TreeGeometry {
         var hull = tips.reduce(CGRect.null) { $0.union(CGRect(origin: $1.point, size: .zero)) }
         if let top = trunkNodes.last { hull = hull.union(CGRect(origin: nodes[top].p, size: .zero)) }
         if hull.isNull { hull = CGRect(x: base.x, y: base.y - H, width: 0, height: 0) }
+        let shapedCrown = st != nil && (species == .oak || species == .willow) && !fromBase
+        if shapedCrown, let sh = st {
+            // The recipe's crown shape sets the envelope the crown grows into.
+            for e in scaffoldEnds { hull = hull.union(CGRect(origin: e, size: .zero)) }
+            let density = tree.look.recipe?.density ?? 0.5
+            let dens = 0.55 + 0.9 * (sh.crown == .columnar ? max(density, 0.7) : density)
+            let n = Int(Double(140 + 10 * tips.count + 8 * scaffoldEnds.count) * dens)
+            let W = hull.width / 2, Hh = hull.height / 2
+            switch sh.crown {
+            case .round:
+                scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), W + R * 0.95, Hh + R * 0.85, n)
+                bias = CGVector(dx: 0, dy: -0.15)
+            case .columnar:
+                // A full column from low on the trunk to above the top.
+                let top = min(hull.minY, base.y - H) - R * 0.5, low = base.y - H * 0.22
+                scatter(CGPoint(x: (hull.midX + base.x) / 2, y: (top + low) / 2), max(W, R * 0.55) + R * 0.4, (low - top) / 2, n)
+                bias = CGVector(dx: 0, dy: -0.2)
+            case .vase:
+                // Narrow low down, wide at the top.
+                let top = hull.minY - R * 0.9, bottom = max(hull.maxY, base.y - H * 0.45)
+                var made = 0, tries = 0
+                while made < n && tries < n * 6 {
+                    tries += 1
+                    let y = top + CGFloat(rnd.next()) * (bottom - top)
+                    let v = 1 - (y - top) / max(1, bottom - top)
+                    let half = (W + R * 0.9) * (0.3 + 0.7 * v)
+                    let p = CGPoint(x: hull.midX + CGFloat(rnd.range(-1, 1)) * half, y: y)
+                    if p.y < floorY { att.append(p); made += 1 }
+                }
+                bias = CGVector(dx: 0, dy: -0.25)
+            case .spreading:
+                scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.15), W + R * 1.35, Hh * 0.75 + R * 0.45, n)
+                bias = CGVector(dx: 0, dy: -0.04)
+            case .weeping:
+                // Curtains: the crown reaches far down toward the ground.
+                scatter(CGPoint(x: hull.midX, y: hull.midY + R * 0.5), W + R * 1.05, Hh + R * 1.3, n)
+                bias = CGVector(dx: 0, dy: 0.45)
+            case .windswept:
+                scatter(CGPoint(x: hull.midX + CGFloat(sh.side) * R * 0.7, y: hull.midY - R * 0.1), W + R * 1.15, Hh * 0.7 + R * 0.5, n)
+                bias = CGVector(dx: CGFloat(sh.side) * 0.38, dy: -0.04)
+            }
+            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.15), R * 1.0, R * 0.75, 10) }
+            step = D * 1.3
+        } else {
         switch species {
         case .oak:
-            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), hull.width / 2 + R * 0.95, hull.height / 2 + R * 0.85, 260 + 22 * tips.count)
-            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.2), R * 1.1, R * 0.8, 24) }
+            // Fewer crown points and a longer reach: an open crown of distinct limbs, not a thicket.
+            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), hull.width / 2 + R * 0.95, hull.height / 2 + R * 0.85, 170 + 12 * tips.count)
+            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.2), R * 1.1, R * 0.8, 12) }
             bias = CGVector(dx: 0, dy: -0.15)
+            step = D * 1.3
         case .willow:
-            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.2), hull.width / 2 + R * 0.9, hull.height / 2 + R * 0.5, 200 + 16 * tips.count)
-            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.05), R * 1.05, R * 0.6, 18) }
+            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.2), hull.width / 2 + R * 0.9, hull.height / 2 + R * 0.5, 90 + 7 * tips.count)
+            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.05), R * 1.05, R * 0.6, 7) }
             bias = CGVector(dx: 0, dy: 0.2)
+            step = D * 1.3
         case .alien:
             for t in tips { scatter(t.point, R * 1.0, R * 1.0, 22) }
             swirl = 0.42
@@ -207,11 +278,13 @@ extension TreeGeometry {
             }
             bias = CGVector(dx: 0, dy: -0.1)
             step = D * 0.8
-        case .conifer, .flytrap:
+        default:
             break
         }
+        }
         if att.count > 640 { att = Array(att.prefix(640)) }
-        if !att.isEmpty { colonize(&att, step: step, influence: R * 1.3, kill: step * 1.7, bias: bias, swirl: swirl, maxNodes: 1200) }
+        let open = species == .oak || species == .willow
+        if !att.isEmpty { colonize(&att, step: step, influence: R * 1.3, kill: step * (species == .oak ? 2.4 : open ? 2.9 : 1.7), bias: bias, swirl: swirl, maxNodes: 1200) }
 
         // 3. Pull new nodes a little toward their parent: softer branching angles.
         let before = nodes.map(\.p)
@@ -244,6 +317,7 @@ extension TreeGeometry {
             }
             if nodes[i].along <= 1 { r *= 1 - 0.3 * nodes[i].along }
             nodes[i].r = max(minR, r)
+            if real == .cactus, let w = laid[i] { nodes[i].r = max(minR, w) }
         }
         let maxR = nodes.map(\.r).max() ?? 1
         maxRadius = maxR
@@ -269,7 +343,7 @@ extension TreeGeometry {
 
         // 6. Leaves, needles, polyps, pods.
         let terminals = nodes.indices.filter { kids[$0].isEmpty }
-        var fr = SeededRandom(tree.seed, "foliage")
+        var fr = SeededRandom(st?.seed ?? tree.seed, "foliage")
         let pts = terminals.map { nodes[$0].p }
         let box = pts.reduce(CGRect.null) { $0.union(CGRect(origin: $1, size: .zero)) }.insetBy(dx: -1, dy: -1)
         func lightAt(_ p: CGPoint) -> Double {
@@ -301,7 +375,7 @@ extension TreeGeometry {
             }
         }
 
-        switch species {
+        switch real {
         case .oak, .willow:
             let willow = species == .willow
             let cell = R * (willow ? 0.6 : 0.78)
@@ -312,11 +386,12 @@ extension TreeGeometry {
                                     layers: Wash.blob(layers: 5, squash: 1, rnd: &fr), dabs: dabs(willow ? 6 : 14),
                                     front: k % 4 != 0, phase: fr.range(0, 6)))
             }
-            if willow {
-                let stride = max(1, terminals.count / 70)
+            // Willows, and any tree with a weeping crown, let strands fall from the branch ends.
+            if willow || st?.crown == .weeping {
+                let stride = max(1, terminals.count / (willow ? 26 : 30))
                 for (k, t) in terminals.enumerated() where k % stride == 0 {
                     let p = nodes[t].p
-                    let len = min(base.y - 6 - p.y, R * fr.cg(1.0, 2.2) * (0.6 + CGFloat(tree.look.droop)))
+                    let len = min(base.y - 6 - p.y, R * fr.cg(1.0, 2.2) * (0.6 + CGFloat(tree.look.droopValue)))
                     guard len > R * 0.3 else { continue }
                     strands.append(Strand(node: t, length: len, lean: fr.cg(-0.12, 0.12), phase: fr.range(0, 6),
                                           leaves: max(4, Int(len / (D * 1.3))), tint: fr.range(0, 1)))
@@ -327,6 +402,13 @@ extension TreeGeometry {
                 let rx = R * fr.cg(0.18, 0.36)
                 clumps.append(Clump(node: t, offset: .zero, rx: rx, ry: rx * 1.18, light: lightAt(nodes[t].p), kind: .orb,
                                     layers: Wash.blob(layers: 4, rnd: &fr), dabs: [], front: true, phase: fr.range(0, 6)))
+            }
+        case .dendrite:
+            // Synaptic boutons on the ends of the finest branches.
+            for t in terminals {
+                let rx = max(1.1, R * 0.05) * fr.cg(0.8, 1.3)
+                clumps.append(Clump(node: t, offset: .zero, rx: rx, ry: rx, light: lightAt(nodes[t].p), kind: .polyp,
+                                    layers: [], dabs: [], front: true, phase: fr.range(0, 6)))
             }
         case .coral:
             for t in terminals {
@@ -370,11 +452,109 @@ extension TreeGeometry {
                 tiers.append(Tier(node: anchor, offset: .zero, layers: Wash.layers(of: outline, count: 4, amount: 0.035, rnd: &fr),
                                   half: half, height: h, light: Double(0.25 + 0.55 * (1 - t0))))
             }
-        case .flytrap:
+        default:
             break
         }
         clumps.sort { ($0.front ? 1 : 0, nodes[$0.node].p.y) < ($1.front ? 1 : 0, nodes[$1.node].p.y) }
+        switch real {
+        case .oak: growLeaves(.oak, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit, structure: st)
+        case .willow: growLeaves(.willow, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit, structure: st)
+        case .crystal: growLeaves(.crystal, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit, structure: st)
+        case .herb: growLeaves(.herb, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit, structure: st)
+        case .kelp: growLeaves(.kelp, kids: kids, rnd: &fr, light: lightAt, habit: tree.look.habit, structure: st)
+        default: break
+        }
         groundLayers = Wash.blob(sides: 11, layers: 4, squash: 1, rnd: &fr)
+    }
+
+    /// Leaves one by one along the twigs, with Poisson-disc spacing: a new leaf only goes where no
+    /// other leaf's center is closer than most of a leaf length, so there are gaps to see through.
+    enum LeafPlan { case oak, willow, crystal, herb, kelp }
+
+    private mutating func growLeaves(_ plan: LeafPlan, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double, habit: TreeHabit, structure: TreeStructure?) {
+        let willow = plan == .willow
+        let size: CGFloat
+        let spacing: CGFloat
+        let cap: Int
+        switch plan {
+        case .oak: size = 0.08; spacing = 0.74; cap = 520
+        case .willow: size = 0.055; spacing = 0.7; cap = 320
+        case .crystal: size = 0.075; spacing = 1.0; cap = 240
+        case .herb: size = 0.06; spacing = 0.85; cap = 260
+        case .kelp: size = 0.17; spacing = 0.5; cap = 140
+        }
+        // A recipe sets the leaf size and the gap between leaves. The gap never closes: leaf centers
+        // stay most of a leaf apart, so every leaf reads on its own.
+        let sized = structure.map { size * CGFloat(0.62 + 0.8 * ($0.crown == .columnar ? max($0.leafSize, 0.5) : $0.leafSize)) } ?? size
+        let L = max(6, min(plan == .kelp ? 70 : 46, height * CGFloat(sized)))
+        leafSize = L
+        let minD: CGFloat
+        if let sh = structure, plan != .kelp {
+            minD = L * max(spacing, 0.86) * CGFloat(0.95 + 0.75 * (sh.crown == .columnar ? min(sh.leafGap, 0.45) : sh.leafGap))
+        } else {
+            minD = L * spacing * CGFloat(habit.spacingScale)
+        }
+        let leafCap = Int(Double(cap) * habit.countScale)
+        var grid: [Int64: [CGPoint]] = [:]
+        func key(_ x: Int, _ y: Int) -> Int64 { (Int64(x) << 32) | Int64(UInt32(bitPattern: Int32(truncatingIfNeeded: y))) }
+        func cell(_ p: CGPoint) -> (Int, Int) { (Int(floor(p.x / minD)), Int(floor(p.y / minD))) }
+        func free(_ p: CGPoint) -> Bool {
+            let (cx, cy) = cell(p)
+            for dx in -1...1 { for dy in -1...1 {
+                for q in grid[key(cx + dx, cy + dy)] ?? [] where hypot(q.x - p.x, q.y - p.y) < minD { return false }
+            } }
+            return true
+        }
+        func put(_ p: CGPoint) { let (cx, cy) = cell(p); grid[key(cx, cy), default: []].append(p) }
+
+        let trunk = Set(trunkNodes)
+        // Herbs and kelp have no fine crown growth: leaves go all along their stems.
+        let along = plan == .herb || plan == .kelp
+        let twig = along ? .greatestFiniteMagnitude : maxRadius * (willow ? 0.55 : 0.5)
+        let groundLine = base.y - height * 0.07
+        var order = nodes.indices.filter { nodes[$0].parent >= 0 && nodes[$0].r <= twig && !trunk.contains($0) && nodes[$0].p.y < groundLine }
+        // Branch ends first, so every twig tip gets its leaf before the spaces fill in.
+        order.sort { (kids[$0].isEmpty ? 0 : 1, $0) < (kids[$1].isEmpty ? 0 : 1, $1) }
+        for i in order {
+            if leaves.count >= leafCap { break }
+            let p = nodes[i].p, q = nodes[nodes[i].parent].p
+            let dir = atan2(Double(p.y - q.y), Double(p.x - q.x))
+            let side: Double = i % 2 == 0 ? 1 : -1
+            var tries: [(Double, CGFloat)] = []
+            if kids[i].isEmpty { tries.append((fr.range(-0.2, 0.2), 1)) }
+            for t in [CGFloat(0.3), 0.7] {
+                tries.append((side * fr.range(0.55, 1.0), t))
+                tries.append((-side * fr.range(0.55, 1.0), t))
+            }
+            for (da, t) in tries {
+                let at = CGPoint(x: q.x + (p.x - q.x) * t, y: q.y + (p.y - q.y) * t)
+                var a = dir + da
+                if willow {
+                    // Willow leaves hang: lean every leaf most of the way toward straight down.
+                    let vx = cos(a) * 0.45, vy = sin(a) * 0.45 + 0.55
+                    a = atan2(vy, vx)
+                } else if plan == .kelp {
+                    // Kelp blades float: they stream upward from the stipe.
+                    let vx = cos(a) * 0.5, vy = sin(a) * 0.5 - 0.6
+                    a = atan2(vy, vx)
+                } else if plan == .crystal || plan == .herb {
+                    // Shards and herb leaves angle up and out, never down.
+                    if sin(a) > -0.1 { a = atan2(-abs(sin(a)) - 0.35, cos(a)) }
+                } else if sin(a) > 0.6 {
+                    a -= 0.5 * (cos(a) >= 0 ? 1 : -1)      // oak leaves don't point at the ground
+                }
+                let len = L * fr.cg(0.82, 1.15)
+                let c = CGPoint(x: at.x + CGFloat(cos(a)) * len * 0.55, y: at.y + CGFloat(sin(a)) * len * 0.55)
+                guard free(c) else { continue }
+                put(c)
+                let lit = light(c) * 2 - 1
+                leaves.append(Leaf(node: i, offset: CGPoint(x: at.x - p.x, y: at.y - p.y), angle: a, length: len,
+                                   value: max(-1, min(1, lit * 0.7 + fr.range(-0.35, 0.35))), hue: fr.range(-1, 1),
+                                   phase: fr.range(0, 6.28), back: fr.next() < 0.28))
+            }
+        }
+        // Willow strands carry their own leaves; fewer of them, spaced to the leaf size.
+        for k in strands.indices { strands[k].leaves = max(3, Int(strands[k].length / (L * 0.78))) }
     }
 
     /// Space colonization: each crown point pulls its nearest node; nodes step toward the average pull;

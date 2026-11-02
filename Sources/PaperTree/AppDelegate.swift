@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // add), two flip Research mode.
         adder = PaperAdder(island: island)
         island.model.onAddHighlight = { [weak self] title in self?.adder.add(title) }
+        island.model.onExplain = { [weak self] text, context, rect in self?.explainFromReader(text: text, context: context, rect: rect) }
         optionTaps = RightOptionTapDetector()
         optionTaps.onSingleTap = { [weak self] in
             guard let self else { return }
@@ -207,6 +208,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     /// The practice passage in setup shows a real card, just like a highlight in any other app.
     private func explainPractice(text: String, context: String, rect: NSRect) {
+        let sel = CapturedSelection(text: text, context: context, rect: rect, preciseRect: true,
+                                    appPID: ProcessInfo.processInfo.processIdentifier, appName: "Paper Tree",
+                                    capturedAt: Date(), source: .accessibility)
+        card.show(for: sel, clickedAt: NSPoint(x: rect.minX + 24, y: rect.minY))
+    }
+
+    /// "Explain" on a selection in the paper reader.
+    func explainFromReader(text: String, context: String, rect: NSRect) {
+        let rect = rect == .zero ? NSRect(origin: NSEvent.mouseLocation, size: NSSize(width: 1, height: 1)) : rect
         let sel = CapturedSelection(text: text, context: context, rect: rect, preciseRect: true,
                                     appPID: ProcessInfo.processInfo.processIdentifier, appName: "Paper Tree",
                                     capturedAt: Date(), source: .accessibility)

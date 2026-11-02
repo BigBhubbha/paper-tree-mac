@@ -229,7 +229,7 @@ class GeminiError extends Error {
 
 /// Runs attempts with hedging: the first starts now, the next starts if the current ones are
 /// slower than HEDGE_MS or fail. The first attempt to succeed wins and the rest are cancelled.
-function hedged(attempts, outer) {
+function hedged(attempts, outer, hedgeMs = HEDGE_MS) {
   return new Promise((resolve, reject) => {
     const ctrls = [];
     let running = 0, settled = false, lastErr = null, timer = null;
@@ -243,7 +243,7 @@ function hedged(attempts, outer) {
       outer.addEventListener("abort", () => c.abort(), { once: true });
       running++;
       clearTimeout(timer);
-      timer = setTimeout(startNext, HEDGE_MS);
+      timer = setTimeout(startNext, hedgeMs);
       attempts[i](c.signal).then(
         (r) => {
           if (settled) { r?.cancel?.(); return; }
@@ -961,12 +961,285 @@ async function treeSpecies(req, waitUntil) {
   }
 }
 
+// The tree customizer. One call returns a whole recipe for a tree: which of the 13 plant bodies,
+// a palette, leaf shape, branch habit, size and an accent. It runs on its own model (not the
+// explain models) so it has its own free-tier allowance, and the app only asks when a tree is
+// planted or its subject shifts. Every field is checked and clamped here, so the app always gets
+// something it can draw.
+// Gemini 3.5 Flash-Lite designs trees: it has its own free allowance, separate from the 3.1 Flash-Lite
+// that explains. It is slow with this schema (about 20 to 25 seconds), which is fine for a call that
+// runs in the background, so the next model is only started early if it fails outright. Fallbacks:
+// 3.1 Flash-Lite, then Gemma 4 (its own allowance, but weaker at this).
+const TREE_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemma-4-26b-a4b-it"];
+const TREE_HEDGE_MS = 25_000;
+const PLANTS = ["oak", "willow", "conifer", "flytrap", "alien", "coral", "kelp", "dendrite", "crystal", "herb", "cactus", "fern", "mushroom"];
+const LEAF_SHAPES = ["auto", "lobed", "lance", "oval", "heart", "fan", "shard"];
+const ACCENTS = ["none", "blossom", "berry", "fruit", "glow", "pods"];
+const CROWNS = ["round", "columnar", "vase", "spreading", "weeping", "windswept"];
+const TRUNKS = ["single", "forked", "multi", "leaning", "gnarled"];
+
+// Each plant's own colors, used whenever the model's color is missing or unusable.
+const DEFAULT_PALETTE = {
+  oak: ["#6E553F", "#7F9C6B", "#E89AB0"], willow: ["#6B5A45", "#8FA36A", "#F6F1E4"], conifer: ["#5E4632", "#2F5E4F", "#C8423B"],
+  flytrap: ["#7C9A3A", "#95B23E", "#C8423B"], alien: ["#56656B", "#8FC7D8", "#9B7BC8"], coral: ["#D9694F", "#E58066", "#F6F1E4"],
+  kelp: ["#8A6F2E", "#8A7A3A", "#E8B53A"], dendrite: ["#5B4E86", "#8C78C8", "#E8B53A"], crystal: ["#4E5D6C", "#8FC7D8", "#6E93D6"],
+  herb: ["#6F8F45", "#7F9C6B", "#9B7BC8"], cactus: ["#5F8A4E", "#6F9A57", "#E89AB0"], fern: ["#6E5A3A", "#5E7A3A", "#C79A3A"],
+  mushroom: ["#E9DDC4", "#B5533A", "#F6F1E4"],
+};
+
+// Safe color ranges, as [min, max] saturation and lightness, so nothing comes out neon or muddy.
+// A few plants need a different range for their body (a pale mushroom stalk, a coral pink).
+function colorRange(role, species) {
+  if (role === "bark") {
+    if (species === "mushroom") return { s: [0.1, 0.45], l: [0.62, 0.9] };
+    if (species === "coral") return { s: [0.3, 0.68], l: [0.4, 0.66] };
+    if (["cactus", "herb", "flytrap", "kelp", "dendrite"].includes(species)) return { s: [0.15, 0.5], l: [0.25, 0.55] };
+    return { s: [0.06, 0.4], l: [0.2, 0.44] };
+  }
+  if (role === "leaf") return { s: [0.12, 0.6], l: [0.3, 0.68] };
+  return { s: [0.25, 0.72], l: [0.42, 0.82] };
+}
+
+const hexToHsl = (hex) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || "").trim());
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  const h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h / 6, s, l];
+};
+const hslToHex = ([h, s, l]) => {
+  const f = (n) => {
+    const k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l);
+    return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, "0");
+  };
+  return ("#" + f(0) + f(8) + f(4)).toUpperCase();
+};
+const clamp01 = (v, d = 0.5) => { const n = Number(v); return Number.isFinite(n) ? Math.round(Math.max(0, Math.min(1, n)) * 100) / 100 : d; };
+const r2 = (v) => Math.round(v * 100) / 100;
+const clampRange = (v, [lo, hi]) => Math.max(lo, Math.min(hi, v));
+
+/// A model color made safe for its role, or the plant's own color.
+function safeColor(hex, role, species) {
+  const fallback = DEFAULT_PALETTE[species][["bark", "leaf", "accent"].indexOf(role)];
+  const hsl = hexToHsl(hex);
+  if (!hsl) return fallback;
+  const r = colorRange(role, species);
+  let h = hsl[0];
+  // A cactus body stays green, whatever the model says.
+  if (role === "bark" && species === "cactus") h = clampRange(h, [75 / 360, 160 / 360]);
+  return hslToHex([h, clampRange(hsl[1], r.s), clampRange(hsl[2], r.l)]);
+}
+
+const UNIT = { type: "NUMBER" };
+const RECIPE_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    species: { type: "STRING", enum: PLANTS },
+    palette: {
+      type: "OBJECT",
+      properties: { bark: { type: "STRING" }, leaf: { type: "STRING" }, accent: { type: "STRING" } },
+      required: ["bark", "leaf", "accent"], propertyOrdering: ["bark", "leaf", "accent"],
+    },
+    crown: { type: "STRING", enum: CROWNS },
+    trunk: { type: "STRING", enum: TRUNKS },
+    leafShape: { type: "STRING", enum: LEAF_SHAPES },
+    leaves: {
+      type: "OBJECT",
+      properties: { size: UNIT, gap: UNIT },
+      required: ["size", "gap"], propertyOrdering: ["size", "gap"],
+    },
+    branches: {
+      type: "OBJECT",
+      properties: { count: UNIT, angle: UNIT, depth: UNIT, droop: UNIT, spread: UNIT, density: UNIT },
+      required: ["count", "angle", "depth", "droop", "spread", "density"], propertyOrdering: ["count", "angle", "depth", "droop", "spread", "density"],
+    },
+    form: {
+      type: "OBJECT",
+      properties: { height: UNIT, girth: UNIT, twist: UNIT },
+      required: ["height", "girth", "twist"], propertyOrdering: ["height", "girth", "twist"],
+    },
+    accent: {
+      type: "OBJECT",
+      properties: { kind: { type: "STRING", enum: ACCENTS }, amount: UNIT },
+      required: ["kind", "amount"], propertyOrdering: ["kind", "amount"],
+    },
+    tendrils: { type: "BOOLEAN" },
+    grownFrom: { type: "ARRAY", items: { type: "STRING" } },
+    commonName: { type: "STRING" },
+    latinName: { type: "STRING" },
+    note: { type: "STRING" },
+  },
+  required: ["species", "crown", "trunk", "palette", "leafShape", "leaves", "branches", "form", "accent", "tendrils", "grownFrom", "commonName", "latinName", "note"],
+  propertyOrdering: ["species", "crown", "trunk", "palette", "leafShape", "leaves", "branches", "form", "accent", "tendrils", "grownFrom", "commonName", "latinName", "note"],
+};
+
+const PLANT_GUIDE =
+  "flytrap = animal science, zoology, animal behavior, entomology, predators, parasites, veterinary science\n" +
+  "kelp = marine science, oceanography, fisheries, marine biology, coasts\n" +
+  "coral = coral reefs, chemistry, materials science, catalysis\n" +
+  "dendrite = neuroscience, the brain, neurons, cognition, memory\n" +
+  "alien = astronomy, astrophysics, planets, cosmology, space science\n" +
+  "oak = botany, plant science, agriculture, forestry, general biology and ecology\n" +
+  "crystal = computer science, AI, machine learning, software, electronics, data\n" +
+  "herb = medicine, pharmacology, clinical research, nursing, public health\n" +
+  "conifer = mathematics, physics, engineering, statistics\n" +
+  "willow = psychology, sociology, education, history, philosophy, the arts\n" +
+  "cactus = geology, earth science, deserts and drought, economics\n" +
+  "fern = evolution, genetics, genomics, paleontology\n" +
+  "mushroom = microbiology, mycology, fungi, microbiomes, soil\n";
+
+/// Text the model got stuck repeating ("weeping weeping weeping") is dropped.
+const sane = (t) => (/\b(\w+)\b(?:\W+\1\b){2,}/i.test(t) ? "" : t);
+
+/// The model's answer, checked field by field. Anything missing or odd gets a safe default.
+function validRecipe(o, { current, base }) {
+  o = o && typeof o === "object" ? o : {};
+  const pick = (v, list, d) => (list.includes(v) ? v : d);
+  const species = base || pick(o.species, PLANTS, current || "oak");
+  const pal = o.palette && typeof o.palette === "object" ? o.palette : {};
+  const br = o.branches && typeof o.branches === "object" ? o.branches : {};
+  const form = o.form && typeof o.form === "object" ? o.form : {};
+  const acc = o.accent && typeof o.accent === "object" ? o.accent : {};
+  const lv = o.leaves && typeof o.leaves === "object" ? o.leaves : {};
+  // No crown or trunk from the model: pick one from the papers' hash, so it is still not always the same.
+  const h = [...JSON.stringify(o.grownFrom || o.commonName || "")].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  // Plants with no leaves of their own keep their own body; the leaf shape only means something on leafy ones.
+  const leafy = ["oak", "willow", "herb"].includes(species);
+  let accent = pick(acc.kind, ACCENTS, "none");
+  if (["blossom", "berry", "fruit"].includes(accent) && ["mushroom", "kelp", "dendrite"].includes(species)) accent = "glow";
+  return {
+    species,
+    palette: {
+      bark: safeColor(pal.bark, "bark", species),
+      leaf: safeColor(pal.leaf, "leaf", species),
+      accent: safeColor(pal.accent, "accent", species),
+    },
+    crown: pick(o.crown, CROWNS, CROWNS[h % CROWNS.length]),
+    trunk: pick(o.trunk, TRUNKS, TRUNKS[(h >> 3) % TRUNKS.length]),
+    leafShape: leafy ? pick(o.leafShape, LEAF_SHAPES, "auto") : "auto",
+    leaves: { size: clamp01(lv.size), gap: clamp01(lv.gap) },
+    branches: {
+      count: clamp01(br.count), angle: clamp01(br.angle), depth: clamp01(br.depth),
+      droop: clamp01(br.droop), spread: clamp01(br.spread), density: clamp01(br.density),
+    },
+    // Wide bands, just short of a stub or a beanpole.
+    form: { height: r2(0.05 + 0.9 * clamp01(form.height)), girth: r2(0.08 + 0.87 * clamp01(form.girth)), twist: clamp01(form.twist) },
+    accent: { kind: accent, amount: accent === "none" ? 0 : r2(0.2 + 0.8 * clamp01(acc.amount)) },
+    tendrils: o.tendrils === true,
+    grownFrom: (Array.isArray(o.grownFrom) ? o.grownFrom : []).map((t) => sane(tidy(clean(t, 30)).toLowerCase())).filter((t) => /[a-z]/.test(t)).slice(0, 3),
+    commonName: sane(tidy(clean(o.commonName, 60))),
+    latinName: sane(tidy(clean(o.latinName, 60))),
+    note: sane(tidy(clean(o.note, 200))),
+  };
+}
+
+/// The older flat answer (/api/tree/plant), filled in from the recipe so earlier branch builds keep working.
+function flatPlant(r) {
+  const tone = (hex) => {
+    const hsl = hexToHsl(hex) || [0.25, 0.3, 0.5];
+    const h = hsl[0] * 360;
+    if (hsl[2] > 0.66 && h > 170 && h < 230) return "ice";
+    if (h < 25 || h >= 330) return "rust";
+    if (h < 50) return "ochre";
+    if (h < 70) return "olive";
+    if (h < 110) return "moss";
+    if (h < 160) return "sage";
+    if (h < 200) return "teal";
+    if (h < 280) return "violet";
+    return "plum";
+  };
+  const bloom = ["blossom", "berry", "fruit"].includes(r.accent.kind) ? r.accent.kind : "none";
+  return {
+    species: r.species, leafShape: r.leafShape, bloom, bloomTone: "pink", tendrils: r.tendrils, leafTone: tone(r.palette.leaf),
+    vigor: r.branches.density, twist: r.form.twist, droop: r.branches.droop, grownFrom: r.grownFrom,
+    commonName: r.commonName, latinName: r.latinName, note: r.note,
+  };
+}
+
+async function treeRecipe(req, waitUntil) {
+  let body;
+  try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
+  const titles = (Array.isArray(body?.titles) ? body.titles : []).map((t) => clean(t, 200)).filter(Boolean).slice(-16);
+  const fields = (Array.isArray(body?.fields) ? body.fields : []).map((t) => clean(t, 60)).filter(Boolean).slice(0, 10);
+  const current = PLANTS.includes(body?.current) ? body.current : "";
+  const base = PLANTS.includes(body?.base) ? body.base : "";
+  if (!titles.length) return json(400, { error: "A tree needs at least one paper." });
+  const prompt =
+    "You are the gardener who designs one drawn plant for a reader's collection of research papers. The drawings look like " +
+    "a pressed-plant herbarium sheet: ink and watercolor on cream paper. Anyone should be able to guess the subject from the plant, " +
+    "and no two collections should get the same plant.\n" +
+    (base
+      ? `The plant body is fixed: species = ${base}. Make this one unlike other ${base} plants through its palette, leaf, habit, size and accent, all suited to the papers.\n`
+      : "species, the plant body, by the main subject of the papers:\n" + PLANT_GUIDE +
+        (current ? `It is currently a ${current}. Keep it unless the papers now clearly center on a different subject.\n` : "")) +
+    "palette: three hex colors, bark (the trunk or stem; for a cactus, coral, mushroom or dendrite this is the main body), leaf, accent (flowers, fruit or glow). Muted, natural watercolor tones that look good " +
+    "on cream paper: no neon, no pure black or white. Let the subject suggest them (sea greens and kelp browns for oceans, cool blues for computing, warm ochres for deserts).\n" +
+    "crown: the silhouette, the most important choice. round (a classic dome), columnar (tall and narrow like a cypress), vase (limbs rising from a low fork, wide on top), " +
+    "spreading (wide and flat, wider than tall), weeping (limbs arching and hanging), windswept (blown to one side, like a tree on a cliff). " +
+    "trunk: single, forked (splits into two leaders), multi (several stems from the ground), leaning, gnarled (twisting and knotted). " +
+    "Pick crown and trunk for the character of the subject, and be bold: round with single is the dull default, use it only when it truly fits.\n" +
+    "leafShape: auto, or a leaf that suits the topic (lobed, lance, oval, heart, fan, shard). " +
+    "leaves: size (0 tiny, 1 large) and gap (0 close together, 1 far apart). Leaves always keep clear space between them. " +
+    "branches also: count (0 a few strong limbs, 1 many), angle (0 rising steeply, 1 level), depth (0 simple limbs, 1 branching again and again). " +
+    "branches: droop (0 reaching up, 1 weeping), spread (0 narrow and tall, 1 wide and open), density (0 airy and sparse, 1 full). " +
+    "form: height (0 short, 1 tall), girth (0 slender, 1 stout), twist (0 straight, 1 gnarled and twisting). " +
+    "Give the plant a clear character and commit to it: use the whole 0 to 1 range, and do not settle on middling or habitual values. " +
+    "Two different subjects should never get the same silhouette: let the crown, trunk, height, girth and branch numbers all differ. " +
+    "A field of quick, light ideas might be tall, slender and airy; old, deep work stout, spreading and gnarled; something fragile might weep. " +
+    "Bark varies too: silver grey, charcoal, red brown, pale ash, warm umber, olive, chosen for the character, not always plain brown. " +
+    "accent: kind is none, blossom, berry, fruit, glow (softly glowing tips, for space, light, energy or the brain) or pods (hanging seed pods); amount 0 to 1. " +
+    "tendrils: true for topics about networks, connection or climbing growth. " +
+    "grownFrom: two or three short lowercase topic phrases (one to three words each) taken from the papers. " +
+    "commonName: a playful two or three word name. latinName: a made-up binomial in Latin style. " +
+    "note: one plain sentence under 18 words saying why this plant fits the papers. Never use em dashes.\n\n" +
+    `Fields: ${fields.join(", ") || "unknown"}\nPaper titles:\n- ${titles.join("\n- ")}`;
+  const key = await cacheKey(["recipe-v4", prompt]);
+  const hit = await cacheRead(key);
+  if (hit?.recipe) return json(200, { ...flatPlant(hit.recipe), recipe: hit.recipe, model: hit.model, cached: true });
+  const outer = new AbortController();
+  const timer = setTimeout(() => outer.abort(), (Number(ENV.TREE_TIMEOUT_MS) || 45_000));
+  // Gemini models take a thinking level; Gemma takes none.
+  const bodyFor = (model) => JSON.stringify({
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.8, maxOutputTokens: model.startsWith("gemma") ? 1500 : 800, responseMimeType: "application/json", responseSchema: RECIPE_SCHEMA,
+      ...(model.startsWith("gemma") || ENV.TREE_THINKING === "none" ? {} : {
+        thinkingConfig: ENV.TREE_THINKING === "budget0" ? { thinkingBudget: 0 } : { thinkingLevel: ENV.TREE_THINKING || "minimal" },
+      }),
+    },
+  });
+  // TREE_MODELS (comma separated) replaces the list; TREE_MODEL puts one model first.
+  const list = ENV.TREE_MODELS ? String(ENV.TREE_MODELS).split(",").map((m) => m.trim()) : TREE_MODELS;
+  const models = [...new Set([ENV.TREE_MODEL, ...list].filter(Boolean))];
+  const order = models.map((m) => [m, 0]);
+  try {
+    const { out, model } = await hedged(order.map(([m, pause]) => wholeAttempt([m, pause], bodyFor(m))), outer.signal, TREE_HEDGE_MS);
+    let parsed;
+    try { parsed = JSON.parse(out.replace(/^```(?:json)?\s*|\s*```$/g, "")); } catch { parsed = {}; }
+    const recipe = validRecipe(parsed, { current, base });
+    cacheWrite(key, { text: "1", recipe, model }, waitUntil);
+    return json(200, { ...flatPlant(recipe), recipe, model });
+  } catch (e) {
+    const { status, error } = errorFor(e);
+    return json(status, { error });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const ROUTES = {
   "/api/explain": handle,
   "/api/paper/lookup": lookupPaper,
   "/api/paper/recommend": recommendPapers,
   "/api/paper/pdfs": paperPdfs,
   "/api/tree/species": treeSpecies,
+  "/api/tree/plant": treeRecipe,
+  "/api/tree/recipe": treeRecipe,
 };
 
 export default {
