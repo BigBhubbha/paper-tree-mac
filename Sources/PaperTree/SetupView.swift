@@ -207,22 +207,23 @@ struct SetupView: View {
     // MARK: Pages
 
     private var page: some View {
-        HStack(alignment: .top, spacing: 18) {
+        HStack(alignment: .center, spacing: 18) {
             VStack(alignment: .leading, spacing: 0) {
                 content
             }
-            .padding(.top, 6)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 6) {
                 BuddyStage(act: step.act, research: state.researchMode, granted: state.accessibilityGranted, pulse: pulse)
-                    .frame(width: 220, height: 250)
+                    .frame(width: 250, height: 290)
                 (Text("Fig. \(step.rawValue + 1). ").font(.fell(13)) + Text(step.figure).font(.fellItalic(13)))
                     .foregroundColor(Palette.ink3)
             }
-            .frame(width: 228)
+            .frame(width: 258)
         }
         .padding(.horizontal, 6)
+        .padding(.bottom, 20)
+        .frame(maxHeight: .infinity, alignment: .center)
     }
 
     private func kicker(_ s: String) -> some View {

@@ -203,13 +203,14 @@ struct TreeGeometry {
                 if real == .mushroom { length *= CGFloat(0.55 + 0.4 * (1 - abs(u))) * rnd.cg(0.8, 1.1) }
                 if real == .kelp { length *= rnd.cg(0.85, 1.12) }
             } else {
-                let t = k == 1 ? 0.55 : 0.3 + 0.58 * Double(jj) / Double(k - 1)
+                let t = real == .cactus ? (k == 1 ? 0.4 : 0.22 + 0.4 * Double(jj) / Double(k - 1))
+                                        : (k == 1 ? 0.55 : 0.3 + 0.58 * Double(jj) / Double(k - 1))
                 start = point(on: trunk, at: CGFloat(t))
                 switch real == .cactus ? Species.cactus : species {
                 case .cactus:
                     // Arms come out sideways, then turn up.
-                    angleFromUp = Double(side) * rnd.range(1.3, 1.5)
-                    length = H * CGFloat(0.42 - 0.14 * t)
+                    angleFromUp = Double(side) * rnd.range(1.45, 1.57)
+                    length = H * CGFloat(0.5 - 0.18 * t)
                 case .conifer:
                     angleFromUp = Double(side) * rnd.range(1.25, 1.45)
                     length = H * CGFloat(0.5 * (1 - t) + 0.1)
@@ -358,7 +359,9 @@ struct TreeGeometry {
         for i in 1...steps {
             let t = Double(i) / Double(steps)
             switch species {
-            case .cactus: a -= (angleFromUp >= 0 ? 1 : -1) * (abs(a) > 0.12 ? 0.2 : 0)
+            case .cactus:
+                // Out sideways for a few steps, then a sharp elbow straight up, like a saguaro arm.
+                if i > 3 && abs(a) > 0.1 { a -= (angleFromUp >= 0 ? 1 : -1) * min(abs(a), 0.42) }
             case .kelp: a += 0.16 * sin(Double(i) * 1.4 + Double(width)) - a * 0.08
             case .fern: a += (angleFromUp >= 0 ? 1 : -1) * 0.07 * t * 2.4
             case .herb: a += (angleFromUp >= 0 ? 1 : -1) * 0.02 + rnd.range(-0.06, 0.06)

@@ -133,7 +133,7 @@ struct BuddyScene {
     static let shoulderR = CGPoint(x: 74, y: 72)
 
     /// A hand at an angle from straight down (positive swings outward and up) and a reach.
-    static func hand(_ right: Bool, angle: Double, reach: CGFloat = 22) -> CGPoint {
+    static func hand(_ right: Bool, angle: Double, reach: CGFloat = 25) -> CGPoint {
         let s = right ? shoulderR : shoulderL
         let side: CGFloat = right ? 1 : -1
         return CGPoint(x: s.x + side * CGFloat(sin(angle)) * reach, y: s.y + CGFloat(cos(angle)) * reach)
@@ -180,7 +180,7 @@ struct BuddyScene {
             p.right = CGPoint(x: 50 + half, y: 66)
             p.tilt = 0.04 * sin(k * 1.8)
         case .knock:
-            p.x = w * 0.42
+            p.x = w * 0.36
             if granted {
                 p.lift = CGFloat(Keys.hop(k, at: 0.1, d: 0.6, height: 16))
                 p.right = Self.hand(true, angle: 2.8)
@@ -188,14 +188,14 @@ struct BuddyScene {
             } else {
                 p.mood = .needsAccess
                 let knock = min(Keys.hop(k, at: 0.35, d: 0.26, height: 1), Keys.hop(k, at: 0.75, d: 0.26, height: 1)) // 0 down to -1
-                let reach = 26 + CGFloat(-knock) * 9
+                let reach = 28 + CGFloat(-knock) * 10
                 p.right = Self.hand(true, angle: 1.5, reach: reach)
                 p.left = Self.hand(false, angle: 0.35)
                 p.tilt = 0.08 * (-knock)
             }
         case .tap:
             // Leans over, presses the key once, bounces as the island opens.
-            p.x = w * 0.6
+            p.x = w * 0.66
             let reachDown = Keys.at(k, [(0.3, 0), (1.0, 1), (1.25, 1.12), (1.5, 1), (2.4, 0)])
             p.tilt = -0.32 * reachDown
             p.left = Self.hand(false, angle: Keys.at(k, [(0, 1.2), (1.0, 1.5), (1.25, 1.65), (1.5, 1.5), (2.4, 1.2)]), reach: 24 + 12 * CGFloat(reachDown))
@@ -203,10 +203,10 @@ struct BuddyScene {
             p.lift = CGFloat(Keys.hop(k, at: 1.35, d: 0.45, height: 12))
             p.squash = CGFloat(Keys.hop(k, at: 1.15, d: 0.2, height: -0.08))
         case .peer:
-            p.x = w * 0.66
+            p.x = w * 0.72
             p.tilt = Keys.at(k, [(0, 0), (0.6, -0.2), (3.2, -0.2), (3.8, 0)])
             p.mood = k > 1.45 ? .noticed : .idle
-            p.left = Self.hand(false, angle: 1.75, reach: 26)
+            p.left = Self.hand(false, angle: 2.0, reach: 27)
             p.right = Self.hand(true, angle: 0.45)
             p.lift = CGFloat(Keys.hop(k, at: 1.45, d: 0.35, height: 7))
         case .carry:
@@ -219,9 +219,9 @@ struct BuddyScene {
             p.left = holding ? CGPoint(x: 34, y: 8) : Self.hand(false, angle: Keys.at(k, [(2.3, 2.9), (3.4, 0.35)]))
             p.right = holding ? CGPoint(x: 66, y: 8) : Self.hand(true, angle: Keys.at(k, [(2.3, 2.9), (3.4, 0.35)]))
         case .flip:
-            p.x = w * 0.62
+            p.x = w * 0.68
             let flick = max(-Keys.hop(k, at: 0.45, d: 0.22, height: 1), -Keys.hop(k, at: 0.8, d: 0.22, height: 1))
-            p.left = Self.hand(false, angle: 1.45 + 0.35 * flick, reach: 30)
+            p.left = Self.hand(false, angle: 1.45 + 0.35 * flick, reach: 34)
             p.right = Self.hand(true, angle: 0.4)
             p.goggles = switchOn
             p.lift = CGFloat(Keys.hop(k, at: 1.1, d: 0.4, height: 10))
@@ -243,7 +243,7 @@ struct BuddyScene {
     // MARK: Drawing the buddy
 
     private func transform(_ p: Pose) -> CGAffineTransform {
-        let s = u * 1.12 * p.scale
+        let s = u * 1.28 * p.scale
         return CGAffineTransform(translationX: p.x, y: groundY + p.lift * u)
             .rotated(by: CGFloat(p.tilt))
             .scaledBy(x: s * (1 + p.squash), y: s * (1 - p.squash))
@@ -352,18 +352,18 @@ struct BuddyScene {
 
         switch act {
         case .knock:
-            padlock(&ctx, at: CGPoint(x: w * 0.82, y: groundY - 60 * u), open: granted)
+            padlock(&ctx, at: CGPoint(x: w * 0.83, y: groundY - 66 * u), open: granted)
             if !granted && (abs(k - 0.48) < 0.25 || abs(k - 0.88) < 0.25) {
                 label(&ctx, "knock", at: CGPoint(x: w * 0.8, y: groundY - 100 * u), color: Palette.pencil)
             }
         case .tap:
             let pressed = k > 1.05 && k < 1.45
-            optionKey(&ctx, at: CGPoint(x: w * 0.22, y: groundY), pressed: pressed)
+            optionKey(&ctx, at: CGPoint(x: w * 0.19, y: groundY), pressed: pressed)
             // The island grows out of the top edge once the key goes down.
             let open = Keys.at(k, [(1.15, 0), (1.6, 1), (2.6, 1), (2.95, 0)])
             island(&ctx, open: CGFloat(open))
         case .peer:
-            textScrap(&ctx, at: CGPoint(x: w * 0.06, y: groundY - 150 * u), k: k)
+            textScrap(&ctx, at: CGPoint(x: w * 0.04, y: groundY - 142 * u), k: k)
         case .carry:
             let grown = CGFloat(Keys.at(k, [(2.4, 0), (2.9, 1), (4.3, 1), (4.6, 0)]))
             sapling(&ctx, at: CGPoint(x: w * 0.86, y: groundY), grown: grown)
@@ -378,9 +378,9 @@ struct BuddyScene {
                 paperSheet(&c, center: .zero, w: 30, h: 22, tilt: Double(drop) * -0.25)
             }
         case .flip:
-            toggle(&ctx, at: CGPoint(x: w * 0.25, y: groundY), on: switchOn, k: k)
+            toggle(&ctx, at: CGPoint(x: w * 0.2, y: groundY), on: switchOn, k: k)
             if !research, abs(k - 0.56) < 0.2 || abs(k - 0.91) < 0.2 {
-                label(&ctx, "tap", at: CGPoint(x: w * 0.25, y: groundY - 112 * u), color: Palette.pencil)
+                label(&ctx, "tap", at: CGPoint(x: w * 0.2, y: groundY - 112 * u), color: Palette.pencil)
             }
         default:
             break
@@ -403,7 +403,7 @@ struct BuddyScene {
         case .peer where k > 1.8 && k < 3.5:
             // A little explanation card pops up beside the word.
             let a = Keys.smooth((k - 1.8) / 0.3) * (1 - Keys.smooth((k - 3.2) / 0.3))
-            let r = CGRect(x: size.width * 0.06, y: groundY - 196 * u, width: 92 * u, height: 34 * u)
+            let r = CGRect(x: size.width * 0.04, y: groundY - 188 * u, width: 92 * u, height: 34 * u)
             var c = ctx
             c.opacity = a
             c.fill(Path(roundedRect: r, cornerRadius: 4 * u), with: .color(Color(hex: 0xFFFDF6)))
@@ -517,13 +517,13 @@ struct BuddyScene {
     }
 
     private func textScrap(_ ctx: inout GraphicsContext, at o: CGPoint, k: Double) {
-        let r = CGRect(x: o.x, y: o.y, width: 92 * u, height: 112 * u)
+        let r = CGRect(x: o.x, y: o.y, width: 82 * u, height: 124 * u)
         ctx.fill(Path(r), with: .color(Color(hex: 0xFFFDF6)))
         ctx.stroke(Path(r), with: .color(Palette.ink.opacity(0.35)), lineWidth: 0.8)
         // The sweep of a highlighter over one phrase.
         let hl = CGFloat(Keys.at(k, [(0.4, 0), (1.4, 1), (3.5, 1), (3.8, 0)]))
-        let line3 = r.minY + 48 * u
-        ctx.fill(Path(CGRect(x: r.minX + 10 * u, y: line3 - 5 * u, width: 56 * u * hl, height: 10 * u)), with: .color(Palette.marker.opacity(0.85)))
+        let marked = r.minY + 96 * u
+        ctx.fill(Path(CGRect(x: r.minX + 10 * u, y: marked - 5 * u, width: 52 * u * hl, height: 10 * u)), with: .color(Palette.marker.opacity(0.85)))
         var lines = Path()
         for j in 0..<7 {
             let y = r.minY + (16 + CGFloat(j) * 16) * u
