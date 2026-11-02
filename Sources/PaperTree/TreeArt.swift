@@ -343,7 +343,9 @@ struct TreeGeometry {
         if let sh = shaped, trunk.count > 2 {
             var sr = SeededRandom(sh.seed, "scaffold")
             let (lo, hi) = Self.attach(sh.crown)
-            let count = Int(((1 + 6 * sh.count) * Double(0.45 + 0.55 * stage)).rounded())
+            // A column needs many short limbs all the way up, or it reads as a bare pole.
+            let limbs = sh.crown == .columnar ? max(sh.count, 0.65) * 1.4 : sh.count
+            let count = Int(((1 + 6 * limbs) * Double(0.45 + 0.55 * stage)).rounded())
             let owner = g.limbs.first(where: { $0.depth == 0 })?.owner ?? 0
             for q in 0..<count {
                 let t = lo + (hi - lo) * (Double(q) + sr.range(0.1, 0.9)) / Double(max(count, 1))
@@ -361,7 +363,9 @@ struct TreeGeometry {
             }
             // Side branches: one to four per limb, and on deep recipes their own side shoots.
             var fr = SeededRandom(sh.seed, "forks")
-            let per = Int((1 + 3 * sh.depth).rounded())
+            let per = Int((1 + 3 * (sh.crown == .columnar ? max(sh.depth, 0.5) : sh.depth)).rounded())
+            // Weeping side shoots arch over and hang like curtains.
+            let forkSag = sh.crown == .weeping ? crownSag + 0.12 : crownSag
             let structural = g.limbs.filter { $0.depth >= 1 && $0.points.count > 3 }
             for limb in structural {
                 let L = pathLength(limb.points)
@@ -373,7 +377,7 @@ struct TreeGeometry {
                     let a = atan2(Double(d.dy), Double(d.dx)) + .pi / 2 + sd * fr.range(0.45, 0.85) * angleK
                     let len = L * fr.cg(0.28, 0.48)
                     var (twig, tip) = TreeGeometry.grow(from: at, angleFromUp: a, length: len, width: max(1, limb.w0 * 0.42),
-                                                        species: real, twist: twist, droop: droop, rnd: &fr, depth: 3, sag: crownSag, wobble: wobble, push: push)
+                                                        species: real, twist: twist, droop: droop, rnd: &fr, depth: 3, sag: forkSag, wobble: wobble, push: push)
                     twig.owner = limb.owner
                     g.twigs.append(twig)
                     if sh.depth > 0.55 {
@@ -382,7 +386,7 @@ struct TreeGeometry {
                             let a2 = atan2(Double(d2.dy), Double(d2.dx)) + .pi / 2 + s2 * fr.range(0.4, 0.75)
                             var (sub, _) = TreeGeometry.grow(from: point(on: twig.points, at: 0.7), angleFromUp: a2, length: len * fr.cg(0.35, 0.55),
                                                              width: max(0.8, twig.w1), species: real, twist: twist, droop: droop, rnd: &fr, depth: 3,
-                                                             sag: crownSag, wobble: wobble, push: push)
+                                                             sag: forkSag, wobble: wobble, push: push)
                             sub.owner = limb.owner
                             g.twigs.append(sub)
                         }
@@ -543,10 +547,10 @@ struct TreeGeometry {
         let a: Double, len: CGFloat
         switch c {
         case .round: a = rnd.range(0.65, 1.05); len = H * CGFloat(0.46 - 0.2 * t)
-        case .columnar: a = rnd.range(0.2, 0.38); len = H * CGFloat(0.3 - 0.12 * t)
+        case .columnar: a = rnd.range(0.32, 0.55); len = H * CGFloat(0.3 - 0.14 * t)
         case .vase: a = rnd.range(0.36, 0.6); len = H * CGFloat(0.66 - 0.1 * t)
         case .spreading: a = rnd.range(1.1, 1.36); len = H * CGFloat(0.7 - 0.25 * t)
-        case .weeping: a = rnd.range(0.7, 1.0); len = H * CGFloat(0.5 - 0.12 * t)
+        case .weeping: a = rnd.range(0.55, 0.85); len = H * CGFloat(0.56 - 0.12 * t)
         case .windswept: a = rnd.range(0.95, 1.3); len = H * CGFloat(0.55 - 0.15 * t)
         }
         return (side * min(1.5, a * angleK), len * rnd.cg(0.88, 1.08))

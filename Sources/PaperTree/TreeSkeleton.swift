@@ -221,8 +221,10 @@ extension TreeGeometry {
                 scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), W + R * 0.95, Hh + R * 0.85, n)
                 bias = CGVector(dx: 0, dy: -0.15)
             case .columnar:
-                scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.35), W + R * 0.35, Hh + R * 1.05, n)
-                bias = CGVector(dx: 0, dy: -0.35)
+                // A full column from low on the trunk to above the top.
+                let top = min(hull.minY, base.y - H) - R * 0.5, low = base.y - H * 0.22
+                scatter(CGPoint(x: (hull.midX + base.x) / 2, y: (top + low) / 2), max(W, R * 0.55) + R * 0.4, (low - top) / 2, n)
+                bias = CGVector(dx: 0, dy: -0.2)
             case .vase:
                 // Narrow low down, wide at the top.
                 let top = hull.minY - R * 0.9, bottom = max(hull.maxY, base.y - H * 0.45)
@@ -240,8 +242,9 @@ extension TreeGeometry {
                 scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.15), W + R * 1.35, Hh * 0.75 + R * 0.45, n)
                 bias = CGVector(dx: 0, dy: -0.04)
             case .weeping:
-                scatter(CGPoint(x: hull.midX, y: hull.midY + R * 0.2), W + R * 1.0, Hh + R * 0.95, n)
-                bias = CGVector(dx: 0, dy: 0.32)
+                // Curtains: the crown reaches far down toward the ground.
+                scatter(CGPoint(x: hull.midX, y: hull.midY + R * 0.5), W + R * 1.05, Hh + R * 1.3, n)
+                bias = CGVector(dx: 0, dy: 0.45)
             case .windswept:
                 scatter(CGPoint(x: hull.midX + CGFloat(sh.side) * R * 0.7, y: hull.midY - R * 0.1), W + R * 1.15, Hh * 0.7 + R * 0.5, n)
                 bias = CGVector(dx: CGFloat(sh.side) * 0.38, dy: -0.04)
