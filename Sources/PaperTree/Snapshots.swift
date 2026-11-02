@@ -21,6 +21,8 @@ enum Snapshots {
         render(to: dir)
         renderGrove(to: dir)
         renderSpace(to: dir)
+        renderTopics(to: dir)
+        renderBuddy(to: dir)
         return true
     }
 
@@ -65,9 +67,9 @@ enum Snapshots {
         save(IslandView(model: flash, state: state, store: TreeStore(persist: false))
                 .frame(width: 420, height: 110).background(Color(hex: 0x6E7B86)), "island-flash", to: dir)
 
-        for step in 0..<5 {
-            save(SetupView(state: state, island: island, initialStep: step, explainPractice: { _, _, _ in }, done: {}),
-                 "setup-\(step + 1)", to: dir)
+        for step in SetupStep.allCases {
+            save(SetupView(state: state, island: island, initialStep: step.rawValue, explainPractice: { _, _, _ in }, done: {}),
+                 "setup-" + String(format: "%02d", step.rawValue + 1) + "-\(step)", to: dir)
         }
         // Settings as this build machine really is (no cards opened, no Accessibility).
         save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
@@ -174,6 +176,7 @@ enum Snapshots {
         // Every species with the same papers, as a chooser thumbnail and as a small sheet.
         if let eco = store.trees.first(where: { $0.number == 3 }) {
             let species = Species.allCases
+            let rows = [Array(species.prefix(7)), Array(species.dropFirst(7))]
             func variant(_ sp: Species) -> PaperTreeData {
                 var t = eco
                 t.look = TreeLook(species: sp, commonName: sp.plainName, leafTone: eco.look.leafTone, vigor: 0.6, twist: 0.5, droop: 0.4)
@@ -181,8 +184,9 @@ enum Snapshots {
                 return t
             }
             let sampler = VStack(alignment: .leading, spacing: 14) {
+                ForEach(0..<2, id: \.self) { r in
                 HStack(spacing: 14) {
-                    ForEach(species, id: \.self) { sp in
+                    ForEach(rows[r], id: \.self) { sp in
                         VStack(spacing: 4) {
                             TreeDrawing(tree: variant(sp), geometry: TreeGeometry.make(variant(sp), in: CGSize(width: 84, height: 70)), detail: 0.5)
                                 .frame(width: 84, height: 70).clipped()
@@ -193,11 +197,12 @@ enum Snapshots {
                     }
                 }
                 HStack(spacing: 14) {
-                    ForEach(species, id: \.self) { sp in
+                    ForEach(rows[r], id: \.self) { sp in
                         TreeCanvas(tree: variant(sp), store: store).frame(width: 200, height: 230).clipped()
                             .background(Color(hex: 0xFBF8EE))
                             .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.2), lineWidth: 0.7))
                     }
+                }
                 }
             }
             .padding(16)
@@ -517,5 +522,174 @@ enum SamplePaper {
         }
         ctx.closePDF()
         return data as Data
+    }
+}
+
+// MARK: Plants that reflect their papers, a big grove, and the buddy in motion
+
+extension Snapshots {
+    struct Topic { var name: String; var fields: [String]; var titles: [String] }
+
+    static let topics: [Topic] = [
+        Topic(name: "Animal behavior", fields: ["Biology"], titles: ["Social learning in wild chimpanzees", "Foraging behavior of honeybees under predation risk", "Song learning in zebra finches", "Migration routes of monarch butterflies", "Predator avoidance in schooling fish", "Tool use in New Caledonian crows"]),
+        Topic(name: "Oceans", fields: ["Environmental Science"], titles: ["Kelp forest decline along the California coast", "Ocean warming and the redistribution of fisheries", "Sea otters as a keystone species in kelp forests", "Plankton blooms and ocean color from satellites", "Coastal upwelling and marine productivity", "Marine heatwaves in the North Pacific"]),
+        Topic(name: "The brain", fields: ["Neuroscience", "Biology"], titles: ["Dendritic computation in cortical pyramidal neurons", "Place cells in the hippocampus", "Synaptic plasticity and memory", "The default mode network of the brain", "Dopamine neurons and reward prediction error", "Grid cells in the entorhinal cortex"]),
+        Topic(name: "Stars", fields: ["Physics"], titles: ["Observational evidence from supernovae for an accelerating universe", "A terrestrial planet candidate orbiting Proxima Centauri", "Observation of gravitational waves from a binary black hole merger", "First results from the Event Horizon Telescope: the shadow of a black hole", "Rotation curves of spiral galaxies and dark matter", "Exoplanet atmospheres observed with JWST"]),
+        Topic(name: "Plants", fields: ["Biology"], titles: ["Photosynthesis under drought and salt stress", "Flowering time control in Arabidopsis", "Root architecture and nutrient uptake in crops", "Pollinator networks in alpine meadows", "The worldwide leaf economics spectrum", "Seed dispersal by birds in tropical forests"]),
+        Topic(name: "Computing", fields: ["Computer Science"], titles: ["Attention is all you need", "Deep residual learning for image recognition", "BERT: pre-training of deep bidirectional transformers", "ImageNet classification with deep convolutional neural networks", "A note on two problems in connexion with graphs", "MapReduce: simplified data processing on large clusters"]),
+        Topic(name: "Medicine", fields: ["Medicine"], titles: ["Statins for the primary prevention of cardiovascular disease", "Safety and efficacy of the BNT162b2 mRNA COVID-19 vaccine", "Aspirin in the primary prevention of stroke", "Antibiotic resistance in hospital acquired infections", "Early goal directed therapy in the treatment of severe sepsis", "Metformin and the prevention of type 2 diabetes"]),
+        Topic(name: "Fungi", fields: ["Biology"], titles: ["Mycorrhizal fungi and nutrient exchange in forests", "The human gut microbiome in health and disease", "Fungal networks connecting trees in a forest", "Decomposition of leaf litter by soil fungi", "Bacterial communities in agricultural soil", "The discovery of penicillin from Penicillium mould"]),
+        Topic(name: "Evolution", fields: ["Biology"], titles: ["A draft sequence of the Neandertal genome", "A programmable dual RNA guided DNA endonuclease in adaptive bacterial immunity", "Phylogeny of the flowering plants from DNA sequences", "A feathered dinosaur from the Jurassic of China", "Evolution of antibiotic resistance genes", "Genomic signatures of natural selection in humans"]),
+        Topic(name: "Deserts", fields: ["Geology", "Environmental Science"], titles: ["Desertification and drought in the Sahel", "Plate tectonics and the rise of mountain ranges", "Mineral weathering in arid soils", "Groundwater depletion in dry regions", "Volcanic eruptions and climate", "Fault slip and earthquake prediction"]),
+        Topic(name: "Chemistry", fields: ["Chemistry", "Materials Science"], titles: ["Catalysis on metal surfaces", "Polymer design for recyclable plastics", "Coral reef calcification under ocean acidification", "Metal organic frameworks for carbon capture", "Self assembly of molecular cages", "Electrolytes for lithium batteries"]),
+        Topic(name: "Mathematics", fields: ["Mathematics", "Physics"], titles: ["The entropy formula for the Ricci flow", "Statistical mechanics of phase transitions", "Renormalization in quantum field theory", "Finite element methods in engineering", "Bayesian inference for physical models", "Deterministic nonperiodic flow"]),
+        Topic(name: "People", fields: ["Psychology"], titles: ["Judgment under uncertainty: heuristics and biases", "Delay of gratification in children", "Opinions and social pressure", "Attachment in early childhood", "Mindset and achievement in school", "Reconstruction of automobile destruction: eyewitness memory"]),
+    ]
+
+    /// The plant the server's Gemini call designs for these papers (waiting for it; snapshots run
+    /// synchronously), or the app's own local guess when it can't be reached.
+    private static func plant(for topic: Topic, seed: UInt64) -> TreeLook {
+        let done = DispatchSemaphore(value: 0)
+        final class Box: @unchecked Sendable { var look: TreeLook? }
+        let box = Box()
+        let client = TreeClient.current
+        let titles = topic.titles, fields = topic.fields
+        Task.detached {
+            box.look = try? await client.plant(titles: titles, fields: fields, current: nil)
+            done.signal()
+        }
+        if done.wait(timeout: .now() + 40) == .success, let look = box.look {
+            print("plant: \(topic.name) -> \(look.species.rawValue) (\(look.grownFromLine ?? ""))")
+            return look
+        }
+        print("plant: \(topic.name) -> local guess")
+        return TreeLook.guess(fields: topic.fields, titles: topic.titles, seed: seed)
+    }
+
+    private static func topicTree(_ topic: Topic, look: TreeLook, number: Int, seed: UInt64, papers n: Int) -> PaperTreeData {
+        let base = Date(timeIntervalSince1970: 1_767_000_000)
+        var papers: [Paper] = []
+        for i in 0..<min(n, topic.titles.count) {
+            let parent: String? = i >= 3 ? "t\(number)-\(i - 3)" : nil
+            papers.append(Paper(id: "t\(number)-\(i)", title: topic.titles[i], authors: ["A. Reader"], year: 2010 + i,
+                                fields: topic.fields, parentId: parent, addedAt: base.addingTimeInterval(Double(i) * 86_400)))
+        }
+        return PaperTreeData(number: number, name: topic.name, seed: seed, look: look, papers: papers, lookCheckedAt: papers.count)
+    }
+
+    static func renderTopics(to dir: URL) {
+        TreeClock.frozen = Date()
+        TreeClock.sketchStart = nil
+        let store = TreeStore(persist: false)
+        var looks: [TreeLook] = []
+        for (k, t) in topics.enumerated() { looks.append(plant(for: t, seed: UInt64(900 + k))) }
+
+        // Each subject as its own plant, labelled with what it grew from.
+        let trees = topics.enumerated().map { k, t in topicTree(t, look: looks[k], number: k + 1, seed: UInt64(5000 + k * 97), papers: 6) }
+        let grid = VStack(alignment: .leading, spacing: 16) {
+            ForEach(0..<4, id: \.self) { r in
+                HStack(alignment: .top, spacing: 16) {
+                    ForEach(Array(trees.enumerated()).filter { $0.offset / 4 == r }, id: \.offset) { _, tree in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(tree.name).font(.fell(16)).foregroundColor(Palette.ink)
+                            SpecimenPlate(tree: tree, store: store, compact: false).frame(width: 330, height: 400)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(20)
+        .background(Color(hex: 0xEFE9DA))
+        save(grid, "topic-plants", to: dir)
+
+        // A tree whose papers drift from the sea to chemistry turns from kelp into coral, gradually.
+        if let now = TreeClock.frozen {
+            var morphing = trees[1]
+            morphing.priorLook = looks[1]
+            var coral = looks[10]
+            coral.grownFrom = ["ocean chemistry", "reef calcification"]
+            morphing.look = coral
+            let row = HStack(spacing: 10) {
+                ForEach([0.0, 0.9, 1.6, 3.0], id: \.self) { s in
+                    VStack(spacing: 4) {
+                        TreeCanvas(tree: { var t = morphing; t.lookChangedAt = now.addingTimeInterval(-s); return t }(), store: store)
+                            .frame(width: 280, height: 320).background(Color(hex: 0xFBF8EE))
+                        Text(String(format: "%.1f s", s)).font(.typewriter(11)).foregroundColor(Palette.ink3)
+                    }
+                }
+            }
+            .padding(14)
+            .background(Color(hex: 0xEFE9DA))
+            save(row, "topic-morph", to: dir)
+        }
+
+        // A big grove: 39 trees, three of every subject at different sizes.
+        var many: [PaperTreeData] = []
+        for (k, t) in topics.enumerated() {
+            for (j, n) in [2, 4, 6].enumerated() {
+                var tree = topicTree(t, look: looks[k], number: many.count + 1, seed: UInt64(7000 + k * 31 + j * 7), papers: n)
+                tree.name = j == 0 ? t.name : "\(t.name) \(j + 1)"
+                many.append(tree)
+            }
+        }
+        store.trees = many
+        let grove = CGSize(width: 1360, height: 800)
+        let m = IslandModel()
+        m.notchSize = CGSize(width: 190, height: 32)
+        m.groveSize = grove
+        m.mode = .expanded
+        m.page = .grove
+        save(IslandView(model: m, state: AppState.shared, store: store)
+                .frame(width: grove.width + 40, height: grove.height + 32 + 30).background(desk), "grove-many-topics", to: dir)
+        print("grove trees: \(many.count)")
+    }
+
+    /// Frames of setup pages with the buddy acting, for a short video (15 frames a second).
+    static func renderBuddy(to dir: URL) {
+        let state = AppState.shared
+        state.accessibilityGranted = false
+        state.researchMode = false
+        let island = IslandModel()
+        island.notchSize = CGSize(width: 190, height: 32)
+        let frames = dir.appendingPathComponent("frames/buddy", isDirectory: true)
+        try? FileManager.default.createDirectory(at: frames, withIntermediateDirectories: true)
+        var f = 0
+        for step in [SetupStep.welcome, .fields, .tap, .highlight, .add, .research, .finish] {
+            let n = Int(min(3.4, step.act.loop) * 15)
+            for i in 0..<n {
+                BuddyStage.frozenTime = Double(i) / 15
+                save(SetupView(state: state, island: island, initialStep: step.rawValue, explainPractice: { _, _, _ in }, done: {}),
+                     String(format: "f%04d", f), to: frames)
+                f += 1
+            }
+        }
+        // Each act on its own, larger, for a closer look.
+        let acts = dir.appendingPathComponent("frames/acts", isDirectory: true)
+        try? FileManager.default.createDirectory(at: acts, withIntermediateDirectories: true)
+        var g = 0
+        for act in BuddyAct.allCases {
+            for i in 0..<Int(act.loop * 15) {
+                save(BuddyStage(act: act, time: Double(i) / 15).frame(width: 330, height: 375).background(Color(hex: 0xF3EFE6)),
+                     String(format: "f%04d", g), to: acts)
+                g += 1
+            }
+        }
+        BuddyStage.frozenTime = nil
+        // A still of every act at its key moment.
+        let sheet = VStack(spacing: 10) {
+            ForEach(0..<3, id: \.self) { r in
+                HStack(spacing: 10) {
+                    ForEach(Array(BuddyAct.allCases.enumerated()).filter { $0.offset / 4 == r }, id: \.offset) { _, act in
+                        VStack(spacing: 2) {
+                            BuddyStage(act: act, time: act.restTime).frame(width: 220, height: 250)
+                            Text(act.rawValue).font(.typewriter(11)).foregroundColor(Palette.ink3)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(hex: 0xF3EFE6))
+        save(sheet, "buddy-acts", to: dir)
     }
 }

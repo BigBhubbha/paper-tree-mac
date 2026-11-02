@@ -26,6 +26,11 @@ struct RGB {
 
 extension PlantInk {
     static func leafRGB(_ s: Species, toneName: String) -> RGB {
+        if s == .cactus { return RGB(0x6F9A57) }
+        if s == .mushroom && ["sage", "moss", "olive"].contains(toneName) { return RGB(0xB5533A) }
+        if s == .kelp && ["sage", "moss"].contains(toneName) { return RGB(0x8A7A3A) }
+        if s == .crystal && ["sage", "moss", "olive"].contains(toneName) { return RGB(0x8FC7D8) }
+        if s == .dendrite && toneName == "sage" { return RGB(0x8C78C8) }
         switch s {
         case .flytrap: return RGB(0x95B23E)
         case .coral: return RGB(0xE58066)
@@ -38,12 +43,22 @@ extension PlantInk {
             case "plum": return RGB(0x7D4E6E)
             case "teal": return RGB(0x3E8C86)
             case "ochre": return RGB(0xC79A3A)
+            case "violet": return RGB(0x8C78C8)
+            case "gold": return RGB(0xD4A940)
+            case "ice": return RGB(0x8FC7D8)
             default: return RGB(0x7F9C6B)
             }
         }
     }
     static func barkRGB(_ s: Species) -> RGB {
         switch s {
+        case .kelp: return RGB(0x8A6F2E)
+        case .dendrite: return RGB(0x5B4E86)
+        case .crystal: return RGB(0x4E5D6C)
+        case .herb: return RGB(0x6F8F45)
+        case .cactus: return RGB(0x5F8A4E)
+        case .fern: return RGB(0x6E5A3A)
+        case .mushroom: return RGB(0xE9DDC4)
         case .alien: return RGB(0x56656B)
         case .coral: return RGB(0xD9694F)
         case .flytrap: return RGB(0x7C9A3A)
@@ -266,29 +281,53 @@ struct TreePainter {
         }
     }
 
+    private var hasLeafList: Bool { [.oak, .willow, .crystal, .herb, .kelp].contains(species) }
+
     private func paintPlant(_ ctx: inout GraphicsContext, _ size: CGSize) {
         var rnd = SeededRandom(tree.seed, "ink")
+        if species == .mushroom { mycelium(&ctx) }
         ground(&ctx, rnd: &rnd)
         if tree.papers.isEmpty || g.nodes.isEmpty { seed(&ctx); return }
 
         if species == .coral { fan(&ctx) }
-        if species == .oak || species == .willow {
+        if species == .kelp { water(&ctx) }
+        if hasLeafList {
             for lf in g.leaves where lf.back { leafShape(&ctx, lf) }
         }
         for gh in g.ghosts { ghost(&ctx, gh, rnd: &rnd) }
 
-        if species == .flytrap {
+        // The body: stems, stalks, columns or wood.
+        switch species {
+        case .flytrap:
             rosette(&ctx, rnd: &rnd)
             for chain in g.chains { petiole(&ctx, chain) }
-        } else {
+        case .herb:
+            for chain in g.chains { stem(&ctx, chain, color: RGB(0x6F8F45), widen: 1) }
+        case .kelp:
+            holdfast(&ctx)
+            for chain in g.chains { stem(&ctx, chain, color: RGB(0x8A6F2E), widen: 1.1) }
+        case .fern:
+            for (k, chain) in g.chains.enumerated() { frond(&ctx, chain, index: k) }
+        case .mushroom:
+            for chain in g.chains { stalk(&ctx, chain) }
+        case .cactus:
+            cactusBody(&ctx)
+        case .dendrite:
+            axon(&ctx)
+            woods(&ctx)
+            soma(&ctx)
+        default:
             woods(&ctx)
             if species != .coral { roots(&ctx, rnd: &rnd) }
         }
+        if species == .crystal { circuit(&ctx) }
 
+        // What grows on it.
         switch species {
-        case .oak, .willow:
+        case .oak, .willow, .crystal, .herb, .kelp:
             if species == .willow { for s in g.strands { strand(&ctx, s) } }
             for lf in g.leaves where !lf.back { leafShape(&ctx, lf) }
+            if species == .kelp { bladders(&ctx) }
         case .conifer:
             for t in g.tiers { tier(&ctx, t) }
             sprays(&ctx)
@@ -296,6 +335,15 @@ struct TreePainter {
             for c in g.clumps { orb(&ctx, c) }
         case .coral:
             for c in g.clumps { polyp(&ctx, c) }
+        case .dendrite:
+            spines(&ctx)
+            for c in g.clumps { bouton(&ctx, c) }
+        case .mushroom:
+            caps(&ctx)
+        case .cactus:
+            break
+        case .fern:
+            fiddleheads(&ctx)
         case .flytrap:
             let big = max(g.cardSize.height * 0.95, g.height * 0.2)
             for (k, t) in g.twigEnds.enumerated() where pose.vis[t] > 0 {
@@ -308,6 +356,8 @@ struct TreePainter {
                      open: 0.14 + 0.5 * unfurl + 0.03 * CGFloat(sin(pose.time * 0.7 + Double(o))), mouth: true)
             }
         }
+        if tree.look.tendrils == true { tendrils(&ctx) }
+        blooms(&ctx)
     }
 
     // MARK: Ground and seed
@@ -400,6 +450,8 @@ struct TreePainter {
                 pits.addEllipse(in: CGRect(x: pts[i].x - r + rnd.cg(-1, 1), y: pts[i].y - r + rnd.cg(-1, 1), width: r * 2, height: r * 2))
             }
             ctx.fill(pits, with: .color(RGB(0xFBE3D6).color(0.85)))
+        case .dendrite, .herb, .kelp, .crystal, .cactus, .mushroom, .fern:
+            break
         case .alien:
             // Faint glowing freckles along the wood.
             var dots = Path()
@@ -574,9 +626,14 @@ struct TreePainter {
         let p = pose.p[lf.node]
         let flex = Double(g.nodes[lf.node].flex)
         let flutter = sin(pose.time * 1.7 + lf.phase) * 0.12 * Double(pose.wind) * (0.4 + flex)
-        let unit = species == .willow ? Self.lanceUnit : Self.oakUnit
+        let unit = leafUnit
         // Unfurling: a new leaf turns into place as it grows.
         let turn = Double(1 - min(1, s)) * 0.9
+        if species == .crystal {
+            shard(&ctx, at: CGPoint(x: p.x + lf.offset.x, y: p.y + lf.offset.y), angle: lf.angle + flutter * 0.4 + turn,
+                  length: lf.length * s, value: lf.value - (lf.back ? 0.45 : 0), alpha: lf.dim ? 0.3 : 1)
+            return
+        }
         drawLeaf(&ctx, unit: unit, at: CGPoint(x: p.x + lf.offset.x, y: p.y + lf.offset.y), angle: lf.angle + flutter + turn,
                  length: lf.length * s, color: tone(value: lf.value - (lf.back ? 0.45 : 0), hue: lf.hue), alpha: lf.dim ? 0.3 : 1)
     }
@@ -827,6 +884,569 @@ struct TreePainter {
             guard reach > 0 else { continue }
             ctx.stroke(p.trimmedPath(from: 0, to: reach), with: .color(PlantInk.pencil.opacity(pass == 0 ? 0.75 : 0.3)),
                        style: StrokeStyle(lineWidth: lw * (pass == 0 ? 1 : 0.6), lineCap: .round, dash: pass == 0 ? [5, 3, 1, 3] : []))
+        }
+    }
+}
+
+// MARK: - The newer plants: kelp, dendrite, crystal, herb, cactus, fern, mushroom; blooms and tendrils
+
+extension TreePainter {
+    /// The leaf for this plant: the AI's pick for leafy trees, the plant's own otherwise.
+    var leafUnit: Path {
+        switch species {
+        case .kelp: return Self.kelpUnit
+        case .crystal: return Self.shardUnit
+        case .oak, .willow, .herb:
+            switch tree.look.leafShape ?? "" {
+            case "lobed": return Self.oakUnit
+            case "lance": return Self.lanceUnit
+            case "oval": return Self.ovalUnit
+            case "heart": return Self.heartUnit
+            case "fan": return Self.fanUnit
+            default: return species == .willow ? Self.lanceUnit : species == .herb ? Self.ovalUnit : Self.oakUnit
+            }
+        default: return Self.oakUnit
+        }
+    }
+
+    static let ovalUnit: Path = {
+        var p = Path()
+        p.move(to: .zero)
+        p.addCurve(to: CGPoint(x: 1, y: 0), control1: CGPoint(x: 0.12, y: -0.36), control2: CGPoint(x: 0.78, y: -0.3))
+        p.addCurve(to: .zero, control1: CGPoint(x: 0.78, y: 0.3), control2: CGPoint(x: 0.12, y: 0.36))
+        p.closeSubpath()
+        return p
+    }()
+
+    static let heartUnit: Path = {
+        var p = Path()
+        p.move(to: CGPoint(x: 0.08, y: 0))
+        p.addCurve(to: CGPoint(x: 1, y: 0), control1: CGPoint(x: -0.12, y: -0.62), control2: CGPoint(x: 0.62, y: -0.42))
+        p.addCurve(to: CGPoint(x: 0.08, y: 0), control1: CGPoint(x: 0.62, y: 0.42), control2: CGPoint(x: -0.12, y: 0.62))
+        p.closeSubpath()
+        return p
+    }()
+
+    /// A ginkgo fan.
+    static let fanUnit: Path = {
+        var p = Path()
+        p.move(to: .zero)
+        p.addLine(to: CGPoint(x: 0.7, y: -0.5))
+        p.addQuadCurve(to: CGPoint(x: 0.92, y: -0.04), control: CGPoint(x: 1.02, y: -0.32))
+        p.addLine(to: CGPoint(x: 0.8, y: 0))
+        p.addLine(to: CGPoint(x: 0.92, y: 0.04))
+        p.addQuadCurve(to: CGPoint(x: 0.7, y: 0.5), control: CGPoint(x: 1.02, y: 0.32))
+        p.closeSubpath()
+        return p
+    }()
+
+    /// A long kelp blade with a ruffled edge.
+    static let kelpUnit: Path = {
+        var top: [CGPoint] = [], bottom: [CGPoint] = []
+        let n = 40
+        for i in 0...n {
+            let x = CGFloat(i) / CGFloat(n)
+            let env = 0.12 * CGFloat(sin(Double.pi * pow(Double(x), 0.65)))
+            let ruffle = 1 + 0.2 * CGFloat(sin(Double(x) * 34))
+            top.append(CGPoint(x: x, y: -env * ruffle))
+            bottom.append(CGPoint(x: x, y: env * (2 - ruffle)))
+        }
+        var p = Path()
+        p.move(to: .zero)
+        for q in top { p.addLine(to: q) }
+        for q in bottom.reversed() { p.addLine(to: q) }
+        p.closeSubpath()
+        return p
+    }()
+
+    /// A crystal: a long hexagonal prism, pointed at both ends.
+    static let shardUnit: Path = {
+        var p = Path()
+        p.move(to: .zero)
+        p.addLine(to: CGPoint(x: 0.16, y: -0.15))
+        p.addLine(to: CGPoint(x: 0.8, y: -0.15))
+        p.addLine(to: CGPoint(x: 1, y: 0))
+        p.addLine(to: CGPoint(x: 0.8, y: 0.15))
+        p.addLine(to: CGPoint(x: 0.16, y: 0.15))
+        p.closeSubpath()
+        return p
+    }()
+
+    func shard(_ ctx: inout GraphicsContext, at base: CGPoint, angle: Double, length: CGFloat, value: Double, alpha: Double) {
+        guard length > 0.5 else { return }
+        let t = CGAffineTransform(translationX: base.x, y: base.y).rotated(by: CGFloat(angle)).scaledBy(x: length, y: length)
+        let shape = Self.shardUnit.applying(t)
+        let c = tone(value: value, hue: 0)
+        ctx.fill(shape, with: .color(c.color(0.55 * alpha)))
+        // The lit facet, the ridge, and a glint.
+        var facet = Path()
+        facet.move(to: .zero); facet.addLine(to: CGPoint(x: 0.16, y: -0.15)); facet.addLine(to: CGPoint(x: 0.8, y: -0.15))
+        facet.addLine(to: CGPoint(x: 1, y: 0)); facet.closeSubpath()
+        ctx.fill(facet.applying(t), with: .color(c.lit.lit.color(0.55 * alpha)))
+        var ridge = Path()
+        ridge.move(to: .zero); ridge.addLine(to: CGPoint(x: 1, y: 0))
+        ctx.stroke(ridge.applying(t), with: .color(c.shade.color(0.6 * alpha)), lineWidth: max(0.3, lw * 0.4))
+        var glint = Path()
+        glint.move(to: CGPoint(x: 0.3, y: -0.08)); glint.addLine(to: CGPoint(x: 0.55, y: -0.08))
+        ctx.stroke(glint.applying(t), with: .color(.white.opacity(0.85 * alpha)), style: StrokeStyle(lineWidth: max(0.4, lw * 0.6), lineCap: .round))
+        ctx.stroke(shape, with: .color(PlantInk.ink.opacity(0.6 * alpha)), lineWidth: max(0.35, lw * 0.5))
+    }
+
+    // MARK: Stems and stalks
+
+    func stem(_ ctx: inout GraphicsContext, _ chain: TreeGeometry.Chain, color: RGB, widen: CGFloat) {
+        let (pts, rr) = points(chain)
+        guard pts.count >= 2 else { return }
+        let shape = Pen.ribbon(pts, rr.map { max(0.5, $0 * 0.55 * widen) })
+        ctx.fill(shape, with: .color(color.color(0.95)))
+        let lit = Pen.ribbon(pts.map { CGPoint(x: $0.x - 0.5, y: $0.y - 0.3) }, rr.map { max(0.2, $0 * 0.18 * widen) })
+        ctx.fill(lit, with: .color(color.lit.color(0.55)))
+        ctx.stroke(shape, with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.55)
+    }
+
+    /// Faint water lines and a few bubbles behind a kelp forest.
+    func water(_ ctx: inout GraphicsContext) {
+        var rnd = SeededRandom(tree.seed, "water")
+        let top = g.base.y - g.height * 1.08
+        let half = max(60, g.height * 0.6)
+        var lines = Path()
+        for k in 0..<5 {
+            let y = top + CGFloat(k) * g.height * 0.2 + rnd.cg(-6, 6)
+            var x = g.base.x - half * rnd.cg(0.6, 0.95)
+            let end = g.base.x + half * rnd.cg(0.6, 0.95)
+            lines.move(to: CGPoint(x: x, y: y))
+            while x < end {
+                x += 10
+                lines.addLine(to: CGPoint(x: x, y: y + CGFloat(sin(Double(x) * 0.07 + pose.time * 0.6)) * 1.6))
+            }
+        }
+        ctx.stroke(lines, with: .color(RGB(0x5E9AA0).color(0.16)), style: StrokeStyle(lineWidth: lw * 0.7, lineCap: .round, dash: [14, 6, 4, 6]))
+        for k in 0..<10 {
+            let rise = (pose.time * 0.05 + Double(k) * 0.1).truncatingRemainder(dividingBy: 1)
+            let x = g.base.x + rnd.cg(-half, half) * 0.8
+            let y = g.base.y - CGFloat(rise) * g.height * 1.05
+            let r = rnd.cg(1.2, 2.6)
+            ctx.stroke(Path(ellipseIn: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2)), with: .color(RGB(0x5E9AA0).color(0.35 * (1 - rise))), lineWidth: lw * 0.5)
+        }
+    }
+
+    func holdfast(_ ctx: inout GraphicsContext) {
+        var rnd = SeededRandom(tree.seed, "holdfast")
+        var p = Path()
+        let w = max(8, g.height * 0.06)
+        for _ in 0..<9 {
+            let s = CGPoint(x: g.base.x + rnd.cg(-w * 0.3, w * 0.3), y: g.base.y - 2)
+            let e = CGPoint(x: g.base.x + rnd.cg(-w, w), y: g.base.y + rnd.cg(1, 4))
+            p.move(to: s)
+            p.addQuadCurve(to: e, control: CGPoint(x: (s.x + e.x) / 2 + rnd.cg(-4, 4), y: s.y - rnd.cg(0, 4)))
+        }
+        ctx.stroke(p, with: .color(RGB(0x6B5424).color(0.85)), style: StrokeStyle(lineWidth: lw * 1.1, lineCap: .round))
+    }
+
+    /// Gas floats at the base of kelp blades.
+    func bladders(_ ctx: inout GraphicsContext) {
+        for (k, lf) in g.leaves.enumerated() where k % 2 == 0 && !lf.back && lf.node < pose.p.count && pose.vis[lf.node] > 0 {
+            let s = pose.leafScale(g.nodes[lf.node].owner)
+            guard s > 0.2 else { continue }
+            let p = pose.p[lf.node]
+            let r = max(1.2, lf.length * 0.05) * s
+            let c = CGPoint(x: p.x + lf.offset.x, y: p.y + lf.offset.y)
+            let ball = Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r * 1.15, width: r * 2, height: r * 2.3))
+            ctx.fill(ball, with: .color(RGB(0xB49A45).color(0.95)))
+            ctx.stroke(ball, with: .color(PlantInk.ink.opacity(0.55)), lineWidth: lw * 0.45)
+        }
+    }
+
+    /// A fern frond: a curved stalk with paired leaflets that shrink toward the tip.
+    func frond(_ ctx: inout GraphicsContext, _ chain: TreeGeometry.Chain, index: Int) {
+        let (pts, _) = points(chain)
+        guard pts.count >= 3 else { return }
+        let owner = g.nodes[chain.ids[min(1, chain.ids.count - 1)]].owner
+        let grow = pose.leafScale(owner)
+        var rib = Path()
+        Pen.addSmooth(&rib, pts, move: true)
+        ctx.stroke(rib, with: .color(RGB(0x5E5134).color(0.9)), style: StrokeStyle(lineWidth: max(0.6, lw * (chain.side ? 0.7 : 1.1)), lineCap: .round))
+        let L = max(4, g.height * (chain.side ? 0.045 : 0.07))
+        let n = pts.count
+        var rnd = SeededRandom(tree.seed &+ UInt64(index), "pinnae")
+        var leaflets = Path(), shade = Path()
+        for k in 1..<(n - 1) {
+            let t = CGFloat(k) / CGFloat(n - 1)
+            guard t > 0.12 else { continue }
+            let a = pts[k - 1], b = pts[k + 1]
+            let along = atan2(Double(b.y - a.y), Double(b.x - a.x))
+            let len = L * (1 - 0.8 * t) * (0.55 + 0.45 * CGFloat(min(1, t * 4))) * grow
+            guard len > 0.8 else { continue }
+            for side in [-1.0, 1.0] {
+                let ang = along + side * (1.05 - 0.25 * Double(t)) + rnd.range(-0.06, 0.06)
+                let tr = CGAffineTransform(translationX: pts[k].x, y: pts[k].y).rotated(by: CGFloat(ang)).scaledBy(x: len, y: len * 1.2)
+                if side < 0 { leaflets.addPath(Self.lanceUnit.applying(tr)) } else { shade.addPath(Self.lanceUnit.applying(tr)) }
+            }
+        }
+        ctx.fill(shade, with: .color(leaf.mix(leaf.shade, 0.2).color(0.92)))
+        ctx.fill(leaflets, with: .color(leaf.mix(leaf.lit, 0.15).color(0.92)))
+        if fine {
+            ctx.stroke(leaflets, with: .color(PlantInk.ink.opacity(0.35)), lineWidth: lw * 0.35)
+            ctx.stroke(shade, with: .color(PlantInk.ink.opacity(0.35)), lineWidth: lw * 0.35)
+        }
+    }
+
+    /// Young fronds still coiled, at the foot of the fern.
+    func fiddleheads(_ ctx: inout GraphicsContext) {
+        var rnd = SeededRandom(tree.seed, "fiddle")
+        let r = max(3, g.height * 0.028)
+        for k in 0..<3 {
+            let x = g.base.x + CGFloat(k - 1) * r * 3.4 + rnd.cg(-r, r)
+            let h = r * rnd.cg(2.2, 3.6)
+            let top = CGPoint(x: x + r * 0.6, y: g.base.y - h)
+            var stalk = Path()
+            stalk.move(to: CGPoint(x: x, y: g.base.y))
+            stalk.addQuadCurve(to: top, control: CGPoint(x: x - r * 0.4, y: g.base.y - h * 0.5))
+            var coil = Path()
+            coil.move(to: top)
+            let nod = CGFloat(sin(pose.time * 0.8 + Double(k))) * 0.15 * pose.wind
+            for j in 1...26 {
+                let a = Double(j) * 0.36 + Double(nod)
+                let rr = r * CGFloat(1 - Double(j) / 30)
+                coil.addLine(to: CGPoint(x: top.x - r + CGFloat(cos(a)) * rr, y: top.y + CGFloat(sin(a)) * rr * -1))
+            }
+            ctx.stroke(stalk, with: .color(leaf.shade.color(0.9)), style: StrokeStyle(lineWidth: lw * 1.1, lineCap: .round))
+            ctx.stroke(coil, with: .color(leaf.color(0.95)), style: StrokeStyle(lineWidth: lw * 1.3, lineCap: .round))
+        }
+    }
+
+    // MARK: Mushroom
+
+    func mycelium(_ ctx: inout GraphicsContext) {
+        var rnd = SeededRandom(tree.seed, "mycelium")
+        var p = Path()
+        let half = max(50, g.height * 0.5)
+        for _ in 0..<14 {
+            var q = CGPoint(x: g.base.x + rnd.cg(-8, 8), y: g.base.y + 3)
+            p.move(to: q)
+            let dir = rnd.range(-1.4, 1.4)
+            for _ in 0..<7 {
+                let a = dir + rnd.range(-0.5, 0.5)
+                q = CGPoint(x: q.x + CGFloat(sin(a)) * half * 0.12, y: q.y + abs(CGFloat(cos(a))) * half * 0.025 + 0.6)
+                p.addLine(to: q)
+            }
+        }
+        ctx.stroke(p, with: .color(RGB(0xBFB49A).color(0.7)), style: StrokeStyle(lineWidth: lw * 0.45, lineCap: .round))
+    }
+
+    func stalk(_ ctx: inout GraphicsContext, _ chain: TreeGeometry.Chain) {
+        let (pts, rr) = points(chain)
+        guard pts.count >= 2 else { return }
+        let body = Pen.ribbon(pts, rr.map { max(1, $0 * 0.9) })
+        ctx.fill(body, with: .color(RGB(0xEFE5CF).color(0.98)))
+        let shade = Pen.ribbon(pts.map { CGPoint(x: $0.x + 0.6, y: $0.y) }, rr.map { max(0.4, $0 * 0.35) })
+        ctx.fill(shade, with: .color(RGB(0xCDBE9C).color(0.6)))
+        ctx.stroke(body, with: .color(PlantInk.ink.opacity(0.55)), lineWidth: lw * 0.6)
+    }
+
+    func caps(_ ctx: inout GraphicsContext) {
+        let L = leaf
+        for (k, chain) in g.chains.enumerated() {
+            let (pts, rr) = points(chain)
+            guard pts.count >= 2, let end = pts.last else { continue }
+            let owner = g.nodes[chain.ids[min(1, chain.ids.count - 1)]].owner
+            let s = pose.leafScale(owner)
+            guard s > 0.02 else { continue }
+            let prev = pts[pts.count - 2]
+            let up = atan2(Double(end.y - prev.y), Double(end.x - prev.x)) + .pi / 2
+            let w = max((rr.first ?? 3) * 3.4, chain.side ? g.cardSize.width * 0.45 : g.cardSize.width * 0.85) * s
+            var c = ctx
+            c.translateBy(x: end.x, y: end.y)
+            c.rotate(by: .radians(up))
+            let h = w * 0.62
+            var dome = Path()
+            dome.move(to: CGPoint(x: -w, y: 0))
+            dome.addCurve(to: CGPoint(x: w, y: 0), control1: CGPoint(x: -w * 0.95, y: -h * 1.35), control2: CGPoint(x: w * 0.95, y: -h * 1.35))
+            dome.addQuadCurve(to: CGPoint(x: -w, y: 0), control: CGPoint(x: 0, y: h * 0.28))
+            var gills = Path()
+            for j in 0..<9 {
+                let x = -w * 0.8 + w * 1.6 * CGFloat(j) / 8
+                gills.move(to: CGPoint(x: x * 0.3, y: h * 0.12)); gills.addLine(to: CGPoint(x: x, y: h * 0.06))
+            }
+            c.fill(dome, with: .linearGradient(Gradient(colors: [L.lit.color(0.98), L.color(0.98), L.shade.color(0.98)]),
+                                               startPoint: CGPoint(x: -w * 0.5, y: -h), endPoint: CGPoint(x: w * 0.6, y: 0)))
+            c.stroke(gills, with: .color(PlantInk.ink.opacity(0.35)), lineWidth: lw * 0.4)
+            var rnd = SeededRandom(tree.seed &+ UInt64(k), "spots")
+            for _ in 0..<5 {
+                let x = rnd.cg(-0.6, 0.6) * w, y = -rnd.cg(0.25, 0.85) * h
+                let r = w * rnd.cg(0.06, 0.11)
+                c.fill(Path(ellipseIn: CGRect(x: x - r, y: y - r * 0.8, width: r * 2, height: r * 1.6)), with: .color(RGB(0xFBF4E2).color(0.92)))
+            }
+            c.stroke(dome, with: .color(PlantInk.ink.opacity(0.7)), lineWidth: lw * 0.7)
+        }
+        // A few small ones in the moss.
+        var rnd = SeededRandom(tree.seed, "buttons")
+        for k in 0..<4 {
+            let x = g.base.x + CGFloat(k % 2 == 0 ? -1 : 1) * rnd.cg(14, 40) * max(0.6, g.height / 300)
+            let w = rnd.cg(4, 8) * max(0.6, g.height / 300)
+            let top = CGPoint(x: x, y: g.base.y - w * 1.4)
+            var st = Path(); st.move(to: CGPoint(x: x, y: g.base.y)); st.addLine(to: top)
+            ctx.stroke(st, with: .color(RGB(0xE9DDC4)), style: StrokeStyle(lineWidth: w * 0.45, lineCap: .round))
+            var dome = Path()
+            dome.move(to: CGPoint(x: x - w, y: top.y))
+            dome.addQuadCurve(to: CGPoint(x: x + w, y: top.y), control: CGPoint(x: x, y: top.y - w * 1.3))
+            dome.closeSubpath()
+            ctx.fill(dome, with: .color(leaf.color(0.95)))
+            ctx.stroke(dome, with: .color(PlantInk.ink.opacity(0.6)), lineWidth: lw * 0.5)
+        }
+    }
+
+    // MARK: Cactus
+
+    func cactusBody(_ ctx: inout GraphicsContext) {
+        let L = leaf
+        var limbs: [(Path, [CGPoint], [CGFloat])] = []
+        for chain in g.chains {
+            let (pts, rr) = points(chain)
+            guard pts.count >= 2 else { continue }
+            var shape = Pen.ribbon(pts, rr)
+            if let e = pts.last, let r = rr.last { shape.addEllipse(in: CGRect(x: e.x - r, y: e.y - r, width: r * 2, height: r * 2)) }
+            limbs.append((shape, pts, rr))
+        }
+        for (shape, _, _) in limbs { ctx.stroke(shape, with: .color(PlantInk.ink.opacity(0.65)), lineWidth: lw * 1.3) }
+        for (shape, pts, rr) in limbs {
+            ctx.fill(shape, with: .color(L.color(1)))
+            let lit = Pen.ribbon(pts.enumerated().map { CGPoint(x: $1.x - rr[$0] * 0.35, y: $1.y) }, rr.map { $0 * 0.35 })
+            ctx.fill(lit, with: .color(L.lit.color(0.5)))
+        }
+        // Ribs and spines.
+        var ribs = Path(), spines = Path()
+        for (_, pts, rr) in limbs where pts.count > 2 {
+            for u in [-0.62, -0.2, 0.25, 0.66] as [CGFloat] {
+                var line: [CGPoint] = []
+                for i in pts.indices {
+                    let a = pts[max(0, i - 1)], b = pts[min(pts.count - 1, i + 1)]
+                    let len = max(0.001, hypot(b.x - a.x, b.y - a.y))
+                    line.append(CGPoint(x: pts[i].x - (b.y - a.y) / len * rr[i] * u, y: pts[i].y + (b.x - a.x) / len * rr[i] * u))
+                }
+                Pen.addSmooth(&ribs, line, move: true)
+                if fine {
+                    for i in stride(from: 1, to: line.count, by: 2) {
+                        let q = line[i]
+                        let sp = max(1.2, rr[i] * 0.22)
+                        for a in [-2.4, -1.57, -0.7] {
+                            spines.move(to: q)
+                            spines.addLine(to: CGPoint(x: q.x + CGFloat(cos(a)) * sp, y: q.y + CGFloat(sin(a)) * sp))
+                        }
+                    }
+                }
+            }
+        }
+        ctx.stroke(ribs, with: .color(L.shade.color(0.55)), lineWidth: lw * 0.6)
+        ctx.stroke(spines, with: .color(RGB(0xF3EAD0).color(0.95)), lineWidth: lw * 0.45)
+        ctx.stroke(spines, with: .color(PlantInk.ink.opacity(0.25)), lineWidth: lw * 0.2)
+    }
+
+    // MARK: Dendrite (a neuron)
+
+    func soma(_ ctx: inout GraphicsContext) {
+        let r = max(6, g.height * 0.07)
+        let c = CGPoint(x: g.base.x, y: g.base.y - r * 0.7)
+        var body = Path()
+        for i in 0...24 {
+            let a = Double(i) / 24 * 2 * .pi
+            let k = 1 + 0.12 * sin(a * 3 + 0.5) + 0.05 * sin(pose.time * 1.2 + a)
+            let p = CGPoint(x: c.x + CGFloat(cos(a) * k) * r * 1.15, y: c.y + CGFloat(sin(a) * k) * r * 0.9)
+            if i == 0 { body.move(to: p) } else { body.addLine(to: p) }
+        }
+        body.closeSubpath()
+        ctx.fill(body, with: .radialGradient(Gradient(colors: [leaf.lit.color(0.98), leaf.color(0.95), bark.color(0.95)]),
+                                             center: CGPoint(x: c.x - r * 0.3, y: c.y - r * 0.3), startRadius: 0, endRadius: r * 1.4))
+        ctx.stroke(body, with: .color(PlantInk.ink.opacity(0.6)), lineWidth: lw * 0.8)
+        let nr = r * 0.38
+        let nucleus = Path(ellipseIn: CGRect(x: c.x - nr, y: c.y - nr * 0.9, width: nr * 2, height: nr * 1.8))
+        ctx.fill(nucleus, with: .color(bark.color(0.7)))
+        ctx.fill(Path(ellipseIn: CGRect(x: c.x - nr * 0.3, y: c.y - nr * 0.3, width: nr * 0.6, height: nr * 0.6)), with: .color(RGB(0xF2C14E).color(0.9)))
+    }
+
+    /// The axon, wrapped in myelin, running down into the ground.
+    func axon(_ ctx: inout GraphicsContext) {
+        let len = max(14, g.height * 0.16)
+        var line = Path()
+        line.move(to: g.base)
+        line.addQuadCurve(to: CGPoint(x: g.base.x + len * 0.3, y: g.base.y + len), control: CGPoint(x: g.base.x - len * 0.2, y: g.base.y + len * 0.5))
+        ctx.stroke(line, with: .color(bark.color(0.8)), style: StrokeStyle(lineWidth: lw * 1.2, lineCap: .round))
+        for k in 0..<3 {
+            let t = 0.25 + 0.25 * Double(k)
+            let x = g.base.x + CGFloat(-0.2 * 2 * (1 - t) * t + 0.3 * t * t) * len
+            let y = g.base.y + CGFloat(t) * len
+            let sheath = Path(roundedRect: CGRect(x: x - 2.4 * lw, y: y - len * 0.08, width: 4.8 * lw, height: len * 0.16), cornerRadius: 2.4 * lw)
+            ctx.fill(sheath, with: .color(RGB(0xF3E8D2).color(0.95)))
+            ctx.stroke(sheath, with: .color(PlantInk.ink.opacity(0.45)), lineWidth: lw * 0.45)
+        }
+    }
+
+    /// Dendritic spines along the fine branches, and signals running out along the big ones.
+    func spines(_ ctx: inout GraphicsContext) {
+        var p = Path()
+        let maxR = g.nodes.map(\.r).max() ?? 1
+        let len = max(1.5, g.height / 110)
+        for (i, n) in g.nodes.enumerated() where i % 2 == 0 && n.parent >= 0 && n.r < maxR * 0.35 && pose.vis[i] >= 1 {
+            let q = pose.p[i], o = pose.p[n.parent]
+            let a = atan2(Double(q.y - o.y), Double(q.x - o.x)) + (i % 4 == 0 ? 1.4 : -1.4)
+            let e = CGPoint(x: q.x + CGFloat(cos(a)) * len, y: q.y + CGFloat(sin(a)) * len)
+            p.move(to: q); p.addLine(to: e)
+            p.addEllipse(in: CGRect(x: e.x - len * 0.3, y: e.y - len * 0.3, width: len * 0.6, height: len * 0.6))
+        }
+        ctx.stroke(p, with: .color(bark.color(0.75)), lineWidth: lw * 0.4)
+        // Signals: bright sparks travelling up the main dendrites.
+        for (k, chain) in g.chains.prefix(8).enumerated() where chain.ids.count > 6 {
+            let (pts, _) = points(chain)
+            guard pts.count > 3 else { continue }
+            let f = (pose.time * 0.22 + Double(k) * 0.37).truncatingRemainder(dividingBy: 1)
+            let q = pts[min(pts.count - 1, Int(f * Double(pts.count - 1)))]
+            let r = max(2, g.height / 120)
+            ctx.fill(Path(ellipseIn: CGRect(x: q.x - r * 2.5, y: q.y - r * 2.5, width: r * 5, height: r * 5)),
+                     with: .radialGradient(Gradient(colors: [RGB(0xFFE7A0).color(0.8), RGB(0xFFE7A0).color(0)]), center: q, startRadius: 0, endRadius: r * 2.5))
+        }
+    }
+
+    func bouton(_ ctx: inout GraphicsContext, _ c: TreeGeometry.Clump) {
+        guard pose.vis[c.node] > 0 else { return }
+        let s = pose.leafScale(g.nodes[c.node].owner)
+        guard s > 0.01 else { return }
+        let o = center(c)
+        let r = c.rx * s
+        let glow = 0.25 + 0.25 * sin(pose.time * 2 + c.phase) * Double(pose.wind)
+        ctx.fill(Path(ellipseIn: CGRect(x: o.x - r * 3, y: o.y - r * 3, width: r * 6, height: r * 6)),
+                 with: .radialGradient(Gradient(colors: [RGB(0xF2C14E).color(glow), RGB(0xF2C14E).color(0)]), center: o, startRadius: 0, endRadius: r * 3))
+        let knob = Path(ellipseIn: CGRect(x: o.x - r, y: o.y - r, width: r * 2, height: r * 2))
+        ctx.fill(knob, with: .color(leaf.lit.color(0.95)))
+        ctx.stroke(knob, with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.45)
+    }
+
+    // MARK: Crystal circuit veins
+
+    func circuit(_ ctx: inout GraphicsContext) {
+        let maxR = g.nodes.map(\.r).max() ?? 1
+        var traces = Path(), pads = Path()
+        for chain in g.chains {
+            let (pts, rr) = points(chain)
+            guard pts.count > 4, (rr.max() ?? 0) > maxR * 0.22 else { continue }
+            // A trace that runs in straight runs and 45 degree jogs, like a circuit board.
+            var line: [CGPoint] = [pts[0]]
+            for i in stride(from: 3, to: pts.count, by: 3) {
+                let a = line.last!, b = pts[i]
+                let dx = b.x - a.x, dy = b.y - a.y
+                let m = min(abs(dx), abs(dy))
+                line.append(CGPoint(x: a.x + (dx >= 0 ? m : -m), y: a.y + (dy >= 0 ? m : -m)))
+                line.append(b)
+            }
+            traces.move(to: line[0])
+            for q in line.dropFirst() { traces.addLine(to: q) }
+            for (k, q) in line.enumerated() where k % 4 == 2 {
+                let r = max(0.8, lw * 1.1)
+                pads.addEllipse(in: CGRect(x: q.x - r, y: q.y - r, width: r * 2, height: r * 2))
+            }
+        }
+        ctx.stroke(traces, with: .color(RGB(0xE3C46A).color(0.85)), style: StrokeStyle(lineWidth: max(0.5, lw * 0.6), lineCap: .round, lineJoin: .round))
+        ctx.fill(pads, with: .color(RGB(0xF3DE96)))
+        ctx.stroke(pads, with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.35)
+    }
+
+    // MARK: Tendrils
+
+    func tendrils(_ ctx: inout GraphicsContext) {
+        guard [.oak, .willow, .crystal, .herb, .alien, .coral, .dendrite, .conifer].contains(species) else { return }
+        var isParent = [Bool](repeating: false, count: g.nodes.count)
+        for n in g.nodes where n.parent >= 0 { isParent[n.parent] = true }
+        let ends = g.nodes.indices.filter { !isParent[$0] && g.nodes[$0].parent >= 0 }
+        guard !ends.isEmpty else { return }
+        let stride = max(1, ends.count / 14)
+        let r = max(3, g.height * 0.022)
+        var p = Path()
+        for (k, i) in ends.enumerated() where k % stride == 0 && pose.vis[i] >= 1 {
+            let q = pose.p[i], o = pose.p[g.nodes[i].parent]
+            var a = atan2(Double(q.y - o.y), Double(q.x - o.x))
+            var at = q
+            p.move(to: at)
+            let turn = (k % 2 == 0 ? 1.0 : -1.0)
+            let sway = sin(pose.time * 1.1 + Double(k)) * 0.04 * Double(pose.wind)
+            for j in 0..<22 {
+                let seg = r * CGFloat(0.55 - 0.018 * Double(j))
+                a += turn * (0.12 + 0.03 * Double(j)) + sway
+                at = CGPoint(x: at.x + CGFloat(cos(a)) * seg, y: at.y + CGFloat(sin(a)) * seg)
+                p.addLine(to: at)
+            }
+        }
+        ctx.stroke(p, with: .color(leaf.shade.color(0.85)), style: StrokeStyle(lineWidth: max(0.5, lw * 0.6), lineCap: .round, lineJoin: .round))
+    }
+
+    // MARK: Flowers, berries, fruit
+
+    func bloomRGB(_ name: String?) -> RGB {
+        switch name ?? "" {
+        case "white": return RGB(0xF6F1E4)
+        case "red": return RGB(0xC8423B)
+        case "gold": return RGB(0xE8B53A)
+        case "violet": return RGB(0x9B7BC8)
+        case "blue": return RGB(0x6E93D6)
+        default: return RGB(0xE89AB0)
+        }
+    }
+
+    func blooms(_ ctx: inout GraphicsContext) {
+        guard let kind = tree.look.bloom, kind != "none", ![.mushroom, .kelp, .dendrite].contains(species) else { return }
+        let color = bloomRGB(tree.look.bloomTone)
+        var spots: [(Int, CGPoint)] = []
+        if species == .cactus {
+            for chain in g.chains where chain.ids.count > 3 {
+                let (pts, rr) = points(chain)
+                guard pts.count > 3, let e = pts.last, let r = rr.last else { continue }
+                spots.append((chain.ids[min(chain.ids.count - 1, pts.count - 1)], CGPoint(x: e.x - r * 0.4, y: e.y - r * 0.9)))
+            }
+        } else {
+            var isParent = [Bool](repeating: false, count: g.nodes.count)
+            for n in g.nodes where n.parent >= 0 { isParent[n.parent] = true }
+            let ends = g.nodes.indices.filter { !isParent[$0] && g.nodes[$0].parent >= 0 }
+            let stride = max(1, ends.count / 26)
+            let card = g.cardSize
+            for (k, i) in ends.enumerated() where k % stride == 0 {
+                let rest = g.nodes[i].p
+                if g.cardCenters.values.contains(where: { abs($0.x - rest.x) < card.width * 0.6 && abs($0.y - rest.y) < card.height * 0.6 }) { continue }
+                spots.append((i, pose.p[i]))
+            }
+        }
+        let size = max(2.6, g.height * 0.02)
+        for (k, (i, at)) in spots.enumerated() where i < pose.vis.count && pose.vis[i] >= 1 {
+            let s = pose.leafScale(g.nodes[i].owner)
+            guard s > 0.05 else { continue }
+            let r = size * s
+            switch kind {
+            case "berry":
+                for j in 0..<3 {
+                    let a = Double(j) * 2.1 + Double(k)
+                    let c = CGPoint(x: at.x + CGFloat(cos(a)) * r * 0.8, y: at.y + r * 0.9 + CGFloat(sin(a)) * r * 0.5)
+                    let b = Path(ellipseIn: CGRect(x: c.x - r * 0.62, y: c.y - r * 0.62, width: r * 1.24, height: r * 1.24))
+                    ctx.fill(b, with: .color(color.color(0.98)))
+                    ctx.stroke(b, with: .color(PlantInk.ink.opacity(0.55)), lineWidth: lw * 0.4)
+                    ctx.fill(Path(ellipseIn: CGRect(x: c.x - r * 0.3, y: c.y - r * 0.35, width: r * 0.25, height: r * 0.25)), with: .color(.white.opacity(0.8)))
+                }
+            case "fruit":
+                let c = CGPoint(x: at.x, y: at.y + r * 1.6)
+                var st = Path(); st.move(to: at); st.addLine(to: CGPoint(x: c.x, y: c.y - r * 1.1))
+                ctx.stroke(st, with: .color(bark.color(0.9)), lineWidth: lw * 0.6)
+                let f = Path(ellipseIn: CGRect(x: c.x - r * 1.25, y: c.y - r * 1.15, width: r * 2.5, height: r * 2.4))
+                ctx.fill(f, with: .radialGradient(Gradient(colors: [color.lit.color(1), color.color(1), color.shade.color(1)]),
+                                                  center: CGPoint(x: c.x - r * 0.4, y: c.y - r * 0.4), startRadius: 0, endRadius: r * 1.9))
+                ctx.stroke(f, with: .color(PlantInk.ink.opacity(0.6)), lineWidth: lw * 0.5)
+            default:
+                var petals = Path()
+                let spin = Double(k) * 0.7 + sin(pose.time * 0.8 + Double(k)) * 0.05 * Double(pose.wind)
+                for j in 0..<5 {
+                    let a = spin + Double(j) / 5 * 2 * .pi
+                    let tr = CGAffineTransform(translationX: at.x, y: at.y).rotated(by: CGFloat(a))
+                    petals.addPath(Path(ellipseIn: CGRect(x: r * 0.15, y: -r * 0.42, width: r * 1.05, height: r * 0.84)).applying(tr))
+                }
+                ctx.fill(petals, with: .color(color.color(0.97)))
+                ctx.stroke(petals, with: .color(color.shade.color(0.7)), lineWidth: lw * 0.4)
+                ctx.fill(Path(ellipseIn: CGRect(x: at.x - r * 0.3, y: at.y - r * 0.3, width: r * 0.6, height: r * 0.6)), with: .color(RGB(0xE8B53A)))
+            }
         }
     }
 }

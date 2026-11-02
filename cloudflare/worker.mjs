@@ -961,12 +961,109 @@ async function treeSpecies(req, waitUntil) {
   }
 }
 
+// The parametric plant: Gemini reads the papers and designs a plant that stands for their subject.
+const PLANTS = ["oak", "willow", "conifer", "flytrap", "alien", "coral", "kelp", "dendrite", "crystal", "herb", "cactus", "fern", "mushroom"];
+const PLANT_TONES = ["sage", "moss", "olive", "rust", "plum", "teal", "ochre", "violet", "gold", "ice"];
+const LEAF_SHAPES = ["auto", "lobed", "lance", "oval", "heart", "fan", "shard"];
+const BLOOMS = ["none", "blossom", "berry", "fruit"];
+const BLOOM_TONES = ["pink", "white", "red", "gold", "violet", "blue"];
+const PLANT_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    species: { type: "STRING", enum: PLANTS },
+    leafShape: { type: "STRING", enum: LEAF_SHAPES },
+    bloom: { type: "STRING", enum: BLOOMS },
+    bloomTone: { type: "STRING", enum: BLOOM_TONES },
+    tendrils: { type: "BOOLEAN" },
+    leafTone: { type: "STRING", enum: PLANT_TONES },
+    vigor: { type: "NUMBER" },
+    twist: { type: "NUMBER" },
+    droop: { type: "NUMBER" },
+    grownFrom: { type: "ARRAY", items: { type: "STRING" } },
+    commonName: { type: "STRING" },
+    latinName: { type: "STRING" },
+    note: { type: "STRING" },
+  },
+  required: ["species", "leafShape", "bloom", "bloomTone", "tendrils", "leafTone", "vigor", "twist", "droop", "grownFrom", "commonName", "latinName", "note"],
+  propertyOrdering: ["species", "leafShape", "bloom", "bloomTone", "tendrils", "leafTone", "vigor", "twist", "droop", "grownFrom", "commonName", "latinName", "note"],
+};
+
+async function treePlant(req, waitUntil) {
+  let body;
+  try { body = await readJSON(req); } catch { return json(400, { error: "Body must be JSON." }); }
+  const titles = (Array.isArray(body?.titles) ? body.titles : []).map((t) => clean(t, 200)).filter(Boolean).slice(-16);
+  const fields = (Array.isArray(body?.fields) ? body.fields : []).map((t) => clean(t, 60)).filter(Boolean).slice(0, 10);
+  const current = PLANTS.includes(body?.current) ? body.current : "";
+  if (!titles.length) return json(400, { error: "A tree needs at least one paper." });
+  const prompt =
+    "You design a drawn plant that stands for a reader's collection of research papers, so that anyone can tell the subject from the plant. " +
+    "Choose the plant body by the main subject of the papers:\n" +
+    "flytrap = animal science, zoology, animal behavior, entomology, predators, parasites, veterinary science\n" +
+    "kelp = marine science, oceanography, fisheries, marine biology, coasts\n" +
+    "coral = coral reefs, chemistry, materials science, catalysis\n" +
+    "dendrite = neuroscience, the brain, neurons, cognition, memory\n" +
+    "alien = astronomy, astrophysics, planets, cosmology, space science\n" +
+    "oak = botany, plant science, agriculture, forestry, general biology and ecology (give it bloom = blossom for botany)\n" +
+    "crystal = computer science, AI, machine learning, software, electronics, data\n" +
+    "herb = medicine, pharmacology, clinical research, nursing, public health\n" +
+    "conifer = mathematics, physics, engineering, statistics\n" +
+    "willow = psychology, sociology, education, history, philosophy, the arts\n" +
+    "cactus = geology, earth science, deserts and drought, economics\n" +
+    "fern = evolution, genetics, genomics, paleontology\n" +
+    "mushroom = microbiology, mycology, fungi, microbiomes, soil\n" +
+    (current ? `The plant is currently a ${current}. Keep it unless the papers now clearly center on a different subject.\n` : "") +
+    "leafShape: auto, or a leaf that suits the topic (lobed, lance, oval, heart, fan, shard). bloom: flowers, berries or fruit if they fit, else none. " +
+    "tendrils: true for topics about networks, connection or climbing growth. leafTone and bloomTone: colors that suit the topics. " +
+    "vigor, twist, droop: numbers from 0 to 1 for how bushy, how twisty, how drooping. " +
+    "grownFrom: two or three short lowercase topic phrases (one to three words each) that the plant was grown from, taken from the papers, like \"animal behavior\" and \"ecology\". " +
+    "commonName: a playful two or three word name for this plant. latinName: a made-up binomial in Latin style. " +
+    "note: one plain sentence under 18 words saying why this plant fits the papers. No em dashes.\n\n" +
+    `Fields: ${fields.join(", ") || "unknown"}\nPaper titles:\n- ${titles.join("\n- ")}`;
+  const key = await cacheKey(["plant-v1", prompt]);
+  const hit = await cacheRead(key);
+  if (hit) return json(200, hit.plant);
+  const outer = new AbortController();
+  const timer = setTimeout(() => outer.abort(), 15_000);
+  try {
+    const geminiBody = JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 400, responseMimeType: "application/json", responseSchema: PLANT_SCHEMA, thinkingConfig: { thinkingLevel: "minimal" } },
+    });
+    const { out, model } = await hedged(plan().map((m) => wholeAttempt(m, geminiBody)), outer.signal);
+    const o = JSON.parse(out);
+    const num = (v) => Math.max(0, Math.min(1, Number(v) || 0.5));
+    const pick = (v, list, d) => (list.includes(v) ? v : d);
+    const plant = {
+      species: pick(o.species, PLANTS, current || "oak"),
+      leafShape: pick(o.leafShape, LEAF_SHAPES, "auto"),
+      bloom: pick(o.bloom, BLOOMS, "none"),
+      bloomTone: pick(o.bloomTone, BLOOM_TONES, "pink"),
+      tendrils: o.tendrils === true,
+      leafTone: pick(o.leafTone, PLANT_TONES, "sage"),
+      vigor: num(o.vigor), twist: num(o.twist), droop: num(o.droop),
+      grownFrom: (Array.isArray(o.grownFrom) ? o.grownFrom : []).map((t) => tidy(clean(t, 30)).toLowerCase()).filter(Boolean).slice(0, 3),
+      commonName: tidy(clean(o.commonName, 60)),
+      latinName: tidy(clean(o.latinName, 60)),
+      note: tidy(clean(o.note, 200)),
+      model,
+    };
+    cacheWrite(key, { text: "1", plant }, waitUntil);
+    return json(200, plant);
+  } catch (e) {
+    const { status, error } = errorFor(e);
+    return json(status, { error });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 const ROUTES = {
   "/api/explain": handle,
   "/api/paper/lookup": lookupPaper,
   "/api/paper/recommend": recommendPapers,
   "/api/paper/pdfs": paperPdfs,
   "/api/tree/species": treeSpecies,
+  "/api/tree/plant": treePlant,
 };
 
 export default {

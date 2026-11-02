@@ -60,6 +60,7 @@ struct Suggestion: Codable, Identifiable, Hashable, Sendable {
 
 enum Species: String, Codable, CaseIterable, Sendable {
     case oak, willow, conifer, flytrap, alien, coral
+    case kelp, dendrite, crystal, herb, cactus, fern, mushroom
 
     var plainName: String {
         switch self {
@@ -69,19 +70,75 @@ enum Species: String, Codable, CaseIterable, Sendable {
         case .flytrap: return "venus flytrap"
         case .alien: return "alien tree"
         case .coral: return "coral tree"
+        case .kelp: return "kelp forest"
+        case .dendrite: return "dendrite tree"
+        case .crystal: return "crystal tree"
+        case .herb: return "medicinal herb"
+        case .cactus: return "cactus"
+        case .fern: return "fern"
+        case .mushroom: return "mushroom cluster"
         }
     }
 
-    /// Used until the AI has had a look, and whenever it can't be reached.
-    static func guess(fields: [String], seed: UInt64) -> Species {
-        let f = Set(fields.map { $0.lowercased() })
-        if f.contains("computer science") { return .alien }
-        if f.contains("medicine") { return .flytrap }
-        if f.contains("mathematics") || f.contains("physics") || f.contains("engineering") { return .conifer }
-        if f.contains("psychology") || f.contains("sociology") || f.contains("education") || f.contains("art") || f.contains("philosophy") { return .willow }
-        if f.contains("chemistry") || f.contains("materials science") || f.contains("environmental science") || f.contains("geology") { return .coral }
-        if f.contains("biology") { return .oak }
-        return Species.allCases[Int(seed % UInt64(Species.allCases.count))]
+    /// Which skeleton it grows on. New plants reuse one of the six skeletons and paint their own body.
+    var family: Species {
+        switch self {
+        case .kelp, .herb, .fern, .mushroom: return .flytrap
+        case .dendrite: return .coral
+        case .crystal: return .oak
+        case .cactus: return .conifer
+        default: return self
+        }
+    }
+    /// Stems come up out of the ground in a bunch, rather than off one trunk.
+    var fromBase: Bool { family == .flytrap || family == .coral }
+
+    /// Used until the AI has had a look, and whenever it can't be reached: the subject words in the
+    /// titles and fields, matched to the plant that stands for them.
+    static func guess(fields: [String], titles: [String] = [], seed: UInt64) -> Species {
+        guessWithReasons(fields: fields, titles: titles, seed: seed).0
+    }
+
+    static let topicWords: [(Species, [String])] = [
+        (.flytrap, ["zoology", "animal", "predat", "insect", "entomolog", "behavio", "parasit", "wildlife", "veterinar", "bird", "mammal"]),
+        (.kelp, ["marine", "ocean", "sea ", "seawater", "fisher", "coastal", "kelp", "plankton", "fish"]),
+        (.coral, ["coral", "reef", "chemistry", "chemical", "materials", "catalys", "polymer"]),
+        (.dendrite, ["neuro", "brain", "neuron", "cortex", "synap", "cognit", "memory"]),
+        (.alien, ["astronom", "astrophys", "galax", "planet", "cosmolog", "stellar", "exoplanet", "space", "telescope"]),
+        (.crystal, ["computer", "algorithm", "software", "machine learning", "neural network", "deep learning", "language model", "transformer", "comput", "robot"]),
+        (.herb, ["medicine", "medical", "clinical", "patient", "pharma", "drug", "therap", "disease", "health", "nursing", "cancer"]),
+        (.oak, ["botany", "plant", "photosynth", "leaf", "crop", "agricultur", "forest", "flower", "seed"]),
+        (.mushroom, ["fung", "myco", "microbio", "microbiome", "bacteri", "decompos", "soil"]),
+        (.fern, ["evolution", "genetic", "genom", "dna", "paleo", "fossil", "phylogen"]),
+        (.cactus, ["geolog", "earth science", "desert", "drought", "arid", "mineral", "economic"]),
+        (.conifer, ["mathemat", "physics", "engineering", "statistic", "quantum", "theorem"]),
+        (.willow, ["psycholog", "sociolog", "education", "history", "philosoph", " art ", "literature", "language", "politic"]),
+    ]
+
+    /// The best match and the words that picked it, for the "grown from" note.
+    static func guessWithReasons(fields: [String], titles: [String], seed: UInt64) -> (Species, [String]) {
+        let text = " " + (fields + titles).joined(separator: " ").lowercased() + " "
+        var best: (Species, Int, [String]) = (.oak, 0, [])
+        for (sp, words) in topicWords {
+            var hits: [String] = []
+            var n = 0
+            for w in words {
+                var from = text.startIndex
+                while let r = text.range(of: w, range: from..<text.endIndex) {
+                    n += 1
+                    from = r.upperBound
+                    if !hits.contains(w) { hits.append(w) }
+                }
+            }
+            if n > best.1 { best = (sp, n, hits) }
+        }
+        if best.1 == 0 {
+            let old: [Species] = [.oak, .willow, .conifer, .flytrap, .alien, .coral]
+            return (old[Int(seed % UInt64(old.count))], Array(fields.prefix(2)).map { $0.lowercased() })
+        }
+        let named = fields.prefix(2).map { $0.lowercased() }
+        let reasons = named.isEmpty ? best.2.prefix(2).map { $0.trimmingCharacters(in: .whitespaces) } : Array(named)
+        return (best.0, Array(reasons))
     }
 }
 
@@ -96,6 +153,50 @@ struct TreeLook: Codable, Hashable, Sendable {
     var droop = 0.5
     /// True once Gemini picked it (false while it is a local guess).
     var fromAI = false
+    // Parametric extras. Optional so trees saved by older versions still load.
+    /// lobed, lance, oval, heart, fan, shard; nil means the species' own leaf.
+    var leafShape: String? = nil
+    /// none, blossom, berry, fruit.
+    var bloom: String? = nil
+    /// pink, white, red, gold, violet, blue.
+    var bloomTone: String? = nil
+    /// Curling tendrils off the twigs.
+    var tendrils: Bool? = nil
+    /// The topics the plant was grown from, for the label ("grown from: animal behavior, ecology").
+    var grownFrom: [String]? = nil
+
+    /// "grown from: animal behavior, ecology"
+    var grownFromLine: String? {
+        guard let g = grownFrom?.filter({ !$0.isEmpty }), !g.isEmpty else { return nil }
+        return "grown from: " + g.prefix(3).joined(separator: ", ")
+    }
+
+    /// A local guess from the papers, before the AI has had a look.
+    static func guess(fields: [String], titles: [String], seed: UInt64) -> TreeLook {
+        let (sp, why) = Species.guessWithReasons(fields: fields, titles: titles, seed: seed)
+        var look = TreeLook(species: sp)
+        look.grownFrom = why
+        switch sp {
+        case .oak: look.bloom = "blossom"; look.bloomTone = "pink"
+        case .herb: look.bloom = "blossom"; look.bloomTone = "violet"
+        case .cactus: look.bloom = "blossom"; look.bloomTone = "pink"
+        case .crystal: look.leafTone = "teal"
+        case .dendrite: look.leafTone = "plum"
+        case .kelp: look.leafTone = "olive"
+        case .mushroom: look.leafTone = "rust"
+        default: break
+        }
+        return look
+    }
+
+    /// Part of the way from this look to another: the numbers drift, so a re-read never jumps.
+    func easing(toward o: TreeLook, by k: Double) -> TreeLook {
+        var out = o
+        out.vigor = vigor + (o.vigor - vigor) * k
+        out.twist = twist + (o.twist - twist) * k
+        out.droop = droop + (o.droop - droop) * k
+        return out
+    }
 }
 
 struct PaperTreeData: Codable, Identifiable, Hashable, Sendable {
@@ -110,6 +211,9 @@ struct PaperTreeData: Codable, Identifiable, Hashable, Sendable {
     var dismissed: [String] = []
     /// Paper counts at which we last asked the AI about the species.
     var lookCheckedAt: Int = 0
+    /// The plant it was before the last re-read, and when that changed: the drawing morphs across.
+    var priorLook: TreeLook? = nil
+    var lookChangedAt: Date? = nil
 
     var displayName: String { name.isEmpty ? "Tree No. \(number)" : name }
     var allFields: [String] {
@@ -179,7 +283,7 @@ final class TreeStore: ObservableObject {
         let seed = UInt64.random(in: 1...UInt64.max)
         let fields = first?.fields ?? []
         var tree = PaperTreeData(number: number, name: name.trimmingCharacters(in: .whitespaces), seed: seed,
-                                 look: TreeLook(species: Species.guess(fields: fields, seed: seed)))
+                                 look: TreeLook.guess(fields: fields, titles: first.map { [$0.title] } ?? [], seed: seed))
         if var p = first { p.parentId = nil; tree.papers = [p] }
         trees.append(tree)
         save()
@@ -282,19 +386,50 @@ final class TreeStore: ObservableObject {
         Task { await suggest(from: paper, in: treeId) }
     }
 
-    /// Ask the AI which plant this tree is at 1, 3, 6 and 10 papers, so it settles as it grows.
+    /// Paper counts at which the plant is looked at again: often while it is young, then every
+    /// four papers for as long as it keeps growing (no upper limit).
+    /// Suggestions waiting on a tree: two per paper, so a big tree keeps all its pencil branches.
+    static func suggestionsKept(papers: Int) -> Int { max(8, papers * 2) }
+
+    static func rereadsLook(at n: Int) -> Bool {
+        n >= 1 && ([1, 2, 3, 5, 8].contains(n) || (n >= 12 && n % 4 == 0))
+    }
+
+    /// Ask the AI which plant this tree is, as it grows, so it comes to reflect what it holds.
     private func refreshLook(_ treeId: UUID) async {
         guard let tree = trees.first(where: { $0.id == treeId }) else { return }
         let n = tree.papers.count
-        guard [1, 3, 6, 10].contains(n), tree.lookCheckedAt != n else { return }
-        guard let look = try? await TreeClient.current.species(titles: tree.papers.map(\.title), fields: tree.allFields) else { return }
+        guard Self.rereadsLook(at: n), tree.lookCheckedAt != n else { return }
+        // Locally first, so a new subject shows straight away even offline.
+        if !tree.look.fromAI {
+            let local = TreeLook.guess(fields: tree.allFields, titles: tree.papers.map(\.title), seed: tree.seed)
+            if local.species != tree.look.species { setLook(local, on: treeId) }
+        }
+        guard let look = try? await TreeClient.current.plant(titles: tree.papers.map(\.title), fields: tree.allFields,
+                                                             current: tree.look.fromAI ? tree.look.species : nil) else { return }
         guard let i = trees.firstIndex(where: { $0.id == treeId }) else { return }
-        trees[i].look = look
         trees[i].lookCheckedAt = n
+        setLook(look, on: treeId)
+    }
+
+    /// A new look. Same plant: the shape numbers drift halfway, so it changes gently. A different
+    /// plant: the old one is kept for a moment so the drawing can cross over.
+    func setLook(_ look: TreeLook, on treeId: UUID) {
+        guard let i = trees.firstIndex(where: { $0.id == treeId }) else { return }
+        let old = trees[i].look
+        if old.species == look.species && old.fromAI {
+            trees[i].look = old.easing(toward: look, by: 0.5)
+        } else {
+            trees[i].look = look
+        }
+        if old.species != look.species || old.leafShape != look.leafShape || old.bloom != look.bloom {
+            trees[i].priorLook = old
+            trees[i].lookChangedAt = Date()
+        }
         save()
     }
 
-    /// Up to two pencil branches off each new paper; at most six waiting per tree.
+    /// Up to two pencil branches off each new paper. Many may wait; only very old ones fall off.
     private func suggest(from paper: Paper, in treeId: UUID) async {
         guard !paper.isLocal, let tree = trees.first(where: { $0.id == treeId }) else { return }
         let exclude = tree.papers.map(\.id) + tree.dismissed + tree.suggestions.map(\.id) + tree.papers.compactMap { $0.doi.map { "doi:" + $0 } }
@@ -309,7 +444,8 @@ final class TreeStore: ObservableObject {
         for p in papers where !trees[i].suggestions.contains(where: { $0.id == p.id }) && !trees[i].papers.contains(where: { $0.id == p.id }) {
             trees[i].suggestions.append(Suggestion(paper: p, fromPaperId: paper.id))
         }
-        if trees[i].suggestions.count > 6 { trees[i].suggestions.removeFirst(trees[i].suggestions.count - 6) }
+        let keep = Self.suggestionsKept(papers: trees[i].papers.count)
+        if trees[i].suggestions.count > keep { trees[i].suggestions.removeFirst(trees[i].suggestions.count - keep) }
         save()
     }
 
@@ -469,13 +605,26 @@ struct TreeClient {
     }
 
     func species(titles: [String], fields: [String]) async throws -> TreeLook {
+        try await plant(titles: titles, fields: fields, current: nil)
+    }
+
+    /// The parametric plant for a tree's papers (Gemini, via the Worker).
+    func plant(titles: [String], fields: [String], current: Species?) async throws -> TreeLook {
         struct R: Decodable {
             var species: String; var commonName: String; var latinName: String; var note: String
             var leafTone: String; var vigor: Double; var twist: Double; var droop: Double
+            var leafShape: String?; var bloom: String?; var bloomTone: String?; var tendrils: Bool?; var grownFrom: [String]?
         }
-        let r = try await post("/api/tree/species", ["titles": Array(titles.suffix(12)), "fields": Array(fields.prefix(8))], as: R.self)
-        return TreeLook(species: Species(rawValue: r.species) ?? .oak, commonName: r.commonName, latinName: r.latinName,
-                        note: r.note, leafTone: r.leafTone, vigor: r.vigor, twist: r.twist, droop: r.droop, fromAI: true)
+        let r = try await post("/api/tree/plant", ["titles": Array(titles.suffix(16)), "fields": Array(fields.prefix(8)),
+                                                   "current": current?.rawValue ?? ""], as: R.self)
+        var look = TreeLook(species: Species(rawValue: r.species) ?? .oak, commonName: r.commonName, latinName: r.latinName,
+                            note: r.note, leafTone: r.leafTone, vigor: r.vigor, twist: r.twist, droop: r.droop, fromAI: true)
+        look.leafShape = (r.leafShape == "auto" || r.leafShape?.isEmpty == true) ? nil : r.leafShape
+        look.bloom = r.bloom == "none" ? nil : r.bloom
+        look.bloomTone = r.bloomTone
+        look.tendrils = r.tendrils
+        look.grownFrom = r.grownFrom.map { Array($0.prefix(3)) }
+        return look
     }
 }
 

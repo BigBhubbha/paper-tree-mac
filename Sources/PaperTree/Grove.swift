@@ -220,7 +220,8 @@ struct GroveOverview: View {
         var rows: Int, columns: Int, cell: CGSize, spacing: CGFloat
         static func make(count: Int, in size: CGSize, spacing: CGFloat = 12) -> Layout {
             let n = max(1, count)
-            let rows = n <= 3 ? 1 : 2
+            // More trees, more rows: sheets get smaller as the grove grows, and the rest scroll.
+            let rows = n <= 3 ? 1 : n <= 10 ? 2 : 3
             let columns = Int((Double(n) / Double(rows)).rounded(.up))
             let h = (size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
             let even = (size.width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
@@ -238,7 +239,8 @@ struct GroveOverview: View {
             let overflow = CGFloat(L.columns) * L.cell.width + CGFloat(L.columns - 1) * L.spacing > area.width + 1
             HStack(alignment: .top, spacing: 14) {
                 GroveScroll(axis: .horizontal, indicators: overflow) {
-                    HStack(alignment: .top, spacing: L.spacing) {
+                    // Lazy: with dozens of trees, only the sheets on screen are drawn and animated.
+                    LazyHStack(alignment: .top, spacing: L.spacing) {
                         ForEach(0..<L.columns, id: \.self) { c in
                             VStack(spacing: L.spacing) {
                                 ForEach(0..<L.rows, id: \.self) { r in
@@ -328,8 +330,8 @@ struct HerbariumLabel: View {
                 Text("\(tree.papers.count) \(tree.papers.count == 1 ? "paper" : "papers")")
                     .font(.typewriter(8.5)).foregroundColor(Palette.ink3).fixedSize()
             }
-            Text(tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased())
-                .font(.hand(12)).foregroundColor(Color(hex: 0x23314A)).lineLimit(1)
+            Text(tree.look.grownFromLine ?? (tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased()))
+                .font(.hand(12)).foregroundColor(tree.look.grownFromLine == nil ? Color(hex: 0x23314A) : Palette.red).lineLimit(1)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
@@ -348,6 +350,10 @@ struct HerbariumLabel: View {
             }
             Text(tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased())
                 .font(.hand(compact ? 12 : 14)).foregroundColor(Color(hex: 0x23314A)).lineLimit(1)
+            if let why = tree.look.grownFromLine {
+                Text(why).font(.hand(compact ? 11.5 : 13)).foregroundColor(Palette.red).lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Text("\(tree.papers.count) \(tree.papers.count == 1 ? "paper" : "papers")" + (tree.suggestions.isEmpty ? "" : ", \(tree.suggestions.count) suggested"))
                 .font(.typewriter(compact ? 8.5 : 9.5)).foregroundColor(Palette.ink3)
         }
@@ -418,14 +424,23 @@ struct TreeCanvas: View {
 
     var body: some View {
         GeometryReader { geo in
-            let g = TreeGeometry.cached(tree, in: Self.world(for: tree, in: geo.size))
+            let world = Self.world(for: tree, in: geo.size)
+            let g = TreeGeometry.cached(tree, in: world)
             TimelineView(.animation(minimumInterval: lively ? 1.0 / 30 : 1.0 / 12, paused: reduceMotion)) { timeline in
-                scene(g, size: geo.size, now: TreeClock.frozen ?? timeline.date)
+                scene(g, world: world, size: geo.size, now: TreeClock.frozen ?? timeline.date)
             }
         }
     }
 
-    private func scene(_ g: TreeGeometry, size: CGSize, now: Date) -> some View {
+    /// 0 to 1 while a tree turns into a different plant after a re-read; nil when there is nothing to cross.
+    static func morph(_ tree: PaperTreeData, now: Date) -> CGFloat? {
+        guard tree.priorLook != nil, let at = tree.lookChangedAt else { return nil }
+        let t = now.timeIntervalSince(at) / 2.8
+        guard t >= 0, t < 1 else { return nil }
+        return CGFloat(t * t * (3 - 2 * t))
+    }
+
+    private func scene(_ g: TreeGeometry, world: CGSize, size: CGSize, now: Date) -> some View {
         let still = reduceMotion
         let growing = still ? nil : TreeGrowth.current(tree, at: now)
         let pose = g.pose(time: still ? 0 : now.timeIntervalSinceReferenceDate, wind: still ? 0 : 1, growing: growing)
@@ -439,8 +454,19 @@ struct TreeCanvas: View {
         let (cam, scale) = Self.camera(g, in: size, zoom: zoom, pan: pan, pad: onOpenPaper == nil ? 6 : 18)
         let card = CGSize(width: g.cardSize.width * scale, height: g.cardSize.height * scale)
         let papers = tree.papers.sorted { $0.addedAt < $1.addedAt }
+        let morph = still ? nil : Self.morph(tree, now: now)
         return ZStack(alignment: .topLeading) {
+            if let m = morph, let prior = tree.priorLook {
+                // The old plant fades and settles while the new one comes up through it.
+                let old = Self.before(tree, prior)
+                let og = TreeGeometry.cached(old, in: world)
+                TreeDrawing(tree: old, geometry: og, pose: og.pose(time: now.timeIntervalSinceReferenceDate, wind: 1, growing: nil), camera: cam)
+                    .opacity(Double(1 - m))
+                    .scaleEffect(1 - 0.04 * m, anchor: .bottom)
+            }
             TreeDrawing(tree: tree, geometry: g, pose: pose, sketch: sketch, camera: cam)
+                .opacity(Double(morph ?? 1))
+                .scaleEffect(0.96 + 0.04 * (morph ?? 1), anchor: .bottom)
             ForEach(g.ghosts, id: \.id) { ghost in
                 if let s = tree.suggestions.first(where: { $0.id == ghost.id }) {
                     GhostTipCard(paper: s.paper, size: card, full: card.width > 90)
@@ -462,6 +488,14 @@ struct TreeCanvas: View {
         }
         .frame(width: size.width, height: size.height)
         .clipped()
+    }
+
+    private static func before(_ tree: PaperTreeData, _ prior: TreeLook) -> PaperTreeData {
+        var old = tree
+        old.look = prior
+        old.priorLook = nil
+        old.lookChangedAt = nil
+        return old
     }
 
     private static func ghostOpacity(_ drawn: CGFloat) -> Double {
@@ -764,6 +798,11 @@ struct TreeSheetPage: View {
         GroveScroll(axis: .vertical) {
             VStack(alignment: .leading, spacing: 12) {
                 Text(tree.displayName).font(.fell(28)).foregroundColor(Palette.ink)
+                if let why = tree.look.grownFromLine {
+                    (Text("A \(tree.look.species.plainName), ").font(.typewriter(10.5)) + Text(why).font(.typewriter(10.5)))
+                        .foregroundColor(Palette.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if !tree.look.note.isEmpty {
                     Text(tree.look.note).font(.hand(14.5)).foregroundColor(Palette.red)
                         .fixedSize(horizontal: false, vertical: true)
@@ -921,7 +960,7 @@ struct AddChooser: View {
                         store.plantingNewTree != nil ? "Plant it as a new tree, or add it to one you have:" : "Which tree gets it?")
                     .font(.typewriter(10.5)).foregroundColor(Palette.ink3)
                 GroveScroll(axis: .horizontal) {
-                    HStack(spacing: 10) {
+                    LazyHStack(spacing: 10) {
                         newTreeButton
                         ForEach(store.trees) { tree in treeButton(tree) }
                     }

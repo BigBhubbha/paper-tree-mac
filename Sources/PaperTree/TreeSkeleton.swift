@@ -148,12 +148,15 @@ extension TreeGeometry {
     }
 
     mutating func buildSkeleton(_ tree: PaperTreeData) {
-        let species = tree.look.species
+        let real = tree.look.species
+        let species = real.family
         var rnd = SeededRandom(tree.seed, "skeleton")
         let H = max(height, 24)
         let D = max(2.4, H / 34)
-        let fromBase = species == .flytrap || species == .coral
+        let fromBase = real.fromBase
         var rootTarget: [Int: CGFloat] = [:]
+        /// The width each node was laid out with, for plants whose arms stay thick (cactus).
+        var laid: [Int: CGFloat] = [:]
 
         // 1. The paper branches become chains of nodes.
         for limb in limbs + twigs {
@@ -170,9 +173,12 @@ extension TreeGeometry {
                 parent = nearestNode(to: pts[0])
             }
             let total = CGFloat(pts.count - 1)
+            if isRoot { laid[parent] = limb.w0 / 2 }
             for k in 1..<pts.count {
                 nodes.append(Node(p: pts[k], parent: parent, owner: limb.owner, along: CGFloat(k) / total))
                 parent = nodes.count - 1
+                let f = CGFloat(k) / total
+                laid[parent] = (limb.w0 + (limb.w1 - limb.w0) * f) / 2
                 if limb.depth == 0 { trunkNodes.append(parent) }
             }
             if limb.depth == 3 { twigEnds.append(parent) }
@@ -227,7 +233,7 @@ extension TreeGeometry {
             }
             bias = CGVector(dx: 0, dy: -0.1)
             step = D * 0.8
-        case .conifer, .flytrap:
+        default:
             break
         }
         if att.count > 640 { att = Array(att.prefix(640)) }
@@ -265,6 +271,7 @@ extension TreeGeometry {
             }
             if nodes[i].along <= 1 { r *= 1 - 0.3 * nodes[i].along }
             nodes[i].r = max(minR, r)
+            if real == .cactus, let w = laid[i] { nodes[i].r = max(minR, w) }
         }
         let maxR = nodes.map(\.r).max() ?? 1
         maxRadius = maxR
@@ -322,7 +329,7 @@ extension TreeGeometry {
             }
         }
 
-        switch species {
+        switch real {
         case .oak, .willow:
             let willow = species == .willow
             let cell = R * (willow ? 0.6 : 0.78)
@@ -348,6 +355,13 @@ extension TreeGeometry {
                 let rx = R * fr.cg(0.18, 0.36)
                 clumps.append(Clump(node: t, offset: .zero, rx: rx, ry: rx * 1.18, light: lightAt(nodes[t].p), kind: .orb,
                                     layers: Wash.blob(layers: 4, rnd: &fr), dabs: [], front: true, phase: fr.range(0, 6)))
+            }
+        case .dendrite:
+            // Synaptic boutons on the ends of the finest branches.
+            for t in terminals {
+                let rx = max(1.1, R * 0.05) * fr.cg(0.8, 1.3)
+                clumps.append(Clump(node: t, offset: .zero, rx: rx, ry: rx, light: lightAt(nodes[t].p), kind: .polyp,
+                                    layers: [], dabs: [], front: true, phase: fr.range(0, 6)))
             }
         case .coral:
             for t in terminals {
@@ -391,20 +405,40 @@ extension TreeGeometry {
                 tiers.append(Tier(node: anchor, offset: .zero, layers: Wash.layers(of: outline, count: 4, amount: 0.035, rnd: &fr),
                                   half: half, height: h, light: Double(0.25 + 0.55 * (1 - t0))))
             }
-        case .flytrap:
+        default:
             break
         }
         clumps.sort { ($0.front ? 1 : 0, nodes[$0.node].p.y) < ($1.front ? 1 : 0, nodes[$1.node].p.y) }
-        if species == .oak || species == .willow { growLeaves(willow: species == .willow, kids: kids, rnd: &fr, light: lightAt) }
+        switch real {
+        case .oak: growLeaves(.oak, kids: kids, rnd: &fr, light: lightAt)
+        case .willow: growLeaves(.willow, kids: kids, rnd: &fr, light: lightAt)
+        case .crystal: growLeaves(.crystal, kids: kids, rnd: &fr, light: lightAt)
+        case .herb: growLeaves(.herb, kids: kids, rnd: &fr, light: lightAt)
+        case .kelp: growLeaves(.kelp, kids: kids, rnd: &fr, light: lightAt)
+        default: break
+        }
         groundLayers = Wash.blob(sides: 11, layers: 4, squash: 1, rnd: &fr)
     }
 
     /// Leaves one by one along the twigs, with Poisson-disc spacing: a new leaf only goes where no
     /// other leaf's center is closer than most of a leaf length, so there are gaps to see through.
-    private mutating func growLeaves(willow: Bool, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double) {
-        let L = max(6, min(36, height * (willow ? 0.055 : 0.08)))
+    enum LeafPlan { case oak, willow, crystal, herb, kelp }
+
+    private mutating func growLeaves(_ plan: LeafPlan, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double) {
+        let willow = plan == .willow
+        let size: CGFloat
+        let spacing: CGFloat
+        let cap: Int
+        switch plan {
+        case .oak: size = 0.08; spacing = 0.74; cap = 520
+        case .willow: size = 0.055; spacing = 0.7; cap = 320
+        case .crystal: size = 0.075; spacing = 1.0; cap = 240
+        case .herb: size = 0.06; spacing = 0.85; cap = 260
+        case .kelp: size = 0.17; spacing = 0.5; cap = 140
+        }
+        let L = max(6, min(plan == .kelp ? 70 : 36, height * size))
         leafSize = L
-        let minD = L * (willow ? 0.7 : 0.74)
+        let minD = L * spacing
         var grid: [Int64: [CGPoint]] = [:]
         func key(_ x: Int, _ y: Int) -> Int64 { (Int64(x) << 32) | Int64(UInt32(bitPattern: Int32(truncatingIfNeeded: y))) }
         func cell(_ p: CGPoint) -> (Int, Int) { (Int(floor(p.x / minD)), Int(floor(p.y / minD))) }
@@ -418,11 +452,13 @@ extension TreeGeometry {
         func put(_ p: CGPoint) { let (cx, cy) = cell(p); grid[key(cx, cy), default: []].append(p) }
 
         let trunk = Set(trunkNodes)
-        let twig = maxRadius * (willow ? 0.55 : 0.5)
-        var order = nodes.indices.filter { nodes[$0].parent >= 0 && nodes[$0].r <= twig && !trunk.contains($0) }
+        // Herbs and kelp have no fine crown growth: leaves go all along their stems.
+        let along = plan == .herb || plan == .kelp
+        let twig = along ? .greatestFiniteMagnitude : maxRadius * (willow ? 0.55 : 0.5)
+        let floor = base.y - height * 0.07
+        var order = nodes.indices.filter { nodes[$0].parent >= 0 && nodes[$0].r <= twig && !trunk.contains($0) && nodes[$0].p.y < floor }
         // Branch ends first, so every twig tip gets its leaf before the spaces fill in.
         order.sort { (kids[$0].isEmpty ? 0 : 1, $0) < (kids[$1].isEmpty ? 0 : 1, $1) }
-        let cap = willow ? 320 : 520
         for i in order {
             if leaves.count >= cap { break }
             let p = nodes[i].p, q = nodes[nodes[i].parent].p
@@ -441,6 +477,13 @@ extension TreeGeometry {
                     // Willow leaves hang: lean every leaf most of the way toward straight down.
                     let vx = cos(a) * 0.45, vy = sin(a) * 0.45 + 0.55
                     a = atan2(vy, vx)
+                } else if plan == .kelp {
+                    // Kelp blades float: they stream upward from the stipe.
+                    let vx = cos(a) * 0.5, vy = sin(a) * 0.5 - 0.6
+                    a = atan2(vy, vx)
+                } else if plan == .crystal || plan == .herb {
+                    // Shards and herb leaves angle up and out, never down.
+                    if sin(a) > -0.1 { a = atan2(-abs(sin(a)) - 0.35, cos(a)) }
                 } else if sin(a) > 0.6 {
                     a -= 0.5 * (cos(a) >= 0 ? 1 : -1)      // oak leaves don't point at the ground
                 }
