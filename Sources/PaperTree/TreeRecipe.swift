@@ -94,6 +94,21 @@ struct TreeRecipe: Codable, Hashable, Sendable {
         return r.safe(for: s)
     }
 
+    /// This tree's own take on a recipe: the numbers wander a little and the colors shift a few degrees,
+    /// from the tree's seed. Two trees with the same papers get the same recipe from the server, so
+    /// this keeps them from being twins. Deterministic, so a tree always looks like itself.
+    func personalized(seed: UInt64, species: Species) -> TreeRecipe {
+        var rnd = SeededRandom(seed, "personal")
+        var r = self
+        func j(_ v: Double, _ k: Double = 0.09) -> Double { max(0, min(1, v + rnd.range(-k, k))) }
+        r.droop = j(droop); r.spread = j(spread); r.density = j(density)
+        r.height = j(height); r.girth = j(girth); r.twist = j(twist, 0.12)
+        r.bark = Hue.nudge(bark, hue: rnd.range(-6, 6), light: rnd.range(-0.03, 0.03))
+        r.leaf = Hue.nudge(leaf, hue: rnd.range(-8, 8), light: rnd.range(-0.04, 0.04))
+        r.accentColor = Hue.nudge(accentColor, hue: rnd.range(-6, 6), light: 0)
+        return r.safe(for: species)
+    }
+
     /// Part of the way toward another recipe: numbers and colors drift, choices switch.
     func easing(toward o: TreeRecipe, by k: Double) -> TreeRecipe {
         var out = o
@@ -112,14 +127,14 @@ struct TreeRecipe: Codable, Hashable, Sendable {
 struct TreeHabit {
     var droop: Double, spread: Double, density: Double, height: Double, girth: Double, twist: Double
     /// Multipliers centered on 1 (0.5 gives exactly 1).
-    var heightScale: Double { 0.82 + 0.36 * height }
-    var girthScale: Double { 0.72 + 0.56 * girth }
-    var spreadScale: Double { 0.78 + 0.44 * spread }
+    var heightScale: Double { 0.7 + 0.6 * height }
+    var girthScale: Double { 0.65 + 0.7 * girth }
+    var spreadScale: Double { 0.6 + 0.8 * spread }
     /// Leaf spacing: denser means closer leaves.
-    var spacingScale: Double { 1.28 - 0.56 * density }
-    var countScale: Double { 0.6 + 0.8 * density }
+    var spacingScale: Double { 1.45 - 0.9 * density }
+    var countScale: Double { 0.5 + 1.0 * density }
     /// Extra bend per step for branches that do not droop on their own (0 at droop 0.5).
-    var sag: Double { (droop - 0.5) * 0.1 }
+    var sag: Double { (droop - 0.5) * 0.16 }
 }
 
 extension TreeLook {

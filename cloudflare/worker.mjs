@@ -1158,13 +1158,16 @@ async function treeRecipe(req, waitUntil) {
     "leafShape: auto, or a leaf that suits the topic (lobed, lance, oval, heart, fan, shard). " +
     "branches: droop (0 reaching up, 1 weeping), spread (0 narrow and tall, 1 wide and open), density (0 airy and sparse, 1 full). " +
     "form: height (0 short, 1 tall), girth (0 slender, 1 stout), twist (0 straight, 1 gnarled and twisting). " +
+    "Give the plant a clear character and commit to it: use the whole 0 to 1 range, and do not settle on middling or habitual values. " +
+    "A field of quick, light ideas might be tall, slender and airy; old, deep work stout, spreading and gnarled; something fragile might weep. " +
+    "Bark varies too: silver grey, charcoal, red brown, pale ash, warm umber, olive, chosen for the character, not always plain brown. " +
     "accent: kind is none, blossom, berry, fruit, glow (softly glowing tips, for space, light, energy or the brain) or pods (hanging seed pods); amount 0 to 1. " +
     "tendrils: true for topics about networks, connection or climbing growth. " +
     "grownFrom: two or three short lowercase topic phrases (one to three words each) taken from the papers. " +
     "commonName: a playful two or three word name. latinName: a made-up binomial in Latin style. " +
     "note: one plain sentence under 18 words saying why this plant fits the papers. Never use em dashes.\n\n" +
     `Fields: ${fields.join(", ") || "unknown"}\nPaper titles:\n- ${titles.join("\n- ")}`;
-  const key = await cacheKey(["recipe-v1", prompt]);
+  const key = await cacheKey(["recipe-v2", prompt]);
   const hit = await cacheRead(key);
   if (hit?.recipe) return json(200, { ...flatPlant(hit.recipe), recipe: hit.recipe, model: hit.model, cached: true });
   const outer = new AbortController();
@@ -1173,7 +1176,7 @@ async function treeRecipe(req, waitUntil) {
   const bodyFor = (model) => JSON.stringify({
     contents: [{ role: "user", parts: [{ text: prompt }] }],
     generationConfig: {
-      temperature: 0.5, maxOutputTokens: model.startsWith("gemma") ? 1500 : 600, responseMimeType: "application/json", responseSchema: RECIPE_SCHEMA,
+      temperature: 0.85, maxOutputTokens: model.startsWith("gemma") ? 1500 : 600, responseMimeType: "application/json", responseSchema: RECIPE_SCHEMA,
       ...(model.startsWith("gemma") ? {} : { thinkingConfig: { thinkingLevel: "minimal" } }),
     },
   });

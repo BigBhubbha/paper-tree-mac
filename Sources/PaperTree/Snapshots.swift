@@ -671,6 +671,7 @@ extension Snapshots {
         }
         if done.wait(timeout: .now() + 40) == .success, var look = box.look {
             look.species = base
+            look.recipe = look.recipe?.personalized(seed: seed, species: base)
             if let r = look.recipe {
                 print("recipe: \(topic.name) [\(r.model ?? "?")] bark \(r.bark) leaf \(r.leaf) accent \(r.accentColor) \(r.accent) \(r.leafShape) droop \(r.droop) spread \(r.spread) density \(r.density) height \(r.height) girth \(r.girth) twist \(r.twist)")
             }
@@ -707,7 +708,11 @@ extension Snapshots {
 
     static func renderRecipes(to dir: URL, topicLooks: [TreeLook]) {
         let store = TreeStore(persist: false)
-        let looks = oakTopics.enumerated().map { k, t in recipe(for: t, base: .oak, seed: UInt64(3100 + k * 13)) }
+        // A pause between asks keeps under the model's per-minute allowance.
+        let looks = oakTopics.enumerated().map { k, t -> TreeLook in
+            if k > 0 { Thread.sleep(forTimeInterval: 4.5) }
+            return recipe(for: t, base: .oak, seed: UInt64(3100 + k * 13))
+        }
         let oaks = oakTopics.enumerated().map { k, t in topicTree(t, look: looks[k], number: k + 1, seed: 4242, papers: 3) }
         // Same plant body and the same branch seed, so only the recipe differs.
         let more = oaks.map { t -> PaperTreeData in

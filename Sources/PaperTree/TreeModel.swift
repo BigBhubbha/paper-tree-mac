@@ -417,8 +417,9 @@ final class TreeStore: ObservableObject {
             let local = TreeLook.guess(fields: fields, titles: titles, seed: tree.seed)
             if local.species != tree.look.species || tree.look.recipe == nil { setLook(local, on: treeId) }
         }
-        guard let look = try? await TreeClient.current.plant(titles: titles, fields: fields,
+        guard var look = try? await TreeClient.current.plant(titles: titles, fields: fields,
                                                              current: tree.look.fromAI ? tree.look.species : nil) else { return }
+        look.recipe = look.recipe?.personalized(seed: tree.seed, species: look.species)
         guard let i = trees.firstIndex(where: { $0.id == treeId }) else { return }
         trees[i].lookCheckedAt = n
         trees[i].recipeTopic = topic
