@@ -525,6 +525,13 @@ enum SamplePaper {
     }
 }
 
+/// Results gathered from side-by-side work in snapshots.
+final class ParallelSlots<T>: @unchecked Sendable {
+    var v: [T?]
+    let lock = NSLock()
+    init(_ n: Int) { v = Array(repeating: nil, count: n) }
+}
+
 // MARK: Plants that reflect their papers, a big grove, and the buddy in motion
 
 extension Snapshots {
@@ -648,8 +655,7 @@ extension Snapshots {
 
     /// Runs the slow server calls side by side (each waits on its own answer).
     static func parallel<T>(_ n: Int, _ make: @escaping (Int) -> T) -> [T] {
-        final class Slots: @unchecked Sendable { var v: [T?]; let lock = NSLock(); init(_ n: Int) { v = Array(repeating: nil, count: n) } }
-        let slots = Slots(n)
+        let slots = ParallelSlots<T>(n)
         DispatchQueue.concurrentPerform(iterations: n) { k in
             let x = make(k)
             slots.lock.lock(); slots.v[k] = x; slots.lock.unlock()
