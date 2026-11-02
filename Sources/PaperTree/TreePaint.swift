@@ -337,7 +337,7 @@ struct TreePainter {
         // What grows on it.
         switch species {
         case .oak, .willow, .crystal, .herb, .kelp:
-            if species == .willow { for s in g.strands { strand(&ctx, s) } }
+            for s in g.strands { strand(&ctx, s) }
             for lf in g.leaves where !lf.back { leafShape(&ctx, lf) }
             if species == .kelp { bladders(&ctx) }
         case .conifer:

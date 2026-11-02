@@ -344,7 +344,7 @@ struct TreeGeometry {
             var sr = SeededRandom(sh.seed, "scaffold")
             let (lo, hi) = Self.attach(sh.crown)
             // A column needs many short limbs all the way up, or it reads as a bare pole.
-            let limbs = sh.crown == .columnar ? max(sh.count, 0.65) * 1.4 : sh.count
+            let limbs = sh.crown == .columnar ? max(sh.count, 0.8) * 1.5 : sh.count
             let count = Int(((1 + 6 * limbs) * Double(0.45 + 0.55 * stage)).rounded())
             let owner = g.limbs.first(where: { $0.depth == 0 })?.owner ?? 0
             for q in 0..<count {
@@ -547,7 +547,7 @@ struct TreeGeometry {
         let a: Double, len: CGFloat
         switch c {
         case .round: a = rnd.range(0.65, 1.05); len = H * CGFloat(0.46 - 0.2 * t)
-        case .columnar: a = rnd.range(0.32, 0.55); len = H * CGFloat(0.3 - 0.14 * t)
+        case .columnar: a = rnd.range(0.42, 0.68); len = H * CGFloat(0.38 - 0.2 * t)
         case .vase: a = rnd.range(0.36, 0.6); len = H * CGFloat(0.66 - 0.1 * t)
         case .spreading: a = rnd.range(1.1, 1.36); len = H * CGFloat(0.7 - 0.25 * t)
         case .weeping: a = rnd.range(0.55, 0.85); len = H * CGFloat(0.56 - 0.12 * t)

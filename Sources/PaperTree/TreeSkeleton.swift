@@ -213,7 +213,8 @@ extension TreeGeometry {
         if shapedCrown, let sh = st {
             // The recipe's crown shape sets the envelope the crown grows into.
             for e in scaffoldEnds { hull = hull.union(CGRect(origin: e, size: .zero)) }
-            let dens = 0.55 + 0.9 * (tree.look.recipe?.density ?? 0.5)
+            let density = tree.look.recipe?.density ?? 0.5
+            let dens = 0.55 + 0.9 * (sh.crown == .columnar ? max(density, 0.7) : density)
             let n = Int(Double(140 + 10 * tips.count + 8 * scaffoldEnds.count) * dens)
             let W = hull.width / 2, Hh = hull.height / 2
             switch sh.crown {
@@ -385,8 +386,9 @@ extension TreeGeometry {
                                     layers: Wash.blob(layers: 5, squash: 1, rnd: &fr), dabs: dabs(willow ? 6 : 14),
                                     front: k % 4 != 0, phase: fr.range(0, 6)))
             }
-            if willow {
-                let stride = max(1, terminals.count / 26)
+            // Willows, and any tree with a weeping crown, let strands fall from the branch ends.
+            if willow || st?.crown == .weeping {
+                let stride = max(1, terminals.count / (willow ? 26 : 30))
                 for (k, t) in terminals.enumerated() where k % stride == 0 {
                     let p = nodes[t].p
                     let len = min(base.y - 6 - p.y, R * fr.cg(1.0, 2.2) * (0.6 + CGFloat(tree.look.droopValue)))
@@ -483,7 +485,7 @@ extension TreeGeometry {
         }
         // A recipe sets the leaf size and the gap between leaves. The gap never closes: leaf centers
         // stay most of a leaf apart, so every leaf reads on its own.
-        let sized = structure.map { size * CGFloat(0.62 + 0.8 * $0.leafSize) } ?? size
+        let sized = structure.map { size * CGFloat(0.62 + 0.8 * ($0.crown == .columnar ? max($0.leafSize, 0.5) : $0.leafSize)) } ?? size
         let L = max(6, min(plan == .kelp ? 70 : 46, height * CGFloat(sized)))
         leafSize = L
         let minD: CGFloat
