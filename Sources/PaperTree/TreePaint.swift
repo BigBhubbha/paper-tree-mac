@@ -620,7 +620,7 @@ struct TreePainter {
         if let edge = t.layers.first { ctx.fill(edge.applying(tr), with: .color(L.mix(L.lit, t.light * 0.4).color(0.1))) }
         var rnd = SeededRandom(tree.seed &+ UInt64(t.node), "needles")
         let top = a.y + (t.layers.first?.boundingRect.minY ?? 0)
-        let nl = max(3.2, g.height / 46)                  // needle length
+        let nl = max(4, g.height / 34)                  // needle length
         let boughs = max(2, min(4, Int(t.height / (nl * 2.2))))
         for side in [-1.0, 1.0] {
             for j in 0..<boughs {

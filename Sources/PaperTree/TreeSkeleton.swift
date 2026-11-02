@@ -205,8 +205,8 @@ extension TreeGeometry {
         switch species {
         case .oak:
             // Fewer crown points and a longer reach: an open crown of distinct limbs, not a thicket.
-            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), hull.width / 2 + R * 0.95, hull.height / 2 + R * 0.85, 120 + 9 * tips.count)
-            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.2), R * 1.1, R * 0.8, 9) }
+            scatter(CGPoint(x: hull.midX, y: hull.midY - R * 0.25), hull.width / 2 + R * 0.95, hull.height / 2 + R * 0.85, 170 + 12 * tips.count)
+            for t in tips { scatter(CGPoint(x: t.point.x, y: t.point.y - R * 0.2), R * 1.1, R * 0.8, 12) }
             bias = CGVector(dx: 0, dy: -0.15)
             step = D * 1.3
         case .willow:
@@ -232,7 +232,7 @@ extension TreeGeometry {
         }
         if att.count > 640 { att = Array(att.prefix(640)) }
         let open = species == .oak || species == .willow
-        if !att.isEmpty { colonize(&att, step: step, influence: R * 1.3, kill: step * (open ? 2.9 : 1.7), bias: bias, swirl: swirl, maxNodes: 1200) }
+        if !att.isEmpty { colonize(&att, step: step, influence: R * 1.3, kill: step * (species == .oak ? 2.4 : open ? 2.9 : 1.7), bias: bias, swirl: swirl, maxNodes: 1200) }
 
         // 3. Pull new nodes a little toward their parent: softer branching angles.
         let before = nodes.map(\.p)
@@ -402,7 +402,7 @@ extension TreeGeometry {
     /// Leaves one by one along the twigs, with Poisson-disc spacing: a new leaf only goes where no
     /// other leaf's center is closer than most of a leaf length, so there are gaps to see through.
     private mutating func growLeaves(willow: Bool, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double) {
-        let L = max(6, min(34, height * (willow ? 0.055 : 0.072)))
+        let L = max(6, min(36, height * (willow ? 0.055 : 0.08)))
         leafSize = L
         let minD = L * (willow ? 0.7 : 0.74)
         var grid: [Int64: [CGPoint]] = [:]
