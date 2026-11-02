@@ -763,14 +763,16 @@ extension Snapshots {
         save(trio, "recipe-fallback", to: dir)
 
         // A grove: the eight oaks at two sizes, and every subject's plant with its own recipe.
-        var grove: [PaperTreeData] = []
-        for (k, t) in more.enumerated() {
-            var a = t; a.number = grove.count + 1; grove.append(a)
-            var b = oaks[k]; b.number = grove.count + 1; b.name = t.name + " 2"; b.seed = 4242 + UInt64(k); grove.append(b)
+        // Oaks and other subjects mixed, so the first screen shows both kinds of variety.
+        var pool: [PaperTreeData] = []
+        let others = topics.enumerated().filter { $0.offset < topicLooks.count }
+            .map { k, t in topicTree(t, look: topicLooks[k], number: 0, seed: UInt64(8100 + k * 17), papers: 5) }
+        for k in 0..<max(more.count, others.count) {
+            if k < more.count { pool.append(more[k]) }
+            if k < others.count { pool.append(others[k]) }
+            if k < oaks.count { var b = oaks[k]; b.name = more[k].name + " 2"; b.seed = 4242 + UInt64(k); pool.append(b) }
         }
-        for (k, t) in topics.enumerated() where k < topicLooks.count {
-            grove.append(topicTree(t, look: topicLooks[k], number: grove.count + 1, seed: UInt64(8100 + k * 17), papers: 5))
-        }
+        let grove = pool.enumerated().map { i, t -> PaperTreeData in var x = t; x.number = i + 1; return x }
         store.trees = grove
         let size = CGSize(width: 1360, height: 800)
         let m = IslandModel()
