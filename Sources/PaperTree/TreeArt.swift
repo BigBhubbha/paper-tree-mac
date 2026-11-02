@@ -361,6 +361,20 @@ struct TreeGeometry {
                 g.limbs.append(limb)
                 g.scaffoldEnds.append(tip.point)
             }
+            // A column also carries short leafy spurs straight off the trunk, all the way up.
+            if sh.crown == .columnar {
+                var cr = SeededRandom(sh.seed, "spurs")
+                let spurs = Int((8 + 10 * stage).rounded())
+                for q in 0..<spurs {
+                    let t = 0.24 + 0.72 * (Double(q) + cr.range(0.2, 0.8)) / Double(spurs)
+                    let sd: Double = q % 2 == 0 ? 1 : -1
+                    var (spur, _) = TreeGeometry.grow(from: point(on: trunk, at: CGFloat(t)), angleFromUp: sd * cr.range(0.45, 0.8),
+                                                      length: H * cr.cg(0.07, 0.13) * CGFloat(1.1 - 0.4 * t), width: max(1, 2 + 3 * stage),
+                                                      species: real, twist: twist, droop: droop, rnd: &cr, depth: 3, sag: 0, wobble: wobble, push: push)
+                    spur.owner = owner
+                    g.twigs.append(spur)
+                }
+            }
             // Side branches: one to four per limb, and on deep recipes their own side shoots.
             var fr = SeededRandom(sh.seed, "forks")
             let per = Int((1 + 3 * (sh.crown == .columnar ? max(sh.depth, 0.5) : sh.depth)).rounded())

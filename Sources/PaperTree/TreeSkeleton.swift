@@ -490,7 +490,7 @@ extension TreeGeometry {
         leafSize = L
         let minD: CGFloat
         if let sh = structure, plan != .kelp {
-            minD = L * max(spacing, 0.86) * CGFloat(0.95 + 0.75 * sh.leafGap)
+            minD = L * max(spacing, 0.86) * CGFloat(0.95 + 0.75 * (sh.crown == .columnar ? min(sh.leafGap, 0.45) : sh.leafGap))
         } else {
             minD = L * spacing * CGFloat(habit.spacingScale)
         }
