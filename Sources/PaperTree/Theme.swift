@@ -163,8 +163,19 @@ struct StampButtonStyle: ButtonStyle {
                     .offset(x: pressed ? 1 : 3, y: pressed ? 1 : 3)
             )
             .offset(x: pressed ? 2 : 0, y: pressed ? 2 : 0)
-            .animation(.easeOut(duration: 0.12), value: pressed)
+            .modifier(StampHover())
+            .animation(Motion.snappy, value: pressed)
             .contentShape(Rectangle())
+    }
+}
+
+/// A stamp lifts a hair toward you on hover, so it reads as something to press.
+private struct StampHover: ViewModifier {
+    @State private var hover = false
+    func body(content: Content) -> some View {
+        content
+            .offset(x: hover ? -0.5 : 0, y: hover ? -1 : 0)
+            .onHover { h in withAnimation(Motion.snappy) { hover = h } }
     }
 }
 
@@ -172,11 +183,26 @@ struct StampButtonStyle: ButtonStyle {
 struct InkLinkButtonStyle: ButtonStyle {
     var color: Color = Palette.ink
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+        InkLink(label: configuration.label, pressed: configuration.isPressed, color: color)
+    }
+}
+
+/// The underline draws a little thicker on hover and the ink turns red on press.
+private struct InkLink<Label: View>: View {
+    var label: Label
+    var pressed: Bool
+    var color: Color
+    @State private var hover = false
+    var body: some View {
+        label
             .font(.ui(12.5))
-            .foregroundColor(configuration.isPressed ? Palette.red : color)
-            .overlay(Rectangle().frame(height: 1).foregroundColor(configuration.isPressed ? Palette.red : color.opacity(0.8)).offset(y: 2), alignment: .bottom)
+            .foregroundColor(pressed ? Palette.red : color)
+            .overlay(Rectangle().frame(height: hover ? 1.6 : 1)
+                        .foregroundColor(pressed ? Palette.red : color.opacity(hover ? 1 : 0.8)).offset(y: 2), alignment: .bottom)
+            .offset(y: pressed ? 0.5 : 0)
             .contentShape(Rectangle())
+            .onHover { h in withAnimation(Motion.snappy) { hover = h } }
+            .animation(Motion.snappy, value: pressed)
     }
 }
 
@@ -184,7 +210,7 @@ struct InkLinkButtonStyle: ButtonStyle {
 struct InkToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         Button {
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.75)) { configuration.isOn.toggle() }
+            withAnimation(Motion.pick(Motion.snappy)) { configuration.isOn.toggle() }
         } label: {
             HStack(spacing: 10) {
                 configuration.label

@@ -1,5 +1,6 @@
-// Single tap of the right Option key: read the highlighted text (a paper's title), look it up in
-// Semantic Scholar through the Paper Tree server, and open the island half way to choose a tree.
+// Single tap of the right Option key: read the highlighted text, then open the grove with it offered
+// at the top as "Add this paper". Choosing that looks the title up (Semantic Scholar, OpenAlex,
+// Crossref) and opens the match and tree chooser.
 import AppKit
 
 @MainActor
@@ -13,30 +14,34 @@ final class PaperAdder {
 
     func singleTap() {
         task?.cancel()
-        task = Task { await run() }
+        if island.isOpen { island.close(); return }
+        task = Task { await openWithHighlight() }
     }
 
-    private func run() async {
+    /// Reads the highlight before the island takes the keyboard (the copy fallback sends Command-C
+    /// to the app in front), then opens the grove.
+    private func openWithHighlight() async {
         let trusted = Accessibility.isTrusted
         if trusted != state.accessibilityGranted { state.accessibilityGranted = trusted }
-        guard trusted else {
-            island.note("Paper Tree needs Accessibility to read your highlight")
-            return
+        var title: String?
+        if trusted, let raw = await captureSelection() {
+            let t = raw.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: "\"\u{201C}\u{201D}")))
+            if t.count >= 4 && t.count <= 400 { title = t }
         }
-        guard let raw = await captureSelection(), !Task.isCancelled else {
-            island.note("Highlight a paper's title first, then tap right Option")
-            return
-        }
-        let title = raw.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: "\"\u{201C}\u{201D}")))
-        guard title.count >= 4 else {
-            island.note("Highlight a paper's whole title, then tap right Option")
-            return
-        }
-        guard title.count <= 400 else {
-            island.note("That's a lot of text. Highlight just the title")
-            return
-        }
+        guard !Task.isCancelled else { return }
+        island.model.highlight = title
+        island.open()
+    }
+
+    /// "Add this paper": look the title up and open the chooser.
+    func add(_ title: String) {
+        task?.cancel()
+        task = Task { await run(title) }
+    }
+
+    private func run(_ title: String) async {
+        island.model.highlight = nil
         island.openAdding(AddRequest(highlighted: title))
         do {
             let result = try await PaperLookup.find(title)

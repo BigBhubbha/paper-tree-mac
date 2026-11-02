@@ -1,5 +1,5 @@
 // The island: a black pill that grows out of the notch, Dynamic Island style.
-// Tap the right Option key once to add a highlighted paper, twice to open the grove (it fills most of
+// Tap the right Option key once to open the grove, with anything highlighted ready to add (it fills most of
 // the screen), three times to flip Research mode.
 import AppKit
 import SwiftUI
@@ -23,6 +23,10 @@ final class IslandModel: ObservableObject {
     @Published var mode: Mode = .hidden
     @Published var page: GrovePage = .grove
     @Published var adding: AddRequest?
+    /// What was highlighted when the island opened: offered at the top as "Add this paper".
+    @Published var highlight: String?
+    /// The size the content was last laid out at, kept while it fades out as the pill closes.
+    var openContentSize = CGSize(width: 640, height: 300)
     /// The open grove's size; set from the screen so it fills most of it.
     @Published var groveSize = CGSize(width: 1180, height: 720)
     /// Size of the notch (or a small stand-in on Macs without one). The pill starts and ends here.
@@ -36,6 +40,8 @@ final class IslandModel: ObservableObject {
     var onClose: () -> Void = {}
     /// A paper landed on a tree: show it there.
     var onAdded: (UUID) -> Void = { _ in }
+    /// "Add this paper" on the highlight: look it up and choose a tree.
+    var onAddHighlight: (String) -> Void = { _ in }
 
     static let addingSize = CGSize(width: 640, height: 300)
     static let flashExtraWidth: CGFloat = 170
@@ -95,7 +101,7 @@ final class IslandController {
             if TreeStore.shared.plantingNewTree != nil {
                 Task { @MainActor [weak self] in
                     try? await Task.sleep(nanoseconds: 500_000_000)
-                    self?.note("Now highlight a paper's title, then tap right Option")
+                    self?.note("Now highlight a paper's title and tap right Option")
                 }
             }
         }
@@ -196,7 +202,9 @@ final class IslandController {
         panel.makeKey()
         // Let the collapsed pill draw first, then spring it open.
         DispatchQueue.main.async { [weak self] in
-            withAnimation(IslandView.spring) { self?.model.mode = mode }
+            guard let self else { return }
+            withAnimation(IslandView.spring) { self.model.mode = mode }
+            self.model.openContentSize = self.model.pillSize
         }
         installOutsideClickMonitors()
     }
@@ -206,8 +214,9 @@ final class IslandController {
         removeOutsideClickMonitors()
         collapseTask?.cancel()
         panel.allowsKey = false
-        withAnimation(IslandView.spring) { model.mode = .hidden }
+        withAnimation(Motion.pick(Motion.close)) { model.mode = .hidden }
         model.adding = nil
+        model.highlight = nil
         hideTask?.cancel()
         hideTask = Task { [weak self] in
             try? await Task.sleep(nanoseconds: 450_000_000)
@@ -282,18 +291,24 @@ struct IslandView: View {
     @ObservedObject var state: AppState
     @ObservedObject var store: TreeStore
 
-    static let spring = Animation.spring(response: 0.42, dampingFraction: 0.78)
+    static var spring: Animation { Motion.pick(Motion.open) }
 
     var body: some View {
         let size = model.pillSize
+        let contentSize = model.mode == .hidden ? model.openContentSize : size
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
-                IslandShape(bottomRadius: model.mode == .expanded ? 34 : (model.mode == .adding ? 30 : min(size.height / 2, 18)))
+                IslandShape(bottomRadius: model.mode == .expanded ? 34 : (model.mode == .adding ? 30 : min(size.height / 2, 18)),
+                            earRadius: model.mode == .expanded || model.mode == .adding ? 12 : 8)
                     .fill(Color.black)
                     .shadow(color: .black.opacity(model.mode == .hidden ? 0 : 0.35), radius: 14, x: 0, y: 6)
 
+                // The content is laid out once at its open size and revealed by the growing pill
+                // (clipped), so nothing reflows while the spring runs.
                 content
                     .padding(.top, model.notchSize.height)
+                    .frame(width: contentSize.width, height: contentSize.height, alignment: .top)
+                    .animation(nil, value: model.mode)
                     .frame(width: size.width, height: size.height, alignment: .top)
                     .clipped()
             }
@@ -338,10 +353,10 @@ struct IslandView: View {
             .transition(.opacity.combined(with: .scale(scale: 0.9, anchor: .top)))
         case .adding:
             AddChooser(model: model, store: store)
-                .transition(.opacity.animation(.easeOut(duration: 0.18).delay(0.1)))
+                .transition(.islandContent)
         case .expanded:
             GroveView(model: model, state: state, store: store)
-                .transition(.opacity.animation(.easeOut(duration: 0.2).delay(0.14)))
+                .transition(.islandContent)
         }
     }
 }
@@ -352,9 +367,9 @@ struct IslandShape: Shape {
     var bottomRadius: CGFloat
     var earRadius: CGFloat = 8
 
-    var animatableData: CGFloat {
-        get { bottomRadius }
-        set { bottomRadius = newValue }
+    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        get { AnimatablePair(bottomRadius, earRadius) }
+        set { bottomRadius = newValue.first; earRadius = newValue.second }
     }
 
     func path(in r: CGRect) -> Path {
@@ -377,15 +392,14 @@ struct IslandShape: Shape {
 
 // MARK: Right Option taps
 
-/// Counts quick taps of the RIGHT Option key (key code 61) and reports single, double and triple taps.
+/// Counts quick taps of the RIGHT Option key (key code 61) and reports single and double taps.
 /// It only looks at that one key's up and down; other keys, other modifiers, mouse clicks, and holding
 /// the key too long all cancel the count, and nothing is ever stored. A single or double tap waits out
-/// the tap window first, so it never fires on the way to a double or triple.
+/// A single tap waits out a short window first, so it never fires on the way to a double; a double fires at once.
 @MainActor
 final class RightOptionTapDetector {
     var onSingleTap: () -> Void = {}
     var onDoubleTap: () -> Void = {}
-    var onTripleTap: () -> Void = {}
 
     private var monitors: [Any] = []
     private var downAt: Date?
@@ -395,7 +409,7 @@ final class RightOptionTapDetector {
     private var decideTask: Task<Void, Never>?
 
     /// Max gap between taps, and max time the key may be held for it to count as a tap.
-    private let window: TimeInterval = 0.35
+    private let window: TimeInterval = 0.3
     private let maxHold: TimeInterval = 0.3
 
     private static let rightOptionKeyCode: UInt16 = 61
@@ -465,18 +479,18 @@ final class RightOptionTapDetector {
         tapCount = continuesSequence ? tapCount + 1 : 1
         lastTapAt = now
 
-        if tapCount >= 3 {
+        if tapCount >= 2 {
+            // Nothing comes after a double tap, so there is no need to wait.
             reset()
-            onTripleTap()
+            onDoubleTap()
         } else {
-            // Wait out the tap window in case another tap is coming.
-            let count = tapCount
+            // Wait out the tap window in case a second tap is coming.
             decideTask?.cancel()
             decideTask = Task { [weak self] in
-                try? await Task.sleep(nanoseconds: UInt64((self?.window ?? 0.35) * 1_000_000_000))
-                guard let self, !Task.isCancelled, self.tapCount == count, self.downAt == nil else { return }
+                try? await Task.sleep(nanoseconds: UInt64((self?.window ?? 0.3) * 1_000_000_000))
+                guard let self, !Task.isCancelled, self.tapCount == 1, self.downAt == nil else { return }
                 self.reset()
-                if count == 2 { self.onDoubleTap() } else { self.onSingleTap() }
+                self.onSingleTap()
             }
         }
     }

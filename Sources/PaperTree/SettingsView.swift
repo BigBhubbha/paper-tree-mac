@@ -50,7 +50,7 @@ struct SettingsView: View {
     /// The page itself (outside the scroll view, so snapshots can render it).
     var content: some View {
         VStack(alignment: .leading, spacing: 0) {
-            masthead
+            masthead.entrance(0)
 
             HStack(alignment: .top, spacing: 26) {
                 ReaderLabel(state: state, redoSetup: showWelcome)
@@ -62,12 +62,13 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.top, 22)
+            .entrance(1)
 
-            switches.padding(.top, 30)
+            switches.padding(.top, 30).entrance(2)
 
-            figure.padding(.top, 30)
+            figure.padding(.top, 30).entrance(3)
 
-            colophon.padding(.top, 30)
+            colophon.padding(.top, 30).entrance(4)
         }
         .padding(.horizontal, 34)
         .padding(.top, 34)
@@ -143,7 +144,7 @@ struct SettingsView: View {
             sectionHead("Switches", aside: "circle on or off")
             VStack(alignment: .leading, spacing: 14) {
                 SpecimenTag(number: 1, label: "research mode", tilt: -0.7) {
-                    switchRow("Highlight anything and the card opens by itself. Triple-tap right Option to flip it from anywhere.",
+                    switchRow("Highlight anything and the card opens by itself. Double-tap right Option to flip it from anywhere.",
                               isOn: $state.researchMode, name: "Research mode")
                 }
                 .frame(width: 548)
@@ -186,7 +187,7 @@ struct SettingsView: View {
                 .padding(.top, 12)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("Fig. 1.").font(.fellItalic(14)).foregroundColor(Palette.ink)
-                Text("The right Option key. One tap adds the paper title you've highlighted to a tree; two open your trees at the notch; three flip Research mode.")
+                Text("The right Option key. One tap opens your trees at the notch, with anything you've highlighted ready to add; two flip Research mode.")
                     .font(.text(13))
                     .foregroundColor(Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -207,7 +208,7 @@ struct SettingsView: View {
                 Button("Check for updates") { checkForUpdates() }
                     .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
             }
-            DisclosureGroup(isExpanded: $showTinkerers) {
+            DisclosureGroup(isExpanded: Binding(get: { showTinkerers }, set: { v in withAnimation(Motion.pick(Motion.page)) { showTinkerers = v } })) {
                 tinkerers.padding(.top, 10)
             } label: {
                 Text("For tinkerers")
@@ -529,7 +530,7 @@ struct HandSwitch: View {
 // MARK: - Fig. 1, the keyboard
 
 /// The right end of a Mac keyboard's bottom row, drawn in ink. The right Option key is
-/// marked in highlighter; red pen notes say what two and three taps do. Clicking the
+/// marked in highlighter; red pen notes say what one and two taps do. Clicking the
 /// marked key plays the double tap.
 struct OptionKeyFigure: View {
     @State private var pressed = false
@@ -553,12 +554,10 @@ struct OptionKeyFigure: View {
 
             // Red pen notes, pointing at the marked key.
             // The marked key spans about x 264 to 324, with its top edge at y 76.
-            HandNote(text: "tap: add a highlighted paper", arrowTo: CGPoint(x: 214, y: 52))
-                .offset(x: 56, y: 2)
-            HandNote(text: "tap tap: open your trees", arrowTo: CGPoint(x: -24, y: 54), flip: true)
+            HandNote(text: "tap: open your trees", arrowTo: CGPoint(x: 214, y: 52))
+                .offset(x: 70, y: 2)
+            HandNote(text: "tap tap: Research mode", arrowTo: CGPoint(x: -24, y: 54), flip: true)
                 .offset(x: 346, y: 0)
-            HandNote(text: "tap tap tap: Research mode", arrowTo: CGPoint(x: -34, y: 32), flip: true)
-                .offset(x: 360, y: 34)
         }
         .frame(height: 142, alignment: .topLeading)
     }

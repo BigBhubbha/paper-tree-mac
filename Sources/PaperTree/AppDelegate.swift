@@ -30,16 +30,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         island.model.onRequestAccess = { [weak self] in self?.island.close(); self?.openWelcome() }
         island.model.onCheckForUpdates = { [weak self] in self?.island.close(); self?.updater?.checkForUpdates() }
 
-        // Right Option: one tap adds the highlighted paper, two open or close the grove, three flip Research mode.
+        // Right Option: one tap opens or closes the grove (offering whatever is highlighted as a paper to
+        // add), two flip Research mode.
         adder = PaperAdder(island: island)
+        island.model.onAddHighlight = { [weak self] title in self?.adder.add(title) }
         optionTaps = RightOptionTapDetector()
         optionTaps.onSingleTap = { [weak self] in
             guard let self else { return }
             self.card.close()
             self.adder.singleTap()
         }
-        optionTaps.onDoubleTap = { [weak self] in self?.island.toggle() }
-        optionTaps.onTripleTap = { [weak self] in
+        optionTaps.onDoubleTap = { [weak self] in
             guard let self else { return }
             self.island.close()
             self.state.researchMode.toggle()
@@ -143,7 +144,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         research.target = self
         menu.addItem(research)
 
-        let open = NSMenuItem(title: "Open the island (double-tap right Option)", action: #selector(toggleIsland), keyEquivalent: "")
+        let open = NSMenuItem(title: "Open the island (tap right Option)", action: #selector(toggleIsland), keyEquivalent: "")
         open.target = self
         menu.addItem(open)
 

@@ -1,6 +1,6 @@
 # Paper Tree for Mac (v0.1)
 
-A lab flask that lives in the notch. Double-tap the right Option key and a black island grows out of the notch with Research mode, Settings, and updates. Triple-tap to flip Research mode. With Research mode on, highlight anything you are reading in any app and it explains it on a small taped card, in plain words.
+A lab flask that lives in the notch. Tap the right Option key and a black island grows out of the notch with your trees, Research mode, Settings, and updates; anything you have highlighted waits at the top, ready to add as a paper. Double-tap to flip Research mode. With Research mode on, highlight anything you are reading in any app and it explains it on a small taped card, in plain words.
 
 Built to work in Preview, Safari, Chrome, Word, Pages, Notes, and most apps with real text (not yet tested on a real Mac). No AI key lives in the app; it talks to your own small server (see `../backend`).
 
@@ -32,7 +32,7 @@ Deploy `../backend` to Netlify (its README walks through it), then open Paper Tr
 
 ## How it works
 
-- `Island.swift`: the notch island (a non-activating panel above the menu bar that springs open from the notch, or from the top center on Macs without one), its quick "Research mode on/off" flash, and the right Option tap detector (key code 61: double-tap opens, triple-tap toggles).
+- `Island.swift`: the notch island (a non-activating panel above the menu bar that springs open from the notch, or from the top center on Macs without one), its quick "Research mode on/off" flash, and the right Option tap detector (key code 61: one tap opens, two taps toggle Research mode).
 - `BuddyView.swift`: the flask, drawn in code (mint glass, liquid, rising bubbles, pink-lavender halo, closed "^ ^" eyes, goggles in research mode).
 - `SelectionMonitor.swift`: global mouse monitors. About 350 ms after a drag, double-click, triple-click, or shift-click, it reads the highlight and opens the card. Held Cmd, Control, or Option skips it, and the same highlight does not fire twice.
 - `Accessibility.swift`: reads `AXSelectedText`, `AXSelectedTextRange`, and `AXBoundsForRange` from the focused element (or the element under the mouse and its parents), plus about 300 characters on each side as context.

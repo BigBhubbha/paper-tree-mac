@@ -81,7 +81,7 @@ struct AccessibilitySheet: View {
             Text("Hello. I'm the flask.")
                 .font(.fell(31))
                 .foregroundColor(Palette.ink)
-            Text("I live in the notch. Double-tap the right Option key to open me, triple-tap to toggle Research mode. Then highlight a hard line in any paper and I'll explain it in plain words.")
+            Text("I live in the notch. Tap the right Option key to open me, double-tap to toggle Research mode. Then highlight a hard line in any paper and I'll explain it in plain words.")
                 .font(.text(15))
                 .foregroundColor(Palette.ink2)
                 .lineSpacing(2)

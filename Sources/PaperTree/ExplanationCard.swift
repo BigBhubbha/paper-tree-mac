@@ -16,7 +16,16 @@ final class CardModel: ObservableObject {
 
     @Published var selection: String = ""
     @Published var mode: ExplainMode = .plain
-    @Published var phase: Phase = .loading
+    @Published var phase: Phase = .loading {
+        didSet {
+            switch phase {
+            case .loading, .failed: writeStart = nil
+            case .streaming, .loaded: if writeStart == nil { writeStart = Date() }
+            }
+        }
+    }
+    /// When the answer started writing itself onto the card.
+    var writeStart: Date?
     @Published var specimen: Int = 1
     @Published var copied = false
 
@@ -144,7 +153,7 @@ struct CardBody: View {
 
         case .streaming(let text):
             VStack(alignment: .leading, spacing: 0) {
-                Text(text)
+                WritingText(text: text, start: model.writeStart)
                     .font(.ui(15.5))
                     .foregroundColor(CardInk.text)
                     .lineSpacing(3.5)
@@ -159,7 +168,7 @@ struct CardBody: View {
 
         case .loaded(let e):
             VStack(alignment: .leading, spacing: 0) {
-                Text(e.text)
+                WritingText(text: e.text, start: model.writeStart)
                     .font(.ui(15.5))
                     .foregroundColor(CardInk.text)
                     .lineSpacing(3.5)
@@ -192,6 +201,7 @@ struct CardBody: View {
                     }
                     .textSelection(.enabled)
                     .padding(.top, 9)
+                    .modifier(FadeInAfter(start: model.writeStart, delay: WritingText.duration(e.text.count)))
                 }
             }
 

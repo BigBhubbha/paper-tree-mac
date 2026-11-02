@@ -40,9 +40,7 @@ struct SetupView: View {
             ZStack {
                 page
                     .id(step)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: forward ? .trailing : .leading).combined(with: .opacity),
-                        removal: .move(edge: forward ? .leading : .trailing).combined(with: .opacity)))
+                    .transition(.pageTurn(forward: forward))
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .clipped()
@@ -116,7 +114,7 @@ struct SetupView: View {
         // Entry 003 is the permission page; hop over it when it has nothing to ask.
         if next == 2 && skipPermissionIfGranted && state.accessibilityGranted { next = next > step ? 3 : 1 }
         forward = next > step
-        withAnimation(.spring(response: 0.45, dampingFraction: 0.86)) { step = max(0, min(4, next)) }
+        withAnimation(Motion.pick(Motion.page)) { step = max(0, min(4, next)) }
     }
 
     @ViewBuilder private var page: some View {
@@ -460,7 +458,7 @@ private struct PracticeBench: View {
                     } else {
                     PracticeTextView(text: PracticeBench.passage) { text, rect in
                         guard state.researchMode else {
-                            hint = "Research mode is off, so nothing happened. Triple-tap right Option first."
+                            hint = "Research mode is off, so nothing happened. Double-tap right Option first."
                             return
                         }
                         hint = ""
@@ -504,18 +502,18 @@ private struct PracticeBench: View {
                 Text("Try it for real.")
                     .font(.fell(26)).foregroundColor(Palette.ink)
                 TaskRow(number: 1, done: openedIsland,
-                        title: "Double-tap the right Option key.",
-                        detail: "The island grows out of the notch and opens your trees. Double-tap again, or press Esc, to put it away.")
+                        title: "Tap the right Option key once.",
+                        detail: "The island grows out of the notch and opens your trees. Tap again, or press Esc, to put it away.")
                 TaskRow(number: 2, done: researchOn,
-                        title: "Triple-tap it.",
-                        detail: researchWasAlreadyOn ? "Research mode was already on, so this one is stamped. Triple-tap turns it off and on."
+                        title: "Double-tap it.",
+                        detail: researchWasAlreadyOn ? "Research mode was already on, so this one is stamped. A double tap turns it off and on."
                                                       : "That turns Research mode on. The island flashes to say so.")
                 TaskRow(number: 3, done: explained,
                         title: "Highlight a phrase in the sample.",
                         detail: "Drag across a few words, like \"photorespiration\". A note opens right beside them.")
                 TaskRow(number: 4, done: added,
-                        title: "Highlight the title under \"Further reading\", then tap right Option once.",
-                        detail: "The island finds the paper and asks which tree should get it. Pick one, start a new tree, or say not now.")
+                        title: "Highlight the title under \"Further reading\", tap right Option, then choose Add this paper.",
+                        detail: "The island opens with your highlight at the top. It finds the paper and asks which tree should get it.")
                 if openedIsland && researchOn && explained && added {
                     Button("All four stamped. Next") { finished() }
                         .buttonStyle(StampButtonStyle(compact: true))
@@ -678,8 +676,8 @@ private struct ClosingEntry: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 VStack(alignment: .leading, spacing: 7) {
-                    KeyLine(keys: "right option, twice", does: "open or close the island")
-                    KeyLine(keys: "right option, three times", does: "Research mode on or off")
+                    KeyLine(keys: "right option, once", does: "open or close the island, and add what you highlighted")
+                    KeyLine(keys: "right option, twice", does: "Research mode on or off")
                     KeyLine(keys: "highlight", does: "it explains, a moment after you let go")
                 }
                 .padding(.top, 16)
