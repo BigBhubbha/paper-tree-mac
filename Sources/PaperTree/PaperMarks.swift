@@ -23,7 +23,7 @@ enum MarkInk: String, Codable, CaseIterable, Identifiable {
     var name: String { rawValue }
 }
 
-struct PaperMark: Codable, Identifiable, Hashable {
+struct PaperMark: Codable, Identifiable, Equatable {
     enum Kind: String, Codable { case highlight, underline, comment, sticky }
     var id = UUID()
     var kind: Kind
