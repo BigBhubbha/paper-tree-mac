@@ -402,9 +402,9 @@ extension TreeGeometry {
     /// Leaves one by one along the twigs, with Poisson-disc spacing: a new leaf only goes where no
     /// other leaf's center is closer than most of a leaf length, so there are gaps to see through.
     private mutating func growLeaves(willow: Bool, kids: [[Int]], rnd fr: inout SeededRandom, light: (CGPoint) -> Double) {
-        let L = max(5, min(30, height * (willow ? 0.05 : 0.058)))
+        let L = max(6, min(34, height * (willow ? 0.055 : 0.072)))
         leafSize = L
-        let minD = L * (willow ? 0.72 : 0.8)
+        let minD = L * (willow ? 0.7 : 0.74)
         var grid: [Int64: [CGPoint]] = [:]
         func key(_ x: Int, _ y: Int) -> Int64 { (Int64(x) << 32) | Int64(UInt32(bitPattern: Int32(truncatingIfNeeded: y))) }
         func cell(_ p: CGPoint) -> (Int, Int) { (Int(floor(p.x / minD)), Int(floor(p.y / minD))) }
@@ -418,11 +418,11 @@ extension TreeGeometry {
         func put(_ p: CGPoint) { let (cx, cy) = cell(p); grid[key(cx, cy), default: []].append(p) }
 
         let trunk = Set(trunkNodes)
-        let twig = maxRadius * (willow ? 0.4 : 0.34)
+        let twig = maxRadius * (willow ? 0.55 : 0.5)
         var order = nodes.indices.filter { nodes[$0].parent >= 0 && nodes[$0].r <= twig && !trunk.contains($0) }
         // Branch ends first, so every twig tip gets its leaf before the spaces fill in.
         order.sort { (kids[$0].isEmpty ? 0 : 1, $0) < (kids[$1].isEmpty ? 0 : 1, $1) }
-        let cap = willow ? 260 : 380
+        let cap = willow ? 320 : 520
         for i in order {
             if leaves.count >= cap { break }
             let p = nodes[i].p, q = nodes[nodes[i].parent].p
@@ -430,8 +430,10 @@ extension TreeGeometry {
             let side: Double = i % 2 == 0 ? 1 : -1
             var tries: [(Double, CGFloat)] = []
             if kids[i].isEmpty { tries.append((fr.range(-0.2, 0.2), 1)) }
-            tries.append((side * fr.range(0.55, 1.0), 0.5))
-            tries.append((-side * fr.range(0.55, 1.0), 0.5))
+            for t in [CGFloat(0.3), 0.7] {
+                tries.append((side * fr.range(0.55, 1.0), t))
+                tries.append((-side * fr.range(0.55, 1.0), t))
+            }
             for (da, t) in tries {
                 let at = CGPoint(x: q.x + (p.x - q.x) * t, y: q.y + (p.y - q.y) * t)
                 var a = dir + da

@@ -273,10 +273,6 @@ struct TreePainter {
 
         if species == .coral { fan(&ctx) }
         if species == .oak || species == .willow {
-            // Only a whisper of the old washes, so the crown has some shade behind the leaves.
-            var faint = ctx
-            faint.opacity = 0.22
-            for c in g.clumps where c.kind == .leaves { leafMass(&faint, c, pass: .shadow) }
             for lf in g.leaves where lf.back { leafShape(&ctx, lf) }
         }
         for gh in g.ghosts { ghost(&ctx, gh, rnd: &rnd) }
@@ -619,37 +615,47 @@ struct TreePainter {
         guard pose.vis[t.node] > 0 else { return }
         let a = pose.p[t.node]
         let L = leaf
-        let body = L.mix(L.lit, t.light * 0.45)
         let tr = CGAffineTransform(translationX: a.x, y: a.y)
-        for l in t.layers { ctx.fill(l.applying(tr), with: .color(body.color(0.24))) }
-        if let edge = t.layers.first {
-            let e = edge.applying(tr)
-            ctx.stroke(e, with: .color(L.shade.color(0.45)), lineWidth: lw * 0.6)
-            if fine {
-                var gctx = ctx
-                gctx.blendMode = .multiply
-                gctx.opacity = 0.3
-                gctx.fill(e, with: .tiledImage(Grain.image, origin: .zero, sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1), scale: 1))
-            }
-        }
-        // Needle chevrons in rows, lighter where the light falls.
+        // Only a faint silhouette; the tier is really its boughs and their needles.
+        if let edge = t.layers.first { ctx.fill(edge.applying(tr), with: .color(L.mix(L.lit, t.light * 0.4).color(0.1))) }
         var rnd = SeededRandom(tree.seed &+ UInt64(t.node), "needles")
-        var chev = Path()
-        let scale = max(0.5, g.height / 300)
-        let rows = max(1, Int(t.height / (8 * scale)))
         let top = a.y + (t.layers.first?.boundingRect.minY ?? 0)
-        for r in 0..<rows {
-            let y = top + (CGFloat(r) + 0.9) * t.height / CGFloat(rows + 1)
-            let w = t.half * ((y - top) / max(1, t.height)) * 0.85
-            var x = a.x - w
-            while x < a.x + w {
-                chev.move(to: CGPoint(x: x - 2.4 * scale, y: y + 2.6 * scale))
-                chev.addLine(to: CGPoint(x: x, y: y))
-                chev.addLine(to: CGPoint(x: x + 2.4 * scale, y: y + 2.6 * scale))
-                x += 6.5 * scale + rnd.cg(0, 2)
+        let nl = max(3.2, g.height / 46)                  // needle length
+        let boughs = max(2, min(4, Int(t.height / (nl * 2.2))))
+        for side in [-1.0, 1.0] {
+            for j in 0..<boughs {
+                let f = (CGFloat(j) + 0.6) / CGFloat(boughs)
+                let root = CGPoint(x: a.x, y: top + t.height * (0.12 + 0.7 * f))
+                let reach = t.half * (0.35 + 0.65 * f) * rnd.cg(0.85, 1.05)
+                let sway = CGFloat(sin(pose.time * 1.2 + Double(t.node) + Double(j))) * reach * 0.03 * pose.wind
+                let end = CGPoint(x: root.x + CGFloat(side) * reach, y: root.y + t.height * 0.22 + sway)
+                let ctrl = CGPoint(x: root.x + CGFloat(side) * reach * 0.55, y: root.y - t.height * 0.04)
+                var bough = Path()
+                bough.move(to: root)
+                bough.addQuadCurve(to: end, control: ctrl)
+                ctx.stroke(bough, with: .color(bark.color(0.85)), lineWidth: max(0.5, lw * 0.75))
+                // Needle sprays: little fans along the bough, each its own shade of green.
+                let tufts = max(2, Int(reach / (nl * 0.95)))
+                for k in 1...tufts {
+                    let u = CGFloat(k) / CGFloat(tufts)
+                    let w = 1 - u
+                    let q = CGPoint(x: w * w * root.x + 2 * w * u * ctrl.x + u * u * end.x, y: w * w * root.y + 2 * w * u * ctrl.y + u * u * end.y)
+                    let d = CGPoint(x: 2 * w * (ctrl.x - root.x) + 2 * u * (end.x - ctrl.x), y: 2 * w * (ctrl.y - root.y) + 2 * u * (end.y - ctrl.y))
+                    let along = atan2(Double(d.y), Double(d.x))
+                    var fan = Path()
+                    for n in 0..<7 {
+                        let off = (Double(n) - 3) / 3 * 1.05
+                        let ang = along + off + (n % 2 == 0 ? 0.15 : -0.15)
+                        let len = nl * (1 - 0.25 * CGFloat(abs(off))) * rnd.cg(0.85, 1.1)
+                        fan.move(to: q)
+                        fan.addLine(to: CGPoint(x: q.x + CGFloat(cos(ang)) * len, y: q.y + CGFloat(sin(ang)) * len))
+                    }
+                    let value = t.light * 1.4 - 0.6 + rnd.range(-0.35, 0.35) - Double(u) * 0.15
+                    ctx.stroke(fan, with: .color(tone(value: value, hue: rnd.range(-1, 1)).color(0.95)),
+                               style: StrokeStyle(lineWidth: max(0.5, lw * 0.7), lineCap: .round))
+                }
             }
         }
-        ctx.stroke(chev, with: .color(L.lit.color(0.42)), lineWidth: lw * 0.55)
     }
 
     private func sprays(_ ctx: inout GraphicsContext) {
