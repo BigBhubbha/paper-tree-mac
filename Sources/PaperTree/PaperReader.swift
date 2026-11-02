@@ -41,13 +41,12 @@ final class ReaderModel: ObservableObject {
     private var annotations: [Int: MarksAnnotation] = [:]
     private(set) var originals: [Int: CGRect] = [:]
     private var thumbs: [Int: NSImage] = [:]
-    private var bag: AnyCancellable?
     private var started = false
 
     init(paper: Paper, persist: Bool = true) {
         self.paper = paper
         self.marks = MarkStore(paperId: paper.id, persist: persist)
-        bag = marks.$marks.receive(on: RunLoop.main).sink { [weak self] _ in self?.refreshMarks() }
+        marks.onChange = { [weak self] in self?.refreshMarks() }
     }
 
     var pageCount: Int { document?.pageCount ?? 0 }

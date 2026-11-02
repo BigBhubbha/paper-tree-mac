@@ -49,7 +49,9 @@ struct PaperMark: Codable, Identifiable, Equatable {
 final class MarkStore: ObservableObject {
     let paperId: String
     private let persist: Bool
-    @Published private(set) var marks: [PaperMark] = []
+    @Published private(set) var marks: [PaperMark] = [] { didSet { onChange?() } }
+    /// Called right after any change, so the pages redraw in the same pass.
+    var onChange: (() -> Void)?
 
     init(paperId: String, persist: Bool = true) {
         self.paperId = paperId

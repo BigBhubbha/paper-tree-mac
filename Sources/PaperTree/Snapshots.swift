@@ -402,6 +402,7 @@ extension Snapshots {
                            authors: ["Sample text", "written for Paper Tree design snapshots"], year: 2026, venue: "Paper Tree design notes")
         sample.abstract = SamplePaper.abstract
         sample.fields = ["Biology", "Environmental Science"]
+        sample.url = "https://www.semanticscholar.org/search?q=leaves%20in%20a%20dry%20spell"
         var host = dense
         host.papers.append(sample)
         store.trees[0] = host
