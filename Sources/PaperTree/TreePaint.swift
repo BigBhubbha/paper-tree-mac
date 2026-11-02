@@ -569,15 +569,22 @@ struct TreePainter {
         guard s > 0.01 else { return }
         let o = center(c)
         let L = leaf
-        let glowR = c.rx * 2.8 * s
+        let glowR = c.rx * 2.6 * s
         ctx.fill(Path(ellipseIn: CGRect(x: o.x - glowR, y: o.y - glowR, width: glowR * 2, height: glowR * 2)),
-                 with: .radialGradient(Gradient(colors: [L.lit.color(0.42), L.lit.color(0)]), center: o, startRadius: 0, endRadius: glowR))
-        for l in c.layers { ctx.fill(layer(l, at: o, rx: c.rx * s, ry: c.ry * s), with: .color(L.mix(RGB(0x7B5BA6), 0.25).color(0.2))) }
-        let core = Path(ellipseIn: CGRect(x: o.x - c.rx * 0.32 * s, y: o.y - c.ry * 0.4 * s, width: c.rx * 0.64 * s, height: c.ry * 0.8 * s))
-        ctx.fill(core, with: .color(RGB(0xF3E7B8).color(0.8)))
-        if let edge = c.layers.first {
-            ctx.stroke(layer(edge, at: o, rx: c.rx * s, ry: c.ry * s), with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.6)
-        }
+                 with: .radialGradient(Gradient(colors: [RGB(0xBFF2E2).color(0.38), RGB(0xBFF2E2).color(0)]), center: o, startRadius: 0, endRadius: glowR))
+        // A smooth seed pod: teal-lit on top, violet underneath, a pale seed showing through.
+        let rx = c.rx * s * 0.85, ry = c.ry * s * 0.95
+        let pod = Path(ellipseIn: CGRect(x: o.x - rx, y: o.y - ry, width: rx * 2, height: ry * 2))
+        let top = L.mix(RGB(0x7FD6C2), 0.55), under = L.mix(RGB(0x6A4C93), 0.6)
+        ctx.fill(pod, with: .linearGradient(Gradient(colors: [top.lit.color(0.95), under.color(0.95)]),
+                                            startPoint: CGPoint(x: o.x - rx * 0.5, y: o.y - ry), endPoint: CGPoint(x: o.x + rx * 0.4, y: o.y + ry)))
+        let seed = Path(ellipseIn: CGRect(x: o.x - rx * 0.36, y: o.y - ry * 0.3, width: rx * 0.72, height: ry * 0.66))
+        ctx.fill(seed, with: .radialGradient(Gradient(colors: [RGB(0xFFF4C8).color(0.95), RGB(0xF3D98A).color(0.4)]),
+                                             center: CGPoint(x: o.x, y: o.y + ry * 0.03), startRadius: 0, endRadius: rx * 0.4))
+        var shine = Path()
+        shine.addArc(center: o, radius: min(rx, ry) * 0.78, startAngle: .degrees(200), endAngle: .degrees(250), clockwise: false)
+        ctx.stroke(shine, with: .color(.white.opacity(0.6)), style: StrokeStyle(lineWidth: lw * 0.9, lineCap: .round))
+        ctx.stroke(pod, with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.6)
     }
 
     private func polyp(_ ctx: inout GraphicsContext, _ c: TreeGeometry.Clump) {
@@ -607,11 +614,8 @@ struct TreePainter {
         let prog: CGFloat = pose.owner == 0 && pose.progress < 1 ? TreeGrowth.easeOut(pose.progress) : 1
         let tr = CGAffineTransform(translationX: root.p.x, y: g.base.y).scaledBy(x: prog, y: prog)
         for l in g.fanLayers { ctx.fill(l.applying(tr), with: .color(leaf.color(0.06))) }
-        if fine, let e = g.fanLayers.first {
-            var gctx = ctx
-            gctx.blendMode = .multiply
-            gctx.opacity = 0.16
-            gctx.fill(e.applying(tr), with: .tiledImage(Grain.image, origin: .zero, sourceRect: CGRect(x: 0, y: 0, width: 1, height: 1), scale: 1))
+        if let e = g.fanLayers.first {
+            ctx.stroke(e.applying(tr), with: .color(leaf.shade.color(0.12)), lineWidth: lw * 1.4)
         }
     }
 
