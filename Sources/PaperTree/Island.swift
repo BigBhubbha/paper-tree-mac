@@ -25,6 +25,8 @@ final class IslandModel: ObservableObject {
     @Published var adding: AddRequest?
     /// What was highlighted when the island opened: offered at the top as "Add this paper".
     @Published var highlight: String?
+    /// The size the content was last laid out at, kept while it fades out as the pill closes.
+    var openContentSize = CGSize(width: 640, height: 300)
     /// The open grove's size; set from the screen so it fills most of it.
     @Published var groveSize = CGSize(width: 1180, height: 720)
     /// Size of the notch (or a small stand-in on Macs without one). The pill starts and ends here.
@@ -200,7 +202,9 @@ final class IslandController {
         panel.makeKey()
         // Let the collapsed pill draw first, then spring it open.
         DispatchQueue.main.async { [weak self] in
-            withAnimation(IslandView.spring) { self?.model.mode = mode }
+            guard let self else { return }
+            withAnimation(IslandView.spring) { self.model.mode = mode }
+            self.model.openContentSize = self.model.pillSize
         }
         installOutsideClickMonitors()
     }
@@ -291,6 +295,7 @@ struct IslandView: View {
 
     var body: some View {
         let size = model.pillSize
+        let contentSize = model.mode == .hidden ? model.openContentSize : size
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
                 IslandShape(bottomRadius: model.mode == .expanded ? 34 : (model.mode == .adding ? 30 : min(size.height / 2, 18)),
@@ -298,8 +303,12 @@ struct IslandView: View {
                     .fill(Color.black)
                     .shadow(color: .black.opacity(model.mode == .hidden ? 0 : 0.35), radius: 14, x: 0, y: 6)
 
+                // The content is laid out once at its open size and revealed by the growing pill
+                // (clipped), so nothing reflows while the spring runs.
                 content
                     .padding(.top, model.notchSize.height)
+                    .frame(width: contentSize.width, height: contentSize.height, alignment: .top)
+                    .animation(nil, value: model.mode)
                     .frame(width: size.width, height: size.height, alignment: .top)
                     .clipped()
             }

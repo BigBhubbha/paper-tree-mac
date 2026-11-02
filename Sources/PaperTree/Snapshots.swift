@@ -87,6 +87,8 @@ enum Snapshots {
         let state = AppState.shared
         let store = TreeStore(persist: false)
         store.trees = SampleGrove.trees()
+        // A fixed clock, so wind and growth render the same every time.
+        TreeClock.frozen = Date()
         // Real front pages, rendered from each paper's open-access PDF, for the trees shown up close.
         for tree in store.trees where tree.number == 1 || tree.number == 3 || tree.number == 6 {
             for p in tree.papers + tree.suggestions.map(\.paper) {
@@ -200,6 +202,11 @@ enum Snapshots {
             save(sampler, "species-sampler", to: dir)
         }
 
+        // One tap with a title highlighted: the grove opens with "Add this paper" on top.
+        shoot(island { $0.mode = .expanded; $0.page = .grove; $0.highlight = SampleGrove.addedPaper.title }, "grove-add-highlight", size: full)
+
+        renderMotion(to: dir, store: store, grove: grove)
+
         let note = island { $0.mode = .note("Added to Tree No. 3") }
         shoot(note, "island-note", size: CGSize(width: 460, height: 110))
 
@@ -231,6 +238,46 @@ enum Snapshots {
         }
     }
 
+    // MARK: Motion, as frame sequences (CI turns them into video)
+
+    private static func renderMotion(to dir: URL, store: TreeStore, grove: CGSize) {
+        let state = AppState.shared
+        guard let start = TreeClock.frozen else { return }
+        let growDir = dir.appendingPathComponent("frames/grow", isDirectory: true)
+        let islandDir = dir.appendingPathComponent("frames/island", isDirectory: true)
+        try? FileManager.default.createDirectory(at: growDir, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: islandDir, withIntermediateDirectories: true)
+
+        // A paper is added to Tree No. 3: its branch reaches out, leaves unfurl, the page lands,
+        // then the pencil branches sketch themselves in. 24 frames a second.
+        if let eco = store.trees.first(where: { $0.number == 3 }) {
+            var t = eco
+            let born = start.addingTimeInterval(0.4)
+            if let k = t.papers.indices.max(by: { t.papers[$0].addedAt < t.papers[$1].addedAt }) { t.papers[k].addedAt = born }
+            TreeClock.sketchStart = born.addingTimeInterval(TreeGrowth.duration - 0.2)
+            for f in 0..<96 {
+                TreeClock.frozen = start.addingTimeInterval(Double(f) / 24)
+                save(TreeCanvas(tree: t, store: store).frame(width: 640, height: 600).background(Color(hex: 0xFBF8EE)),
+                     String(format: "f%03d", f), to: growDir)
+            }
+            TreeClock.sketchStart = nil
+            TreeClock.frozen = start
+        }
+
+        // The island springing open out of the notch, with the grove fading up inside it. 30 frames a second.
+        let m = IslandModel()
+        m.notchSize = CGSize(width: 190, height: 32)
+        m.groveSize = grove
+        m.mode = .expanded
+        m.page = .grove
+        let frame = CGSize(width: grove.width + 40, height: grove.height + 32 + 30)
+        for f in 0..<36 {
+            let t = Double(f) / 30
+            save(IslandOpeningFrame(model: m, state: state, store: store, time: t).frame(width: frame.width, height: frame.height)
+                    .background(desk), String(format: "f%03d", f), to: islandDir)
+        }
+    }
+
     /// Page 1 of a paper through the app's whole chain (known links, the server's search, OpenAlex),
     /// waiting for it (snapshots run synchronously).
     private static func frontPage(_ paper: Paper) -> NSImage? {
@@ -248,5 +295,46 @@ enum Snapshots {
         }
         print("front page: \(paper.title) <- \(hit.1)")
         return NSImage(data: hit.0)
+    }
+}
+
+/// One frame of the island opening, computed from the same spring the app uses (response 0.5,
+/// damping 0.76) and the same content transition (blur, rise, fade after a short delay).
+struct IslandOpeningFrame: View {
+    @ObservedObject var model: IslandModel
+    @ObservedObject var state: AppState
+    @ObservedObject var store: TreeStore
+    var time: Double
+
+    static func spring(_ t: Double, response: Double = 0.5, damping: Double = 0.76) -> Double {
+        guard t > 0 else { return 0 }
+        let w = 2 * Double.pi / response
+        let wd = w * (1 - damping * damping).squareRoot()
+        return 1 - exp(-damping * w * t) * (cos(wd * t) + damping * w / wd * sin(wd * t))
+    }
+
+    var body: some View {
+        let k = CGFloat(Self.spring(time))
+        let notch = model.notchSize
+        let open = CGSize(width: model.groveSize.width, height: notch.height + model.groveSize.height)
+        let size = CGSize(width: notch.width + (open.width - notch.width) * k, height: max(0, notch.height + (open.height - notch.height) * k))
+        let radius = min(notch.height / 2, 18) + (34 - min(notch.height / 2, 18)) * k
+        let reveal = CGFloat(1 - Self.spring(time - 0.09))
+        VStack(spacing: 0) {
+            ZStack(alignment: .top) {
+                IslandShape(bottomRadius: radius, earRadius: 8 + 4 * k)
+                    .fill(Color.black)
+                    .shadow(color: .black.opacity(0.35 * Double(min(1, k * 3))), radius: 14, x: 0, y: 6)
+                GroveView(model: model, state: state, store: store)
+                    .modifier(BlurRise(amount: max(0, min(1, reveal))))
+                    .padding(.top, notch.height)
+                    .frame(width: open.width, height: open.height, alignment: .top)
+                    .frame(width: max(1, size.width), height: max(1, size.height), alignment: .top)
+                    .clipped()
+            }
+            .frame(width: max(1, size.width), height: max(1, size.height))
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
