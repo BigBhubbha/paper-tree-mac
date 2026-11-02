@@ -1186,7 +1186,7 @@ extension TreePainter {
             let w = rnd.cg(4, 8) * max(0.6, g.height / 300)
             let top = CGPoint(x: x, y: g.base.y - w * 1.4)
             var st = Path(); st.move(to: CGPoint(x: x, y: g.base.y)); st.addLine(to: top)
-            ctx.stroke(st, with: .color(RGB(0xE9DDC4)), style: StrokeStyle(lineWidth: w * 0.45, lineCap: .round))
+            ctx.stroke(st, with: .color(RGB(0xE9DDC4).color()), style: StrokeStyle(lineWidth: w * 0.45, lineCap: .round))
             var dome = Path()
             dome.move(to: CGPoint(x: x - w, y: top.y))
             dome.addQuadCurve(to: CGPoint(x: x + w, y: top.y), control: CGPoint(x: x, y: top.y - w * 1.3))
@@ -1345,7 +1345,7 @@ extension TreePainter {
             }
         }
         ctx.stroke(traces, with: .color(RGB(0xE3C46A).color(0.85)), style: StrokeStyle(lineWidth: max(0.5, lw * 0.6), lineCap: .round, lineJoin: .round))
-        ctx.fill(pads, with: .color(RGB(0xF3DE96)))
+        ctx.fill(pads, with: .color(RGB(0xF3DE96).color()))
         ctx.stroke(pads, with: .color(PlantInk.ink.opacity(0.5)), lineWidth: lw * 0.35)
     }
 
@@ -1445,7 +1445,7 @@ extension TreePainter {
                 }
                 ctx.fill(petals, with: .color(color.color(0.97)))
                 ctx.stroke(petals, with: .color(color.shade.color(0.7)), lineWidth: lw * 0.4)
-                ctx.fill(Path(ellipseIn: CGRect(x: at.x - r * 0.3, y: at.y - r * 0.3, width: r * 0.6, height: r * 0.6)), with: .color(RGB(0xE8B53A)))
+                ctx.fill(Path(ellipseIn: CGRect(x: at.x - r * 0.3, y: at.y - r * 0.3, width: r * 0.6, height: r * 0.6)), with: .color(RGB(0xE8B53A).color()))
             }
         }
     }

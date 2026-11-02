@@ -455,8 +455,8 @@ extension TreeGeometry {
         // Herbs and kelp have no fine crown growth: leaves go all along their stems.
         let along = plan == .herb || plan == .kelp
         let twig = along ? .greatestFiniteMagnitude : maxRadius * (willow ? 0.55 : 0.5)
-        let floor = base.y - height * 0.07
-        var order = nodes.indices.filter { nodes[$0].parent >= 0 && nodes[$0].r <= twig && !trunk.contains($0) && nodes[$0].p.y < floor }
+        let groundLine = base.y - height * 0.07
+        var order = nodes.indices.filter { nodes[$0].parent >= 0 && nodes[$0].r <= twig && !trunk.contains($0) && nodes[$0].p.y < groundLine }
         // Branch ends first, so every twig tip gets its leaf before the spaces fill in.
         order.sort { (kids[$0].isEmpty ? 0 : 1, $0) < (kids[$1].isEmpty ? 0 : 1, $1) }
         for i in order {
