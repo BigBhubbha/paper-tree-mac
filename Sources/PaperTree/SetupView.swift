@@ -253,7 +253,7 @@ struct SetupView: View {
             kicker("No. 2, about you")
             title("What year are you in?")
             line("So I can pitch my notes at your level.")
-            SpecimenTag(number: 1, label: "year in school", tilt: -0.6) {
+            SpecimenTag(number: 1, total: 4, label: "year in school", tilt: -0.6) {
                 CircleChoices(options: ReaderProfile.schoolYears, selected: [state.profileSchool]) { id in
                     state.profileSchool = state.profileSchool == id ? "" : id
                     pulse += 1
@@ -264,7 +264,7 @@ struct SetupView: View {
             kicker("No. 3, about you")
             title("How much science have you done?")
             line("Circle the closest one. Nobody else sees this.")
-            SpecimenTag(number: 2, label: "science background", tilt: 0.5) {
+            SpecimenTag(number: 2, total: 4, label: "science background", tilt: 0.5) {
                 CircleChoices(options: ReaderProfile.expertise, selected: [state.profileExpertise]) { id in
                     state.profileExpertise = state.profileExpertise == id ? "" : id
                     pulse += 1
@@ -275,7 +275,7 @@ struct SetupView: View {
             kicker("No. 4, about you")
             title("What do you read?")
             line("Tick as many as you like.")
-            SpecimenTag(number: 3, label: "fields you read most", tilt: 0.4) {
+            SpecimenTag(number: 3, total: 4, label: "fields you read most", tilt: 0.4) {
                 CircleChoices(options: ReaderProfile.fields, selected: Set(state.profileFields), multiple: true) { id in
                     if let i = state.profileFields.firstIndex(of: id) { state.profileFields.remove(at: i) }
                     else { state.profileFields.append(id) }
@@ -287,7 +287,7 @@ struct SetupView: View {
             kicker("No. 5, about you")
             title("How long should my notes be?")
             line("You can change this, and the rest, in Settings whenever you like.")
-            SpecimenTag(number: 4, label: "how long should my notes be", tilt: -0.5) {
+            SpecimenTag(number: 4, total: 4, label: "how long should my notes be", tilt: -0.5) {
                 CircleChoices(options: ReaderProfile.lengths, selected: [state.profileLength]) { id in
                     state.profileLength = state.profileLength == id ? "" : id
                     pulse += 1
@@ -567,6 +567,7 @@ struct FieldNote: View {
 /// A manila specimen tag on a string: punched hole on the left, a typed number and label, then the answers.
 struct SpecimenTag<Content: View>: View {
     var number: Int
+    var total: Int? = nil
     var label: String
     var tilt: Double = 0
     @ViewBuilder var content: Content
@@ -575,7 +576,7 @@ struct SpecimenTag<Content: View>: View {
         HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 9) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text("No. \(number)").font(.typewriter(11.5)).foregroundColor(Palette.red)
+                    Text(total.map { "Q. \(number) of \($0)" } ?? "No. \(number)").font(.typewriter(11.5)).foregroundColor(Palette.red)
                     Text(label).font(.typewriter(11.5)).foregroundColor(Palette.ink2)
                     Rectangle().fill(Palette.ink.opacity(0.25)).frame(height: 0.8).offset(y: -3)
                 }
