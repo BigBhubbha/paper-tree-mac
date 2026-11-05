@@ -19,9 +19,19 @@ struct BuddyView: View {
         self.compact = compact
     }
 
+    /// Idle bob and bubbles only need a few frames a second; thinking and "noticed" keep full motion.
+    private var frameInterval: Double? {
+        guard animated, !reduceMotion else { return nil }
+        switch mood {
+        case .thinking, .noticed: return 1.0 / 30.0
+        case .idle, .needsAccess: return 1.0 / 3.0
+        }
+    }
+
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !animated || reduceMotion)) { timeline in
-            let t = (animated && !reduceMotion) ? timeline.date.timeIntervalSinceReferenceDate : 0
+        let interval = frameInterval
+        TimelineView(.animation(minimumInterval: interval ?? 1.0, paused: interval == nil)) { timeline in
+            let t = interval == nil ? 0 : timeline.date.timeIntervalSinceReferenceDate
             Canvas { ctx, size in
                 ctx.scaleBy(x: size.width / 100, y: size.height / 100)
                 BuddyArt.draw(in: &ctx, t: t, mood: mood, research: researchMode, compact: compact)
