@@ -14,12 +14,14 @@ enum BuddyMood: Equatable {
 final class AppState: ObservableObject {
     static let shared = AppState()
 
-    // TODO: Turn this off (set to false) before the public launch.
-    /// Testing-period switch. When true, the setup walkthrough opens again after every update
-    /// (any new CFBundleVersion), with your earlier answers already filled in. The Accessibility
-    /// page is skipped unless permission is actually missing. Set to false for normal
-    /// first-run-only setup.
+    /// When true, the setup walkthrough opens again after every update (any new CFBundleVersion),
+    /// with earlier answers already filled in. The Accessibility page is skipped unless permission
+    /// is actually missing. Off in release builds; on in DEBUG for local testing.
+#if DEBUG
     static let replaySetupOnEveryUpdate = true
+#else
+    static let replaySetupOnEveryUpdate = false
+#endif
 
     static let placeholderEndpoint = "https://YOUR-SITE.netlify.app/api/explain"
     /// The built-in explainer. Users never have to set anything up.

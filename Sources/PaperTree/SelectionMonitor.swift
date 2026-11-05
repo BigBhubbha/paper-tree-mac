@@ -30,27 +30,46 @@ final class SelectionMonitor {
 
     func start() {
         stop()
+        // Mouse monitors are only registered while Research mode is on. Right Option taps stay
+        // always on (see RightOptionTapDetector). The card has its own outside-click monitor.
+        state.$researchMode.removeDuplicates().sink { [weak self] on in
+            Task { @MainActor in
+                guard let self else { return }
+                self.setMonitoring(on)
+            }
+        }.store(in: &bag)
+    }
+
+    func stop() {
+        setMonitoring(false)
+        bag.removeAll()
+    }
+
+    private func setMonitoring(_ on: Bool) {
+        if on {
+            installMonitors()
+            ExplainClient.warmUp(endpoint: state.endpoint)
+        } else {
+            removeMonitors()
+            captureTask?.cancel()
+            lastExplained = nil
+        }
+        state.refreshMood()
+    }
+
+    private func installMonitors() {
+        guard monitors.isEmpty else { return }
         // Monitor callbacks arrive on the main thread; we hop onto the main actor explicitly
         // (in order) so this compiles cleanly whatever concurrency annotations the SDK uses.
         if let m = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .leftMouseDragged, .leftMouseUp], handler: { [weak self] e in
             let info = MouseInfo(e)
             Task { @MainActor in self?.handle(info) }
         }) { monitors.append(m) }
-
-        state.$researchMode.removeDuplicates().sink { [weak self] on in
-            Task { @MainActor in
-                guard let self else { return }
-                if !on { self.captureTask?.cancel(); self.lastExplained = nil }
-                if on { ExplainClient.warmUp(endpoint: self.state.endpoint) }
-                self.state.refreshMood()
-            }
-        }.store(in: &bag)
     }
 
-    func stop() {
+    private func removeMonitors() {
         monitors.forEach { NSEvent.removeMonitor($0) }
         monitors.removeAll()
-        bag.removeAll()
     }
 
     // MARK: Events

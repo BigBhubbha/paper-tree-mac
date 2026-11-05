@@ -56,7 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         state.refreshMood()
 
         if state.shouldReplaySetupForUpdate {
-            // Testing period: walk through setup again after every update (see AppState.replaySetupOnEveryUpdate).
+            // DEBUG builds only: walk through setup again after every update (see AppState.replaySetupOnEveryUpdate).
             openWelcome(replayAfterUpdate: true)
         } else if !state.accessibilityGranted || state.needsSetup {
             openWelcome()

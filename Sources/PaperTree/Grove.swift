@@ -403,6 +403,8 @@ struct TreeCanvas: View {
     @State private var openGhost: String?
     @State private var appeared = Date()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// False when the island panel (or any host window) is not key, so idle sway stops while you work elsewhere.
+    @Environment(\.controlActiveState) private var controlActiveState
 
     /// How much room a tree gets to spread out in, relative to the view: more for busy trees.
     static func world(for tree: PaperTreeData, in size: CGSize) -> CGSize {
@@ -422,11 +424,20 @@ struct TreeCanvas: View {
         return (t, s)
     }
 
+    /// No sway loop while Reduce Motion is on, the host window is not key, or a snapshot froze the clock.
+    /// GroveView itself is only in the hierarchy while the island is expanded, so a collapsed island
+    /// already tears the TimelineView down.
+    private var swayPaused: Bool {
+        reduceMotion
+            || controlActiveState != .key
+            || TreeClock.frozen != nil
+    }
+
     var body: some View {
         GeometryReader { geo in
             let world = Self.world(for: tree, in: geo.size)
             let g = TreeGeometry.cached(tree, in: world)
-            TimelineView(.animation(minimumInterval: lively ? 1.0 / 30 : 1.0 / 12, paused: reduceMotion)) { timeline in
+            TimelineView(.animation(minimumInterval: lively ? 1.0 / 30 : 1.0 / 12, paused: swayPaused)) { timeline in
                 scene(g, world: world, size: geo.size, now: TreeClock.frozen ?? timeline.date)
             }
         }
