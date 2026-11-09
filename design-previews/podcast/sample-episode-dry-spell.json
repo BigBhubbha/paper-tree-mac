@@ -1,0 +1,318 @@
+{
+ "title": "How Plants Trade Water For Carbon",
+ "model": "gemini-3.5-flash",
+ "lines": [
+  {
+   "speaker": "Juniper",
+   "text": "Why should I care about how plants deal with dry soil? Don't they just wilt and wait for rain?",
+   "quote": "",
+   "section": "",
+   "start": 0,
+   "end": 5.34
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It is actually a smart balancing act. The paper Leaves in a dry spell: how plants trade water for carbon explains how leaves trade water to get carbon.",
+   "quote": "Leaves in a dry spell: how plants trade water for carbon",
+   "section": "Title",
+   "start": 5.96,
+   "end": 16.08
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Wait, how does a plant trade water for carbon?",
+   "quote": "",
+   "section": "",
+   "start": 16.77,
+   "end": 19.17
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Plants need carbon dioxide from the air to make food, but when they open tiny leaf pores called stomata to get it, water escapes.",
+   "quote": "Under drought, plants close their stomata to save water.",
+   "section": "1. Introduction",
+   "start": 19.7,
+   "end": 26.47
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So stomata are basically tiny doors on the leaf surface?",
+   "quote": "",
+   "section": "",
+   "start": 26.87,
+   "end": 31.55
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Exactly. Under drought, the plant closes those doors to save water, which limits transpiration, or water loss.",
+   "quote": "Under drought, plants close their stomata to save water. That limits transpiration",
+   "section": "1. Introduction",
+   "start": 32.02,
+   "end": 38.69
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Okay, saving water sounds great. What is the downside?",
+   "quote": "",
+   "section": "",
+   "start": 39.32,
+   "end": 42.28
+  },
+  {
+   "speaker": "Rowan",
+   "text": "When the doors shut, leaf temperature rises because water is not evaporating to cool it off.",
+   "quote": "so leaf temperature rises, and with less carbon dioxide reaching the chloroplasts",
+   "section": "1. Introduction",
+   "start": 42.83,
+   "end": 47.56
+  },
+  {
+   "speaker": "Juniper",
+   "text": "And less carbon dioxide gets inside too, right?",
+   "quote": "",
+   "section": "",
+   "start": 48.3,
+   "end": 51.32
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Right. With less carbon dioxide reaching the chloroplasts, photorespiration increases and net carbon assimilation falls.",
+   "quote": "photorespiration increases and net carbon assimilation falls.",
+   "section": "1. Introduction",
+   "start": 51.76,
+   "end": 60.05
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Huh? What are photorespiration and net carbon assimilation?",
+   "quote": "",
+   "section": "",
+   "start": 60.68,
+   "end": 64.82
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Net carbon assimilation just means the net amount of carbon the plant takes in to grow. Photorespiration is a side reaction that wastes energy.",
+   "quote": "The enzyme that fixes carbon, Rubisco, works best when carbon dioxide is plentiful inside the leaf.",
+   "section": "2. Why the trade costs carbon",
+   "start": 65.56,
+   "end": 74.25
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Why does that side reaction happen?",
+   "quote": "",
+   "section": "",
+   "start": 75.13,
+   "end": 76.97
+  },
+  {
+   "speaker": "Rowan",
+   "text": "There is an enzyme called Rubisco that fixes carbon. But Rubisco also reacts with oxygen, especially when carbon dioxide levels inside the leaf drop.",
+   "quote": "Rubisco also reacts with oxygen, and that side reaction becomes more common as carbon dioxide inside the leaf drops.",
+   "section": "2. Why the trade costs carbon",
+   "start": 77.6,
+   "end": 86.83
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So if carbon dioxide drops, Rubisco grabs oxygen instead and wastes energy?",
+   "quote": "",
+   "section": "",
+   "start": 87.49,
+   "end": 92.83
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Yes, the plant spends energy recovering carbon it had already fixed.",
+   "quote": "The plant then spends energy recovering carbon it had already fixed.",
+   "section": "2. Why the trade costs carbon",
+   "start": 93.42,
+   "end": 97.46
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Do all plants suffer from this wasteful oxygen reaction?",
+   "quote": "",
+   "section": "",
+   "start": 98.04,
+   "end": 102.76
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Not equally. Plants with C4 metabolism concentrate carbon dioxide around Rubisco and lose less carbon this way.",
+   "quote": "Plants with C4 metabolism concentrate carbon dioxide around Rubisco and lose less this way",
+   "section": "2. Why the trade costs carbon",
+   "start": 103.41,
+   "end": 110.53
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Okay, so C4 plants are like specialized grasses built for hot, dry places.",
+   "quote": "",
+   "section": "",
+   "start": 110.97,
+   "end": 115.29
+  },
+  {
+   "speaker": "Rowan",
+   "text": "That is right. That is one reason many grasses of hot, dry places use C4 metabolism.",
+   "quote": "which is one reason many grasses of hot, dry places use it.",
+   "section": "2. Why the trade costs carbon",
+   "start": 115.92,
+   "end": 120.97
+  },
+  {
+   "speaker": "Juniper",
+   "text": "How does the leaf even know the soil is dry in the first place?",
+   "quote": "",
+   "section": "",
+   "start": 121.8,
+   "end": 124.85
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Stomata do not wait for the leaf to wilt. As soil dries, roots send chemical signals upward.",
+   "quote": "Stomata do not wait for the leaf to wilt. As soil dries, roots send chemical signals upward",
+   "section": "3. Signals from the roots",
+   "start": 125.52,
+   "end": 130.67
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So the roots warn the leaves before they actually run out of water?",
+   "quote": "",
+   "section": "",
+   "start": 131.35,
+   "end": 135.3
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Yes, guard cells respond within hours. The leaf acts cautious early, closing partly before damage occurs.",
+   "quote": "and guard cells respond within hours. The result is a leaf that is cautious early",
+   "section": "3. Signals from the roots",
+   "start": 135.71,
+   "end": 141.81
+  },
+  {
+   "speaker": "Juniper",
+   "text": "What happens after it rains?",
+   "quote": "",
+   "section": "",
+   "start": 142.51,
+   "end": 148.01
+  },
+  {
+   "speaker": "Rowan",
+   "text": "The leaf recovers slowly after rain while those root signals fade away.",
+   "quote": "and that recovers slowly after rain while the signals fade.",
+   "section": "3. Signals from the roots",
+   "start": 151.94,
+   "end": 152.21
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So does a short, intense drought hurt a plant more than a long, mild one?",
+   "quote": "",
+   "section": "",
+   "start": 152.37,
+   "end": 153.6
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Actually, no. A season of mild drought often costs more growth than a short severe one.",
+   "quote": "A season of mild drought often costs more growth than a short severe one",
+   "section": "4. What this means for growth",
+   "start": 154.16,
+   "end": 159.61
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Wait, why would a mild drought cost more total growth?",
+   "quote": "",
+   "section": "",
+   "start": 160.43,
+   "end": 163.24
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Because the leaf spends many days partly closed, missing out on carbon day after day.",
+   "quote": "because the leaf spends many days partly closed.",
+   "section": "4. What this means for growth",
+   "start": 163.78,
+   "end": 169.13
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Can scientists use this to breed better crops?",
+   "quote": "",
+   "section": "",
+   "start": 169.9,
+   "end": 172.16
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Breeding for crops that keep stomata open a little longer, without running out of water, is an active line of work.",
+   "quote": "Breeding for crops that keep stomata open a little longer, without running out of water, is an active line of work.",
+   "section": "4. What this means for growth",
+   "start": 172.71,
+   "end": 178.17
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Are there actual figures or crop yield numbers in this paper?",
+   "quote": "",
+   "section": "",
+   "start": 179.09,
+   "end": 181.7
+  },
+  {
+   "speaker": "Rowan",
+   "text": "No, the text explicitly notes that it is a sample text and has no real figures.",
+   "quote": "The figures in a real paper would show these curves; this sample text has none.",
+   "section": "4. What this means for growth",
+   "start": 182.77,
+   "end": 187.74
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So we do not know specific crop types or exact water savings from this paper?",
+   "quote": "",
+   "section": "",
+   "start": 188.34,
+   "end": 192.05
+  },
+  {
+   "speaker": "Rowan",
+   "text": "That is right, those details are not covered here.",
+   "quote": "",
+   "section": "",
+   "start": 192.64,
+   "end": 196.04
+  },
+  {
+   "speaker": "Juniper",
+   "text": "What is the main thing to remember about how plants handle drought?",
+   "quote": "",
+   "section": "",
+   "start": 196.48,
+   "end": 199.44
+  },
+  {
+   "speaker": "Rowan",
+   "text": "When soil dries, plants save water by closing leaf pores early, but that safety comes at the cost of slower growth.",
+   "quote": "how leaves balance water loss against carbon uptake when soil dries",
+   "section": "Abstract",
+   "start": 200.39,
+   "end": 207.1
+  },
+  {
+   "speaker": "Juniper",
+   "text": "That makes total sense. Thanks for breaking it down, Rowan!",
+   "quote": "",
+   "section": "",
+   "start": 207.77,
+   "end": 210.7
+  }
+ ]
+}

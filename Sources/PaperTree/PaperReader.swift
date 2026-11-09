@@ -9,7 +9,7 @@ import SwiftUI
 @MainActor
 final class ReaderModel: ObservableObject {
     enum Status: Equatable { case loading, ready, unavailable }
-    enum Rail: Equatable { case pages, notes }
+    enum Rail: Equatable { case pages, notes, listen }
     /// Text selected in the PDF, waiting for an action from the bar.
     struct Pick: Equatable {
         var text: String
@@ -35,6 +35,11 @@ final class ReaderModel: ObservableObject {
     @Published var zoomPercent = 100
     @Published var rail: Rail = .notes
     @Published var ink: MarkInk = .marigold
+    /// The passage the podcast is talking about, marked on the page while it plays.
+    struct Listening: Equatable { var page: Int; var rects: [CGRect] }
+    @Published private(set) var listening: Listening?
+    private var listenSelection: PDFSelection?
+    private var quoteHits: [String: PDFSelection?] = [:]
     weak var view: ReaderPDFView?
     var onExplain: (String, String, NSRect) -> Void = { _, _, _ in }
 
@@ -202,6 +207,58 @@ final class ReaderModel: ObservableObject {
         return t
     }
 
+    // MARK: The podcast
+
+    /// The paper's words for the podcast: the PDF's text, or the abstract when there is no PDF.
+    func podcastText() -> (text: String, source: String) {
+        if let doc = document {
+            var out = ""
+            for i in 0..<doc.pageCount {
+                if let t = doc.page(at: i)?.string { out += t + "\n" }
+                if out.count > 60_000 { break }
+            }
+            let text = String(out.prefix(60_000)).trimmingCharacters(in: .whitespacesAndNewlines)
+            if text.count > 600 { return (text, "paper") }
+        }
+        return (paper.abstract, "abstract")
+    }
+
+    /// Marks the passage a podcast line is about and brings it into view if it is off screen.
+    func follow(_ quote: String) {
+        guard let doc = document, !quote.isEmpty, let sel = find(quote, in: doc), let page = sel.pages.first else { clearFollow(); return }
+        let idx = doc.index(for: page)
+        var rects = sel.selectionsByLine().map { $0.bounds(for: page) }.filter { $0.width > 0.5 && $0.height > 0.5 }
+        if rects.isEmpty { rects = [sel.bounds(for: page)] }
+        listening = Listening(page: idx, rects: rects)
+        listenSelection = sel
+        guard results.isEmpty, let v = view else { return }
+        sel.color = NSColor(srgbRed: 0.97, green: 0.88, blue: 0.24, alpha: 0.5)
+        v.highlightedSelections = [sel]
+        let box = rects.dropFirst().reduce(rects[0]) { $0.union($1) }
+        let inView = v.convert(box, from: page)
+        if !v.bounds.insetBy(dx: 0, dy: 30).contains(inView) {
+            v.go(to: box.insetBy(dx: -60, dy: -140), on: page)
+            self.page = idx
+        }
+    }
+
+    func clearFollow() {
+        if listenSelection != nil, results.isEmpty { view?.highlightedSelections = nil }
+        listenSelection = nil
+        listening = nil
+    }
+
+    private func find(_ quote: String, in doc: PDFDocument) -> PDFSelection? {
+        if let hit = quoteHits[quote] { return hit }
+        let words = quote.split(separator: " ")
+        var found: PDFSelection?
+        for n in [words.count, 12, 8, 6] where n <= words.count && n >= 4 && found == nil {
+            found = doc.findString(words.prefix(n).joined(separator: " "), withOptions: [.caseInsensitive]).first
+        }
+        quoteHits.updateValue(found, forKey: quote)
+        return found
+    }
+
     var resultLabel: String {
         if results.isEmpty { return query.isEmpty ? "" : "no matches" }
         return "\(resultIndex + 1) of \(results.count)"
@@ -295,6 +352,7 @@ struct PaperReaderPage: View {
     var tree: PaperTreeData
     var paper: Paper
     @StateObject private var reader: ReaderModel
+    @ObservedObject private var podcast: PodcastModel
 
     init(model: IslandModel, store: TreeStore, tree: PaperTreeData, paper: Paper, preset: ReaderModel? = nil) {
         self.model = model
@@ -302,14 +360,18 @@ struct PaperReaderPage: View {
         self.tree = tree
         self.paper = paper
         _reader = StateObject(wrappedValue: preset ?? ReaderModel(paper: paper))
+        _podcast = ObservedObject(wrappedValue: PodcastDesk.shared.model(for: paper))
     }
+
+    /// The deck shows while you're on the Listen tab, or while an episode plays.
+    private var showDeck: Bool { podcast.episode != nil && podcast.phase == .ready && (reader.rail == .listen || podcast.isPlaying || reader.status == .unavailable) }
 
     var body: some View {
         HStack(spacing: 0) {
-            ReaderRail(reader: reader, tree: tree, paper: paper) {
+            ReaderRail(reader: reader, podcast: podcast, tree: tree, paper: paper) {
                 withAnimation(Motion.pick(Motion.page)) { model.page = .tree(tree.id) }
             }
-            .frame(width: 272)
+            .frame(width: reader.rail == .listen || reader.status == .unavailable ? 340 : 272)
             ZStack {
                 Color(hex: 0xDCD2BB)
                     .overlay(Image(nsImage: PaperGrain.image).resizable(resizingMode: .tile).opacity(0.35))
@@ -321,18 +383,41 @@ struct PaperReaderPage: View {
                         .padding(18)
                         .transition(Motion.reduced ? .opacity : .move(edge: .trailing).combined(with: .opacity))
                 }
-                if reader.status == .ready {
-                    ReaderTools(reader: reader)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                        .padding(14)
+                VStack(alignment: .trailing, spacing: 12) {
+                    if reader.status == .ready {
+                        ReaderTools(reader: reader, podcast: podcast)
+                    }
+                    if showDeck {
+                        PodcastDeck(podcast: podcast)
+                            .frame(maxWidth: .infinity)
+                            .transition(Motion.reduced ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .padding(.horizontal, 18).padding(.bottom, 14)
+                .animation(Motion.pick(Motion.open), value: showDeck)
             }
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
+        .animation(Motion.pick(Motion.page), value: reader.rail)
         .onAppear {
             reader.onExplain = model.onExplain
             reader.load()
+            followLine(podcast.currentLine)
         }
+        .onDisappear {
+            podcast.pause()
+            reader.clearFollow()
+        }
+        .onChange(of: podcast.currentLine) { followLine($0) }
+        .onChange(of: podcast.follow) { on in if on { followLine(podcast.currentLine) } }
+    }
+
+    private func followLine(_ i: Int?) {
+        guard podcast.follow, let i, let ep = podcast.episode, i < ep.lines.count, podcast.isPlaying || Snapshots.isRendering else { return }
+        let q = ep.lines[i].quote
+        if q.isEmpty { return } // small talk: keep the last passage marked
+        reader.follow(q)
     }
 
     @ViewBuilder private var content: some View {
@@ -413,9 +498,18 @@ struct SelectionBar: View {
 /// Bottom right: pin a sticky note, and zoom.
 struct ReaderTools: View {
     @ObservedObject var reader: ReaderModel
+    @ObservedObject var podcast: PodcastModel
 
     var body: some View {
         HStack(spacing: 0) {
+            Button { withAnimation(Motion.pick(Motion.page)) { reader.rail = .listen } } label: {
+                Label(podcast.episode == nil ? "Make podcast" : "Podcast", systemImage: "headphones").font(.uiBold(11.5))
+                    .foregroundColor(reader.rail == .listen ? Palette.red : Palette.ink2)
+                    .padding(.horizontal, 10).frame(height: 28).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Two AI hosts talk this paper through")
+            rule
             Button { reader.placingSticky.toggle() } label: {
                 Label("Sticky note", systemImage: "note.text").font(.uiBold(11.5))
                     .foregroundColor(reader.placingSticky ? Palette.red : Palette.ink2)
@@ -517,6 +611,7 @@ struct MarkEditor: View {
 /// The rail beside the paper: what it is, search, pages and notes.
 struct ReaderRail: View {
     @ObservedObject var reader: ReaderModel
+    @ObservedObject var podcast: PodcastModel
     var tree: PaperTreeData
     var paper: Paper
     var back: () -> Void
@@ -531,26 +626,33 @@ struct ReaderRail: View {
             }
             .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
             Text("from \(tree.displayName)").font(.typewriter(9.5)).foregroundColor(Palette.ink3)
-            Text(paper.title).font(.fell(19)).foregroundColor(Palette.ink)
-                .fixedSize(horizontal: false, vertical: true).lineLimit(5)
-            if !paper.authors.isEmpty {
+            let listening = reader.rail == .listen || reader.status == .unavailable
+            Text(paper.title).font(.fell(listening ? 16 : 19)).foregroundColor(listening ? Palette.ink2 : Palette.ink)
+                .fixedSize(horizontal: false, vertical: true).lineLimit(listening ? 2 : 5)
+            if !listening && !paper.authors.isEmpty {
                 Text(paper.authors.prefix(5).joined(separator: ", ") + (paper.authors.count > 5 ? ", et al." : ""))
                     .font(.text(12.5)).foregroundColor(Palette.ink2).lineLimit(3)
             }
             let meta = [paper.year.map(String.init) ?? "", paper.venue].filter { !$0.isEmpty }.joined(separator: ", ")
-            if !meta.isEmpty { Text(meta).font(.typewriter(10)).foregroundColor(Palette.ink3).lineLimit(2) }
-            if let u = paper.openURL {
+            if !listening && !meta.isEmpty { Text(meta).font(.typewriter(10)).foregroundColor(Palette.ink3).lineLimit(2) }
+            if !listening, let u = paper.openURL {
                 Button("Open in browser") { NSWorkspace.shared.open(u) }
                     .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
                     .font(.ui(11))
             }
             Rectangle().fill(Palette.ink.opacity(0.18)).frame(height: 0.8).padding(.vertical, 2)
             if reader.status == .ready {
-                search
+                if reader.rail != .listen { search }
                 tabs
-                GroveScroll(axis: .vertical) {
-                    if reader.rail == .pages { pages } else { notes }
+                if reader.rail == .listen {
+                    ListenPanel(podcast: podcast, reader: reader)
+                } else {
+                    GroveScroll(axis: .vertical) {
+                        if reader.rail == .pages { pages } else { notes }
+                    }
                 }
+            } else if reader.status == .unavailable {
+                ListenPanel(podcast: podcast, reader: reader)
             } else {
                 Spacer()
             }
@@ -590,6 +692,10 @@ struct ReaderRail: View {
         HStack(spacing: 14) {
             tab("Notes (\(reader.marks.marks.count))", .notes)
             tab("Pages (\(reader.pageCount))", .pages)
+            tab("Listen", .listen)
+                .overlay(alignment: .topTrailing) {
+                    if podcast.phase == .making { RecordingDot().offset(x: 7, y: 1) }
+                }
             Spacer()
         }
         .padding(.top, 2)
@@ -662,6 +768,18 @@ struct ReaderRail: View {
     }
 }
 
+/// A small red light beside the Listen tab while an episode is being recorded.
+struct RecordingDot: View {
+    var body: some View {
+        TimelineView(.animation(minimumInterval: 1.0 / 15, paused: Motion.reduced || Snapshots.isRendering)) { tl in
+            let t = tl.date.timeIntervalSinceReferenceDate
+            Circle().fill(Palette.red).frame(width: 5, height: 5)
+                .opacity(Motion.reduced ? 1 : 0.45 + 0.55 * (sin(t * 3) + 1) / 2)
+        }
+        .accessibilityLabel("Recording")
+    }
+}
+
 /// No free PDF: the abstract and what we know, set like a title page.
 struct AbstractSheet: View {
     var paper: Paper
@@ -724,6 +842,15 @@ struct StandInPages: View {
                         .resizable().frame(width: w, height: crop.height * s)
                         .shadow(color: .black.opacity(0.25), radius: 5, y: 2)
                         .offset(x: origin.x, y: origin.y)
+                    if let l = reader.listening, l.page == 0 {
+                        ForEach(Array(l.rects.enumerated()), id: \.offset) { _, r in
+                            MarkerSweep(seed: Int(r.minY))
+                                .fill(Color(nsColor: NSColor(srgbRed: 0.97, green: 0.88, blue: 0.24, alpha: 0.5)))
+                                .blendMode(.multiply)
+                                .frame(width: r.width * s + 4, height: r.height * s + 2)
+                                .offset(x: origin.x + (r.minX - crop.minX) * s - 2, y: origin.y + (crop.maxY - r.maxY) * s - 1)
+                        }
+                    }
                     if let pick = reader.pick {
                         ForEach(Array(pick.rects.enumerated()), id: \.offset) { _, r in
                             Rectangle().fill(Color(hex: 0x9CC3F0).opacity(0.5))

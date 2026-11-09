@@ -39,3 +39,13 @@ curl -s -X POST https://YOUR-SITE.netlify.app/api/explain \
 - A light per-instance rate limit (20 requests a minute per IP). It is best effort, because serverless instances do not share memory. For real protection, set a spending or quota limit for the key in Google AI Studio.
 - The address is public. Anyone who finds it can use your Gemini quota, which is why `APP_TOKEN` and a quota limit are worth setting. A token shipped inside an app can be extracted, so treat it as a speed bump, not a lock.
 - Gemini free tier rate limits apply. Free tier requests may be used by Google to improve its products, so mention that in your privacy note if you share the app.
+
+
+## Podcasts (Cloudflare Worker)
+
+The live Worker (`cloudflare/worker.mjs`) also serves two podcast routes, built in `cloudflare/podcast.mjs`:
+
+- `POST /api/podcast/script` `{title, authors?, year?, text, source?, take?}` returns `{title, lines: [{speaker, text, quote, section, sig}], model}`. Gemini writes it as JSON; quotes not found in the paper are blanked; each line is sealed with an HMAC (`sig`). 4 per IP per 10 minutes. Cached in KV per paper text and take.
+- `POST /api/podcast/voice` `{lines (up to 10, sealed), model?}` returns `audio/wav` (24 kHz mono) and `X-Podcast-Timings: [[startMs, endMs], ...]`. Gemini multi-speaker TTS (`gemini-3.8-flash-tts`, then `-lite`, then `gemini-3.1-flash-tts-preview`). 40 per IP per 10 minutes. A busy model answers 503 with `retryAfter`; a used-up daily allowance answers 503 with `exhausted` and the `next` model.
+
+Test locally: `cd cloudflare && node test-podcast-unit.mjs`, then with `npx wrangler dev` running, `node test-podcast.mjs paper.txt "Title" out/`. The Netlify function `podcast.mjs` mirrors the routes, but Netlify stops functions at about 26 seconds, so long scripts may time out there.

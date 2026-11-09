@@ -1,0 +1,334 @@
+{
+ "title": "How AI Looks Up Facts",
+ "model": "gemini-3-flash-preview",
+ "lines": [
+  {
+   "speaker": "Juniper",
+   "text": "How come AI models often get basic facts wrong or just make things up when they talk?",
+   "quote": "",
+   "section": "",
+   "start": 0.12,
+   "end": 5.4
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It is a common problem called hallucinations where models rely only on what they have memorized.",
+   "quote": "may produce \u2010hallucinations\u2010 [38]. Hybrid models that combine parametric memory with non\u2010parametric (i.e., retrieval\u2010based) memories",
+   "section": "Introduction",
+   "start": 5.92,
+   "end": 11.25
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Is there a way to give them a textbook or something to check before they answer?",
+   "quote": "",
+   "section": "",
+   "start": 11.76,
+   "end": 15.68
+  },
+  {
+   "speaker": "Rowan",
+   "text": "That is exactly what Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks explores by giving models a digital library.",
+   "quote": "explore a general\u2010purpose fine\u2010tuning recipe for retrieval\u2010augmented generation (RAG) \u2014 models which combine pre\u2010trained parametric and non\u2010parametric memory",
+   "section": "Abstract",
+   "start": 16.2,
+   "end": 23.64
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So it is like an open-book test for the computer?",
+   "quote": "",
+   "section": "",
+   "start": 24.21,
+   "end": 26.69
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Exactly, the authors wanted to see if models could perform better on tasks that humans would need a search engine for.",
+   "quote": "knowledge\u2010intensive tasks\u2014tasks that humans could not reasonably be expected to perform without access to an external knowledge source.",
+   "section": "Introduction",
+   "start": 27.44,
+   "end": 33.37
+  },
+  {
+   "speaker": "Juniper",
+   "text": "What kind of tasks are we talking about here?",
+   "quote": "",
+   "section": "",
+   "start": 33.94,
+   "end": 35.94
+  },
+  {
+   "speaker": "Rowan",
+   "text": "They tested it on things like answering trivia and even generating questions for the game show Jeopardy.",
+   "quote": "we study open\u2010domain question generation. Rather than use questions from standard open\u2010domain",
+   "section": "Methods",
+   "start": 36.79,
+   "end": 41.77
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Okay, so how does it actually work when you ask it a question?",
+   "quote": "",
+   "section": "",
+   "start": 42.35,
+   "end": 46.26
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It uses a retriever to find relevant pages from a huge index of Wikipedia articles.",
+   "quote": "non\u2010parametric memory is a dense vector index of Wikipedia, accessed with a pre\u2010trained neural retriever.",
+   "section": "Abstract",
+   "start": 46.82,
+   "end": 52.24
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Wait, what is an index in this case? Is it just a list of titles?",
+   "quote": "",
+   "section": "",
+   "start": 53.05,
+   "end": 56.97
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It is more like a map of 21 million 100-word chunks of text from a 2018 Wikipedia dump.",
+   "quote": "Each Wikipedia article is split into disjoint 100\u2010word chunks, to make a total of 21M documents.",
+   "section": "Methods",
+   "start": 57.54,
+   "end": 62.05
+  },
+  {
+   "speaker": "Juniper",
+   "text": "And it looks through all 21 million chunks every time I ask a question?",
+   "quote": "",
+   "section": "",
+   "start": 62.4,
+   "end": 68.78
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It does, but it uses a fast search method to find the top five or ten most relevant documents almost instantly.",
+   "quote": "During training, we retrieve the top k documents for each query. We",
+   "section": "Methods",
+   "start": 69.42,
+   "end": 76.03
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So it finds the pages, and then what? Does it just copy and paste the answer?",
+   "quote": "",
+   "section": "",
+   "start": 76.7,
+   "end": 80.7
+  },
+  {
+   "speaker": "Rowan",
+   "text": "No, it passes those pages to a generator which reads them and then writes its own response.",
+   "quote": "",
+   "section": "Introduction",
+   "start": 81.31,
+   "end": 86.28
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Wait, you used the term seq2seq. What does that mean for us non-experts?",
+   "quote": "",
+   "section": "",
+   "start": 86.88,
+   "end": 91.3
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It is just a model that takes one sequence of words and turns it into another, like a translator or a writer.",
+   "quote": "sequence\u2010to\u2010sequence (seq2seq) models. We endow pre\u2010trained, parametric\u2010memory generation models with a non\u2010parametric memory",
+   "section": "Introduction",
+   "start": 91.88,
+   "end": 99.17
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Okay, so it is a reader and a writer working together. What did the researchers find?",
+   "quote": "",
+   "section": "",
+   "start": 99.73,
+   "end": 104.76
+  },
+  {
+   "speaker": "Rowan",
+   "text": "The RAG models actually set new records for accuracy on several big question-answering datasets.",
+   "quote": "set the state of the art on three open domain QA tasks, outperforming parametric seq2seq models and task\u2010specific retrieve\u2010and\u2010extract architectures.",
+   "section": "Abstract",
+   "start": 105.54,
+   "end": 111.14
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Did it help with those hallucinations you mentioned earlier?",
+   "quote": "",
+   "section": "",
+   "start": 111.91,
+   "end": 114.69
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Yes, they found it was much more factual and specific compared to models that didn't have the retrieval feature.",
+   "quote": "RAG models generate more specific, diverse and factual language than a state\u2010of\u2010the\u2010art parametric\u2010only seq2seq baseline.",
+   "section": "Abstract",
+   "start": 115.41,
+   "end": 120.88
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Can you give me an example of it being more specific?",
+   "quote": "",
+   "section": "",
+   "start": 121.66,
+   "end": 124.24
+  },
+  {
+   "speaker": "Rowan",
+   "text": "When asked to define the middle ear, the basic model gave a confusing answer, but RAG correctly named the bones inside.",
+   "quote": "RAG\u2010S: The middle ear includes the tympanic cavity and the three ossicles.",
+   "section": "Results",
+   "start": 125.01,
+   "end": 131.36
+  },
+  {
+   "speaker": "Juniper",
+   "text": "That is much better. Is it smart enough to use different sources for different parts of an answer?",
+   "quote": "",
+   "section": "",
+   "start": 132.05,
+   "end": 136.93
+  },
+  {
+   "speaker": "Rowan",
+   "text": "One version called RAG-Token can actually look at a different document for every single word it writes.",
+   "quote": "",
+   "section": "Methods",
+   "start": 137.62,
+   "end": 144.98
+  },
+  {
+   "speaker": "Juniper",
+   "text": "That sounds complicated. Does it ever get confused by looking at too many things at once?",
+   "quote": "",
+   "section": "",
+   "start": 145.42,
+   "end": 150.26
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Sometimes. They saw that while RAG-Sequence got better with more documents, RAG-Token peaked around ten.",
+   "quote": "performance peaks for RAG\u2010Token at 10 retrieved documents.",
+   "section": "Results",
+   "start": 150.82,
+   "end": 157.21
+  },
+  {
+   "speaker": "Juniper",
+   "text": "Is there anything it still can't do?",
+   "quote": "",
+   "section": "",
+   "start": 157.99,
+   "end": 159.74
+  },
+  {
+   "speaker": "Rowan",
+   "text": "It still relies on the quality of its sources; if Wikipedia is biased or wrong, the model will be too.",
+   "quote": "Wikipedia, or any potential external knowledge source, will probably never be entirely factual and completely devoid of bias.",
+   "section": "Broader Impact",
+   "start": 160.48,
+   "end": 166.37
+  },
+  {
+   "speaker": "Juniper",
+   "text": "What happens when the world changes? Do you have to retrain the whole thing?",
+   "quote": "",
+   "section": "",
+   "start": 167.04,
+   "end": 170.57
+  },
+  {
+   "speaker": "Rowan",
+   "text": "That is the cool part; you can just swap the old index for a new one without retraining the model.",
+   "quote": "we can update RAG\u2019s world knowledge by simply replacing its non\u2010parametric memory.",
+   "section": "Results",
+   "start": 171.2,
+   "end": 176.31
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So you just give it a new library card and it is up to date?",
+   "quote": "",
+   "section": "",
+   "start": 177.1,
+   "end": 181.51
+  },
+  {
+   "speaker": "Rowan",
+   "text": "Exactly, they proved this by swapping 2016 Wikipedia for a 2018 version to update who the world leaders were.",
+   "quote": "RAG answers 70% correctly using the 2016 index for 2016 world leaders and 68% using the 2018 index for 2018 world leaders.",
+   "section": "Results",
+   "start": 182.1,
+   "end": 187.86
+  },
+  {
+   "speaker": "Juniper",
+   "text": "What about the stuff that isn't in Wikipedia?",
+   "quote": "",
+   "section": "",
+   "start": 188.65,
+   "end": 190.79
+  },
+  {
+   "speaker": "Rowan",
+   "text": "If the answer isn't in the documents, the model still gets it right about 11 percent of the time using its own memory.",
+   "quote": "RAG can generate correct answers even when the correct answer is not in any retrieved document, achieving 11.8% accuracy in such cases",
+   "section": "Results",
+   "start": 191.46,
+   "end": 198.66
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So it is like it has its own brain but also a really good search engine.",
+   "quote": "",
+   "section": "",
+   "start": 199.22,
+   "end": 204.06
+  },
+  {
+   "speaker": "Rowan",
+   "text": "That is a great way to put it; the two parts work together to guide the generation.",
+   "quote": "the non\u2010parametric component helps to guide the generation, drawing out specific knowledge stored in the parametric memory.",
+   "section": "Results",
+   "start": 204.79,
+   "end": 209.07
+  },
+  {
+   "speaker": "Juniper",
+   "text": "So, what is the main takeaway here?",
+   "quote": "",
+   "section": "",
+   "start": 209.93,
+   "end": 211.61
+  },
+  {
+   "speaker": "Rowan",
+   "text": "By giving AI a way to look things up, we make it more factual, easier to update, and more reliable.",
+   "quote": "",
+   "section": "",
+   "start": 212.33,
+   "end": 217.57
+  },
+  {
+   "speaker": "Juniper",
+   "text": "It's nice to know we can finally give these models a library card.",
+   "quote": "",
+   "section": "",
+   "start": 218.37,
+   "end": 221.12
+  }
+ ]
+}

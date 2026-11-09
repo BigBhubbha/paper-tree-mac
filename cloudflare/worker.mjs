@@ -2,6 +2,8 @@
 // return {text, terms, mode, model} as JSON, or as server-sent events when the app asks to stream.
 // The Gemini key lives only here, in the GEMINI_API_KEY Worker secret.
 
+import { podcastScript, podcastVoice } from "./podcast.mjs";
+
 let ENV = {};
 
 // Models, fastest first. The pinned Flash Lite answers in about a second. If it is slow we also ask
@@ -1241,6 +1243,8 @@ const ROUTES = {
   "/api/tree/species": treeSpecies,
   "/api/tree/plant": treeRecipe,
   "/api/tree/recipe": treeRecipe,
+  "/api/podcast/script": (req, waitUntil) => podcastScript(req, ENV, waitUntil),
+  "/api/podcast/voice": (req) => podcastVoice(req, ENV),
 };
 
 export default {
@@ -1251,7 +1255,7 @@ export default {
     if (!route) return json(404, { error: "Not found." });
     const waitUntil = (p) => ctx.waitUntil(p);
     if (route === handle) return handle(req, waitUntil);
-    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: HEADERS });
+    if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { ...HEADERS, "Access-Control-Expose-Headers": "X-Podcast-Timings, X-Podcast-Model" } });
     if (req.method !== "POST") return json(405, { error: "Use POST." });
     if (ENV.APP_TOKEN && req.headers.get("x-paper-tree-token") !== ENV.APP_TOKEN) return json(401, { error: "Missing or wrong app token." });
     // Tree calls get their own, roomier bucket: adding one paper makes several small requests.
