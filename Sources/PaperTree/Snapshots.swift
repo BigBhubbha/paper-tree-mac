@@ -464,6 +464,45 @@ extension Snapshots {
         let missing = ReaderModel(paper: sample, persist: false)
         missing.status = .unavailable
         shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = missing }, store, "reader-no-pdf", to: dir)
+
+        // The podcast: before, while recording, and playing. The episode is real: written and voiced
+        // by the podcast endpoint from this sample paper (see PodcastSample).
+        let episode = PodcastSample.episode(paperId: sample.id)
+        func listening(_ setup: (ReaderModel, PodcastModel) -> Void) -> ReaderModel {
+            let r = reader { r, _ in r.marks.preset([]); r.rail = .listen }
+            let pm = PodcastModel(paper: sample, load: false)
+            setup(r, pm)
+            PodcastDesk.shared.preset(pm)
+            return r
+        }
+        let invite = listening { _, _ in }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = invite }, store, "podcast-idle", to: dir)
+        let recording = listening { _, pm in pm.presetMaking(episode, parts: 2, elapsed: 47) }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = recording }, store, "podcast-generating", to: dir)
+        let writing = listening { _, pm in
+            pm.presetMaking(episode, parts: 0, elapsed: 9)
+            pm.step = .writing
+            pm.stepDone = [.reading: Date().addingTimeInterval(-8.5)]
+            pm.draft = []
+            pm.partsTotal = 0
+            pm.draftPeaks = []
+        }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = writing }, store, "podcast-generating-script", to: dir)
+        let playing = listening { r, pm in
+            let at = episode.lines[5].start + 2.2
+            pm.preset(episode: episode, phase: .ready, time: at, playing: true)
+            r.follow(episode.lines[5].quote)
+        }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = playing }, store, "podcast-playing", to: dir)
+        let fresh = listening { _, pm in
+            pm.preset(episode: episode, phase: .ready)
+            pm.justMade = true
+        }
+        shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = fresh }, store, "podcast-ready", to: dir)
+        let deck = PodcastModel(paper: sample, load: false)
+        deck.preset(episode: episode, phase: .ready, time: episode.lines[12].start + 1, playing: true)
+        deck.setRate(1.25)
+        save(PodcastDeck(podcast: deck).frame(width: 720).padding(28).background(Color(hex: 0xDCD2BB)), "podcast-deck", to: dir)
     }
 }
 
