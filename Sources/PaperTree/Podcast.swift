@@ -418,9 +418,11 @@ final class PodcastModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         } catch is CancellationError {
             return
         } catch let f as PodcastClient.Failure {
+            if Task.isCancelled { return }
             waitingUntil = nil
             phase = .failed(f.exhausted ? "The voice model has used up today's allowance. Try again tomorrow." : f.message)
         } catch {
+            if Task.isCancelled { return }
             waitingUntil = nil
             phase = .failed("Something went wrong saving the episode.")
         }
