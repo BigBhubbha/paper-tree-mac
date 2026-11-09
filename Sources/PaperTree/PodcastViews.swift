@@ -179,8 +179,11 @@ struct PodcastSession: View {
                 ForEach(PodcastModel.Step.allCases, id: \.rawValue) { s in entry(s) }
             }
             .padding(.vertical, 2)
-            TapeStrip(peaks: podcast.draftPeaks, done: podcast.partsDone, total: podcast.partsTotal)
-                .frame(height: 34)
+            if podcast.partsTotal > 0 {
+                TapeStrip(peaks: podcast.draftPeaks, done: podcast.partsDone, total: podcast.partsTotal)
+                    .frame(height: 34)
+                    .transition(.opacity)
+            }
             scriptPreview
             Button("Stop recording") { podcast.cancel() }
                 .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))

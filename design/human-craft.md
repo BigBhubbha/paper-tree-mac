@@ -217,3 +217,13 @@ What we read, and what we took from each source.
 40. Runions, Lane, Prusinkiewicz, Modeling Trees with a Space Colonization Algorithm (2007): http://algorithmicbotany.org/papers/colonization.egwnp2007.pdf
 41. Tyler Hobbs, A Guide to Simulating Watercolor Paint with Generative Art: https://www.tylerxhobbs.com/words/a-guide-to-simulating-watercolor-paint-with-generative-art
 42. Shinozaki et al., the pipe model theory of plant form (1964), and Leonardo's rule on branch area
+
+## Podcast (podcast-v1, November 2026)
+
+What it is: the reader's Listen tab turns the open paper into a short talk between two AI hosts, Juniper (asks) and Rowan (explains), and plays it under the page.
+
+- The object: a recording session in the field journal. The invitation hangs two manila host tags; recording is a numbered protocol (read, write, record, bind) with pen ticks, and the tape fills with the real loudness of each part as it arrives. The flask keeps you company in its own voice.
+- The deck is a slip taped to the desk: an ink stamp to play, the waveform drawn as pencil strokes and inked up to a red pen playhead, a ribbon underneath in each host's ink showing who talks when, and speeds typed in a column with the chosen one circled in pencil (the same gesture as the setup questions).
+- The transcript highlights the spoken line with a sweep of marker, and the matching passage on the page gets the same marker. Tap a line to play from there.
+- Honest about what it is: "AI voices", "made by AI from the paper's text", real steps and real elapsed time while it works, and the server blanks any quote it can't find in the paper.
+- Colors: Juniper is rose, Rowan is sage (two of the existing inks), marker yellow means "being read now", green means done (the pen ticks, the RECORDED stamp).
