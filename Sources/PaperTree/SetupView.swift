@@ -837,7 +837,7 @@ private struct KeyLine: View {
                         .background(Palette.marker.opacity(0.6).padding(.vertical, 1).rotationEffect(.degrees(-1.5)))
                 } else {
                     ForEach(0..<taps, id: \.self) { i in
-                        DrawnKey(width: 60, tilt: i == 0 ? -0.5 : 0.6, marked: true) {
+                        DrawnKey(width: 60, tilt: i == 0 ? -0.5 : 0.6) {
                             VStack(alignment: .leading, spacing: 0) {
                                 HStack { Spacer(); Text("\u{2325}").font(.system(size: 10.5)) }
                                 Spacer(minLength: 0)

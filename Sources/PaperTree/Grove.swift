@@ -240,7 +240,13 @@ struct GroveOverview: View {
             let area = CGSize(width: geo.size.width - plate - 14, height: geo.size.height)
             let trees = store.trees.sorted { $0.number < $1.number }
             let L = Layout.make(count: trees.count, in: area)
-            let overflow = CGFloat(L.columns) * L.cell.width + CGFloat(L.columns - 1) * L.spacing > area.width + 1
+            let gridW = CGFloat(L.columns) * L.cell.width + CGFloat(L.columns - 1) * L.spacing
+            let gridH = CGFloat(L.rows) * L.cell.height + CGFloat(L.rows - 1) * L.spacing
+            let overflow = gridW > area.width + 1
+            // When everything fits, the sheets and the New tree plate sit together in the middle of
+            // the board, like sheets laid out on a table. Past that, the sheets scroll sideways.
+            let shownW = overflow ? area.width : gridW
+            let top = max(0, (area.height - gridH) / 2)
             HStack(alignment: .top, spacing: 14) {
                 GroveScroll(axis: .horizontal, indicators: overflow) {
                     // Lazy: with dozens of trees, only the sheets on screen are drawn and animated.
@@ -263,12 +269,15 @@ struct GroveOverview: View {
                             }
                         }
                     }
+                    .padding(.top, top)
                     .padding(.trailing, 2)
                 }
-                .frame(width: area.width, height: area.height)
+                .frame(width: shownW, height: area.height)
                 PlantPlate { withAnimation(Motion.pick(Motion.page)) { model.page = .newTree } }
-                    .frame(width: plate, height: min(geo.size.height, L.rows == 1 ? L.cell.height : geo.size.height))
+                    .frame(width: plate, height: gridH)
+                    .padding(.top, top)
             }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
         }
     }
 }
