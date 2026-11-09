@@ -16,7 +16,7 @@ FONT = os.path.join(ROOT, "Resources", "Fonts", "SpecialElite-Regular.ttf")
 def hexc(h, a=255): return ((h >> 16) & 255, (h >> 8) & 255, h & 255, a)
 SHEET = hexc(0xF8F3E6); INK = hexc(0x24211B); INK3 = hexc(0x776F60)
 GLASS = hexc(0xE6EBDA); SHINE = hexc(0xF4F6EC); LIQ = hexc(0x8EA672); DEEP = hexc(0x6E8A55)
-LINE = hexc(0x506B39); CHEEK = hexc(0xB2432C, int(255 * 0.22)); GRAIN = (0x59, 0x47, 0x2E)
+LINE = hexc(0x506B39); GRAIN = (0x59, 0x47, 0x2E)
 
 S = 4096  # draw big, scale down
 U = S / 512 * 3.3          # px per flask unit
@@ -117,12 +117,6 @@ def draw():
         rr = 1.3 * U; d.ellipse([p[0] - rr, p[1] - rr, p[0] + rr, p[1] + rr], fill=(255, 255, 255, 190))
     e0, e1 = P(44, 26), P(46.4, 35)
     d.ellipse([e0, e1], fill=(255, 255, 255, 180))
-    # Cheeks, in red pen.
-    ch = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    for cx in (32.5, 67.5):
-        ImageDraw.Draw(ch).ellipse([P(cx - 4.2, 76.5), P(cx + 4.2, 80.9)], fill=CHEEK)
-    img.alpha_composite(ch)
-    d = ImageDraw.Draw(img)
     # Happy caret eyes, white over a soft green stroke.
     for ex in (41.5, 58.5):
         pts = [P(ex - 4.2, 72.2), P(ex, 67.6), P(ex + 4.2, 72.2)]
