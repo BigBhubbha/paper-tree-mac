@@ -23,7 +23,7 @@ struct ListenPanel: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .animation(Motion.pick(Motion.page), value: podcast.phase)
+        .animation(Motion.pick(Motion.settle), value: podcast.phase)
     }
 }
 
@@ -102,7 +102,7 @@ struct PodcastInvite: View {
     private func fact(_ s: String) -> some View {
         HStack(spacing: 7) {
             Circle().fill(Palette.ink3).frame(width: 3, height: 3)
-            Text(s).font(.typewriter(10.5)).foregroundColor(Palette.ink3)
+            Text(s).font(.text(12.5)).foregroundColor(Palette.ink3)
         }
     }
 }
@@ -118,7 +118,7 @@ struct HostTag: View {
                 .frame(width: 7, height: 7)
             VStack(alignment: .leading, spacing: -1) {
                 Text(speaker.uppercased()).font(.typewriter(10.5)).foregroundColor(Palette.ink)
-                Text(PodcastHost.role(speaker)).font(.hand(15)).foregroundColor(PodcastHost.pen(speaker))
+                Text(PodcastHost.role(speaker)).font(.hand(15)).foregroundColor(Palette.ink2)
             }
             Rectangle().fill(PodcastHost.ink(speaker).swatch).frame(width: 4, height: 26).cornerRadius(1)
         }
@@ -161,7 +161,7 @@ struct PodcastSession: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("Recording").font(.fell(23)).foregroundColor(Palette.ink)
                 Spacer()
-                if let s = podcast.startedAt { Elapsed(since: s).font(.typewriter(12)).foregroundColor(Palette.ink3) }
+                if let s = podcast.startedAt { Elapsed(since: s).font(.text(14)).foregroundColor(Palette.ink3) }
             }
             Text("Usually a minute or two. You can keep reading while it works.")
                 .font(.text(12.5)).foregroundColor(Palette.ink3)
@@ -232,11 +232,11 @@ struct PodcastSession: View {
         let done = podcast.stepDone[s] != nil
         let active = podcast.step == s && !done
         return HStack(alignment: .firstTextBaseline, spacing: 9) {
-            Text("\(s.rawValue + 1).").font(.typewriter(11)).foregroundColor(Palette.ink3).frame(width: 18, alignment: .leading)
+            Text("\(s.rawValue + 1).").font(.text(12.5)).foregroundColor(Palette.ink3).frame(width: 18, alignment: .leading)
             Text(title(s)).font(.text(13.5))
                 .foregroundColor(done || active ? Palette.ink : Palette.ink3.opacity(0.7))
             Spacer(minLength: 6)
-            detail(s).font(.typewriter(10)).foregroundColor(Palette.ink3).lineLimit(1)
+            detail(s).font(.text(11.5)).foregroundColor(Palette.ink3).lineLimit(1)
             ZStack {
                 if done {
                     PenTick().stroke(Palette.green, style: StrokeStyle(lineWidth: 1.8, lineCap: .round, lineJoin: .round))
@@ -258,12 +258,12 @@ struct PodcastSession: View {
             GroveScroll(axis: .vertical) {
                 VStack(alignment: .leading, spacing: 7) {
                     if !podcast.draftTitle.isEmpty {
-                        Text(podcast.draftTitle).font(.fellItalic(16)).foregroundColor(Palette.ink)
+                        PodcastType.title(podcast.draftTitle, 16).foregroundColor(Palette.ink)
                     }
                     ForEach(podcast.draft) { l in
                         let inked = podcast.recorded.contains(l.id)
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text(l.speaker.prefix(1)).font(.typewriter(10)).foregroundColor(PodcastHost.pen(l.speaker))
+                            Text(l.speaker.prefix(1)).font(.typewriter(10)).foregroundColor(Palette.ink3)
                                 .frame(width: 10)
                             Text(l.text).font(.text(12)).foregroundColor(inked ? Palette.ink2 : Palette.pencil.opacity(0.75))
                                 .fixedSize(horizontal: false, vertical: true)
@@ -431,15 +431,18 @@ struct PodcastTranscript: View {
 
     private func header(_ ep: PodcastEpisode) -> some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("AI podcast, \(Int((ep.duration / 60).rounded(.down))) min \(Int(ep.duration) % 60) s" + (ep.source == "abstract" ? ", from the abstract" : ""))
-                .font(.typewriter(10)).foregroundColor(Palette.ink3)
-            Text(ep.title).font(.fell(20)).foregroundColor(Palette.ink)
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
+                Text(ep.source == "abstract" ? "AI podcast, from the abstract" : "AI podcast").font(.typewriter(10))
+                Text("\(Int((ep.duration / 60).rounded(.down))) min \(Int(ep.duration) % 60) s").font(.text(12))
+            }
+            .foregroundColor(Palette.ink3)
+            PodcastType.title(ep.title, 20).foregroundColor(Palette.ink)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 12) {
                 ForEach(["Juniper", "Rowan"], id: \.self) { s in
                     HStack(spacing: 5) {
                         RoundedRectangle(cornerRadius: 1).fill(PodcastHost.ink(s).swatch).frame(width: 9, height: 4)
-                        Text("\(s) \(PodcastHost.role(s))").font(.hand(13.5)).foregroundColor(PodcastHost.pen(s))
+                        Text("\(s) \(PodcastHost.role(s))").font(.hand(13.5)).foregroundColor(Palette.ink2)
                     }
                 }
             }
@@ -516,13 +519,14 @@ struct TranscriptLine: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
-                Text(line.speaker.uppercased()).font(.typewriter(9.5)).foregroundColor(PodcastHost.pen(line.speaker))
+                RoundedRectangle(cornerRadius: 1).fill(PodcastHost.ink(line.speaker).swatch).frame(width: 7, height: 3)
+                Text(line.speaker.uppercased()).font(.typewriter(9.5)).foregroundColor(Palette.ink3)
                 if !line.section.isEmpty && !line.quote.isEmpty {
                     Text("\u{00A7} " + line.section.replacingOccurrences(of: #"^\d+\.\s*"#, with: "", options: .regularExpression).lowercased())
                         .font(.typewriter(9)).foregroundColor(Palette.pencil).lineLimit(1)
                 }
                 Spacer(minLength: 4)
-                Text(line.start.clock).font(.typewriter(9)).foregroundColor(Palette.pencil)
+                Text(line.start.clock).font(.text(10.5)).monospacedDigit().foregroundColor(Palette.pencil)
                     .opacity(hover || state == .now ? 1 : 0)
             }
             Text(line.text)
@@ -536,7 +540,7 @@ struct TranscriptLine: View {
                         .padding(.horizontal, -3).padding(.vertical, -1)
                         .scaleEffect(x: state == .now ? 1 : 0.001, anchor: .leading)
                         .opacity(state == .now ? 1 : 0)
-                        .animation(Motion.pick(.spring(response: 0.55, dampingFraction: 0.9)), value: state == .now)
+                        .animation(Motion.pick(Motion.settle), value: state == .now)
                 }
         }
         .padding(.vertical, 6).padding(.horizontal, 8)
@@ -596,10 +600,10 @@ struct PodcastDeck: View {
                 PlayStamp(playing: podcast.isPlaying) { podcast.toggle() }
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text(ep.title).font(.fell(16.5)).foregroundColor(Palette.ink).lineLimit(1)
+                        PodcastType.title(ep.title, 16.5).foregroundColor(Palette.ink).lineLimit(1)
                         Spacer(minLength: 8)
                         Text("\(podcast.time.clock) / \(ep.duration.clock)")
-                            .font(.typewriter(10.5)).foregroundColor(Palette.ink3).monospacedDigit()
+                            .font(.text(12.5)).foregroundColor(Palette.ink3).monospacedDigit()
                     }
                     Scrubber(podcast: podcast, episode: ep).frame(height: 42)
                     HStack(spacing: 10) {
@@ -636,7 +640,7 @@ struct PodcastDeck: View {
             let s = ep.lines[i].speaker
             HStack(spacing: 6) {
                 RoundedRectangle(cornerRadius: 1).fill(PodcastHost.ink(s).swatch).frame(width: 9, height: 4)
-                Text("\(s) \(PodcastHost.role(s))").font(.hand(14)).foregroundColor(PodcastHost.pen(s))
+                Text("\(s) \(PodcastHost.role(s))").font(.hand(14)).foregroundColor(Palette.ink2)
             }
             .id(s)
             .transition(.opacity)
@@ -713,7 +717,7 @@ struct Scrubber: View {
             .overlay(alignment: .topLeading) {
                 if let x = hoverX, dragging == nil {
                     Text((Double(x / w) * episode.duration).clock)
-                        .font(.typewriter(9)).foregroundColor(Palette.ink2)
+                        .font(.text(10.5)).foregroundColor(Palette.ink2)
                         .padding(.horizontal, 4).padding(.vertical, 1)
                         .background(Color(hex: 0xFFFCF3).opacity(0.95))
                         .fixedSize()
@@ -798,7 +802,7 @@ struct SpeedPicker: View {
                 Button {
                     withAnimation(Motion.pick(Motion.snappy)) { podcast.setRate(r) }
                 } label: {
-                    Text(label(r)).font(.typewriter(11)).foregroundColor(podcast.rate == r ? Palette.ink : Palette.ink3)
+                    Text(label(r)).font(.text(12.5)).foregroundColor(podcast.rate == r ? Palette.ink : Palette.ink3)
                         .frame(width: 44, height: 15)
                         .background {
                             if podcast.rate == r {
@@ -835,5 +839,27 @@ struct PencilRing: Shape {
             if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
         }
         return p
+    }
+}
+
+/// IM Fell's old-style figures read badly (its 1 looks like a dotless i), so any numbers in a
+/// Fell title are set in Newsreader's lining figures, the same as tree names.
+enum PodcastType {
+    static func title(_ s: String, _ size: CGFloat) -> Text {
+        var out = Text("")
+        var run = ""
+        var digits = false
+        func flush() {
+            guard !run.isEmpty else { return }
+            out = out + Text(run).font(digits ? .text(size * 0.94) : .fell(size))
+            run = ""
+        }
+        for ch in s {
+            let d = ch.isNumber
+            if d != digits { flush(); digits = d }
+            run.append(ch)
+        }
+        flush()
+        return out
     }
 }
