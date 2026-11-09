@@ -323,7 +323,7 @@ struct IslandOpeningFrame: View {
     @ObservedObject var store: TreeStore
     var time: Double
 
-    static func spring(_ t: Double, response: Double = 0.5, damping: Double = 0.76) -> Double {
+    static func spring(_ t: Double, response: Double = 0.52, damping: Double = 0.82) -> Double {
         guard t > 0 else { return 0 }
         let w = 2 * Double.pi / response
         let wd = w * (1 - damping * damping).squareRoot()
@@ -495,9 +495,9 @@ enum SamplePaper {
         let first = NSMutableAttributedString()
         first.append(NSAttributedString(string: "PAPER TREE DESIGN NOTES, SAMPLE TEXT\n", attributes: [.font: font(Typeface.text, 8.5), .paragraphStyle: centered, .foregroundColor: NSColor.darkGray]))
         first.append(NSAttributedString(string: "Leaves in a dry spell: how plants trade water for carbon\n", attributes: [.font: font(Typeface.textMedium, 20), .paragraphStyle: centered]))
-        first.append(NSAttributedString(string: "Sample text written for Paper Tree design snapshots\n\n", attributes: [.font: font(Typeface.textItalic, 11), .paragraphStyle: centered]))
+        first.append(NSAttributedString(string: "Sample text written for Paper Tree design snapshots\n\n", attributes: [.font: font(Typeface.text, 11), .paragraphStyle: centered]))
         first.append(NSAttributedString(string: "Abstract. ", attributes: [.font: font(Typeface.textMedium, 10.5), .paragraphStyle: justified]))
-        first.append(NSAttributedString(string: abstract + "\n\n", attributes: [.font: font(Typeface.textItalic, 10.5), .paragraphStyle: justified]))
+        first.append(NSAttributedString(string: abstract + "\n\n", attributes: [.font: font(Typeface.text, 10.5), .paragraphStyle: justified]))
         for (k, (head, text)) in body.enumerated() {
             first.append(NSAttributedString(string: "\(k + 1). \(head)\n", attributes: [.font: font(Typeface.textMedium, 12), .paragraphStyle: justified]))
             first.append(NSAttributedString(string: text + "\n", attributes: [.font: font(Typeface.text, 11), .paragraphStyle: justified]))

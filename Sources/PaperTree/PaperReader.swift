@@ -471,7 +471,7 @@ struct MarkEditor: View {
                 }
             }
             if !mark.quote.isEmpty {
-                Text("\u{201C}\(mark.quote)\u{201D}").font(.textItalic(12.5)).foregroundColor(Palette.ink2).lineLimit(3)
+                Text("\u{201C}\(mark.quote)\u{201D}").font(.text(12.5)).foregroundColor(Palette.ink2).lineLimit(3)
             }
             Group {
                 if Snapshots.isRendering {
@@ -597,7 +597,7 @@ struct ReaderRail: View {
 
     private func tab(_ title: String, _ r: ReaderModel.Rail) -> some View {
         Button { withAnimation(Motion.pick(Motion.snappy)) { reader.rail = r } } label: {
-            Text(title).font(.fellItalic(16)).foregroundColor(reader.rail == r ? Palette.ink : Palette.ink3)
+            Text(title).font(.fell(16)).foregroundColor(reader.rail == r ? Palette.ink : Palette.ink3)
                 .overlay(alignment: .bottom) {
                     if reader.rail == r { Rectangle().fill(Palette.red.opacity(0.7)).frame(height: 1.2).offset(y: 3) }
                 }
@@ -639,7 +639,7 @@ struct ReaderRail: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text("\(m.label.lowercased()), page \(m.page + 1)").font(.typewriter(9)).foregroundColor(Palette.ink3)
                             if !m.quote.isEmpty {
-                                Text("\u{201C}\(m.quote)\u{201D}").font(.textItalic(12)).foregroundColor(Palette.ink2).lineLimit(3)
+                                Text("\u{201C}\(m.quote)\u{201D}").font(.text(12)).foregroundColor(Palette.ink2).lineLimit(3)
                             }
                             if !m.note.isEmpty {
                                 Text(m.note).font(.hand(13.5)).foregroundColor(Color(hex: 0x23314A)).lineLimit(4)
@@ -678,11 +678,11 @@ struct AbstractSheet: View {
                 if !meta.isEmpty { Text(meta.uppercased()).font(.typewriter(10)).foregroundColor(Palette.ink3) }
                 Text(paper.title).font(.fell(30)).foregroundColor(Palette.ink).fixedSize(horizontal: false, vertical: true)
                 if !paper.authors.isEmpty {
-                    Text(paper.authors.joined(separator: ", ")).font(.textItalic(14)).foregroundColor(Palette.ink2)
+                    Text(paper.authors.joined(separator: ", ")).font(.text(14)).foregroundColor(Palette.ink2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Rectangle().fill(Palette.ink.opacity(0.25)).frame(height: 0.8).padding(.vertical, 4)
-                Text("Abstract").font(.fellItalic(19)).foregroundColor(Palette.ink)
+                SectionHead(title: "Abstract", size: 19)
                 Text(paper.abstract.isEmpty ? "There is no abstract on record for this paper." : paper.abstract)
                     .font(.text(14.5)).foregroundColor(Palette.ink).lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)

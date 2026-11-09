@@ -7,7 +7,7 @@ struct BuddyView: View {
     var researchMode: Bool
     /// Pause the idle animation (used for static renders and reduced motion).
     var animated: Bool = true
-    /// Menu bar size: the halo is pulled in so the whole buddy, glow included, fits inside its square.
+    /// Menu bar size: the ground shadow is pulled up so the whole buddy fits inside its square.
     var compact: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -70,36 +70,20 @@ enum BuddyArt {
         let thinking = mood == .thinking
         let noticed = mood == .noticed
 
-        // 1. Halo: pink to lilac, brighter and wider in research mode.
-        let pulse = research ? (sin(t * 2.4) * 0.5 + 0.5) : 0
-        // Compact (menu bar): the glow stays inside the 100 x 100 square so nothing spills below the bar.
-        let haloCY: CGFloat = compact ? 52 : 56
-        let haloR: CGFloat = compact ? (research ? 44 + CGFloat(pulse) * 2 : 40) : (research ? 47 + CGFloat(pulse) * 2 : 42)
-        let haloAlpha = research ? 0.95 : 0.7
-        let halo = Path(ellipseIn: CGRect(x: 50 - haloR, y: haloCY - haloR, width: haloR * 2, height: haloR * 2))
-        ctx.fill(halo, with: .radialGradient(
-            Gradient(stops: [
-                .init(color: Palette.haloPink.opacity(haloAlpha), location: 0.0),
-                .init(color: Palette.haloPink.opacity(haloAlpha * 0.85), location: 0.45),
-                .init(color: Palette.haloLilac.opacity(haloAlpha * 0.55), location: 0.75),
-                .init(color: Palette.haloLilac.opacity(0), location: 1.0),
-            ]),
-            center: CGPoint(x: 50, y: haloCY), startRadius: 0, endRadius: haloR))
-
         // 2. Idle bob. A little hop when a highlight is noticed.
         let bob = CGFloat(sin(t * 2.1)) * (compact ? 1.0 : 1.6) + (noticed ? CGFloat(-abs(sin(t * 6))) * 2.2 : 0)
         var c = ctx
         c.translateBy(x: 0, y: bob)
 
-        // Soft ground shadow (does not bob).
-        ctx.fill(Path(ellipseIn: CGRect(x: 30, y: compact ? 92 : 91.5, width: 40, height: compact ? 3.5 : 4)),
-                 with: .color(Palette.mintLine.opacity(0.18)))
+        // Ground shadow: a flat ink ellipse under the base, no blur. It does not bob, so the hop reads.
+        ctx.fill(Path(ellipseIn: CGRect(x: 20, y: compact ? 90.5 : 89.5, width: 60, height: 7)),
+                 with: .color(Palette.ink.opacity(0.10)))
 
         let body = bodyPath
 
         // 3. Glass.
         c.fill(body, with: .linearGradient(
-            Gradient(colors: [Palette.mintGlass, Palette.mintLight]),
+            Gradient(colors: [Palette.flaskShine, Palette.flaskGlass]),
             startPoint: CGPoint(x: 30, y: 25), endPoint: CGPoint(x: 70, y: 90)))
 
         // 4. Liquid with a gentle wave, clipped to the glass.
@@ -118,7 +102,7 @@ enum BuddyArt {
         wave.addLine(to: CGPoint(x: 0, y: 100))
         wave.closeSubpath()
         liquid.fill(wave, with: .linearGradient(
-            Gradient(colors: [Palette.mint, Palette.mintDeep]),
+            Gradient(colors: [Palette.flaskLiquid, Palette.flaskDeep]),
             startPoint: CGPoint(x: 50, y: level), endPoint: CGPoint(x: 50, y: 92)))
 
         // 5. Bubbles rising from the liquid, up the neck, and out of the top.
@@ -134,13 +118,15 @@ enum BuddyArt {
             let fade = phase > 0.82 ? max(0, 1 - (phase - 0.82) / 0.18) : min(1, phase / 0.08)
             let bubble = Path(ellipseIn: CGRect(x: bx - r, y: y - r, width: r * 2, height: r * 2))
             c.fill(bubble, with: .color(.white.opacity(0.85 * fade)))
-            c.stroke(bubble, with: .color(Palette.mintLine.opacity(0.55 * fade)), lineWidth: 0.6)
+            c.stroke(bubble, with: .color(Palette.flaskLine.opacity(0.55 * fade)), lineWidth: 0.6)
         }
 
         // 6. Glass outline and rim.
-        c.stroke(body, with: .color(Palette.mintLine), style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
-        c.fill(rimPath, with: .color(Palette.mintLight))
-        c.stroke(rimPath, with: .color(Palette.mintLine), lineWidth: 2.0)
+        // The menu bar flask is tiny, so its line stays a little heavier to read at 18 pt.
+        let line: CGFloat = compact ? 2.2 : 1.6
+        c.stroke(body, with: .color(Palette.flaskLine), style: StrokeStyle(lineWidth: line, lineCap: .round, lineJoin: .round))
+        c.fill(rimPath, with: .color(Palette.flaskGlass))
+        c.stroke(rimPath, with: .color(Palette.flaskLine), lineWidth: line)
 
         // 7. Sheen on the glass.
         var sheen = Path()
@@ -149,22 +135,22 @@ enum BuddyArt {
         c.stroke(sheen, with: .color(.white.opacity(0.75)), style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
         c.fill(Path(ellipseIn: CGRect(x: 44, y: 26, width: 2.4, height: 9)), with: .color(.white.opacity(0.7)))
 
-        // 8. Blush.
+        // 8. Cheeks, in red pen.
         for cx in [CGFloat(32.5), CGFloat(67.5)] {
             c.fill(Path(ellipseIn: CGRect(x: cx - 4.2, y: 76.5, width: 8.4, height: 4.4)),
-                   with: .color(Palette.blush.opacity(0.75)))
+                   with: .color(Palette.cheek))
         }
 
         // 9. Goggles in research mode (drawn under the eyes so the eyes show through).
         if research {
-            let frame = Color(hex: 0x37414A)
+            let frame = Palette.ink
             var strap = Path()
             strap.move(to: CGPoint(x: 24.5, y: eyeY - 1))
             strap.addLine(to: CGPoint(x: 75.5, y: eyeY - 1))
             c.stroke(strap, with: .color(frame.opacity(0.9)), style: StrokeStyle(lineWidth: 3.2, lineCap: .round))
             for ex in [eyeL, eyeR] {
                 let lens = Path(ellipseIn: CGRect(x: ex - 7.6, y: eyeY - 7.6, width: 15.2, height: 15.2))
-                c.fill(lens, with: .color(Color(hex: 0xE4F6FF).opacity(0.75)))
+                c.fill(lens, with: .color(Palette.sheet.opacity(0.78)))
                 c.stroke(lens, with: .color(frame), lineWidth: 2.4)
                 // Little glint on each lens, upper left.
                 var glint = Path()
@@ -175,16 +161,16 @@ enum BuddyArt {
         }
 
         // 10. Face.
-        let eyeColor: Color = research ? Palette.mintLine : .white
+        let eyeColor: Color = research ? Palette.flaskLine : .white
         switch mood {
         case .noticed:
             for ex in [eyeL, eyeR] {
                 let eye = Path(ellipseIn: CGRect(x: ex - 2.8, y: eyeY - 3.2, width: 5.6, height: 6.4))
-                c.fill(eye, with: .color(Color(hex: 0x24493A)))
+                c.fill(eye, with: .color(Palette.ink))
                 c.fill(Path(ellipseIn: CGRect(x: ex - 1.4, y: eyeY - 2.4, width: 1.8, height: 1.8)), with: .color(.white))
             }
             // tiny "o" of surprise
-            c.stroke(Path(ellipseIn: CGRect(x: 48.4, y: 76.5, width: 3.2, height: 3.2)), with: .color(Color(hex: 0x24493A)), lineWidth: 1.3)
+            c.stroke(Path(ellipseIn: CGRect(x: 48.4, y: 76.5, width: 3.2, height: 3.2)), with: .color(Palette.ink), lineWidth: 1.3)
         case .needsAccess:
             for ex in [eyeL, eyeR] {
                 var line = Path()
@@ -199,7 +185,7 @@ enum BuddyArt {
                 caret.addLine(to: CGPoint(x: ex, y: eyeY - 2.4))
                 caret.addLine(to: CGPoint(x: ex + 4.2, y: eyeY + 2.2))
                 if !research {
-                    c.stroke(caret, with: .color(Palette.mintLine.opacity(0.35)), style: StrokeStyle(lineWidth: 4.2, lineCap: .round, lineJoin: .round))
+                    c.stroke(caret, with: .color(Palette.flaskLine.opacity(0.35)), style: StrokeStyle(lineWidth: 4.2, lineCap: .round, lineJoin: .round))
                 }
                 c.stroke(caret, with: .color(eyeColor), style: StrokeStyle(lineWidth: 2.6, lineCap: .round, lineJoin: .round))
             }

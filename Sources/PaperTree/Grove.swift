@@ -94,14 +94,17 @@ struct GroveView: View {
                 .transition(Motion.reduced ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
             ZStack {
-                PaperSheet(corner: 18, graph: true)
+                PaperSheet(corner: 18)
                 page
                     .padding(.horizontal, 24)
                     .padding(.vertical, 18)
             }
-            Text("tap right Option: open or close, with your highlight ready to add     tap tap: Research mode")
-                .font(.typewriter(9.5))
-                .foregroundColor(Color.white.opacity(0.5))
+            // The gesture is taught in setup and in Settings, so it only shows here before the first tree.
+            if store.trees.isEmpty {
+                Text("Tap right Option to open or close. Tap it twice for Research mode.")
+                    .font(.typewriter(9.5))
+                    .foregroundColor(Color.white.opacity(0.5))
+            }
         }
         .padding(.horizontal, 16)
         .padding(.top, 6)
@@ -109,28 +112,18 @@ struct GroveView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: 18) {
             BuddyView(mood: state.mood, researchMode: state.researchMode, compact: true).frame(width: 24, height: 24)
-            Text("Paper Tree").font(.fell(21)).foregroundColor(.white)
-            Text(store.trees.isEmpty ? "the grove, unplanted" : "the grove, \(store.trees.count) \(store.trees.count == 1 ? "tree" : "trees")")
-                .font(.typewriter(10.5)).foregroundColor(Palette.mintLight.opacity(0.85))
-            Spacer()
-            Button {
-                state.researchMode.toggle()
-            } label: {
-                HStack(spacing: 7) {
-                    Circle().fill(state.researchMode ? Palette.mint : Color.white.opacity(0.25)).frame(width: 8, height: 8)
-                    Text(state.researchMode ? "Research mode on" : "Research mode off")
-                        .font(.uiBold(12.5)).foregroundColor(.white.opacity(0.9))
-                }
-                .padding(.horizontal, 10).padding(.vertical, 5)
-                .overlay(Capsule().strokeBorder(Color.white.opacity(0.25), lineWidth: 1))
-                .contentShape(Capsule())
+                .padding(.trailing, -6)
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text("Paper Tree").font(.fell(21)).foregroundColor(.white)
+                Text(store.trees.isEmpty ? "the grove, unplanted" : "the grove, \(store.trees.count) \(store.trees.count == 1 ? "tree" : "trees")")
+                    .font(.typewriter(10.5)).foregroundColor(Color.white.opacity(0.55))
             }
-            .buttonStyle(.plain)
-            .help("Double-tap right Option does this too")
+            Spacer()
+            ResearchSwitch(on: state.researchMode) { state.researchMode.toggle() }
+                .help("Double-tap right Option does this too")
             darkLink("Settings", model.onOpenSettings)
-            darkLink("Check for Updates", model.onCheckForUpdates)
             darkLink("Quit", model.onQuit)
         }
         .padding(.horizontal, 8)
@@ -218,15 +211,26 @@ struct GroveOverview: View {
     /// fits, the rows scroll sideways; the New tree sheet stays pinned outside the scroll.
     struct Layout {
         var rows: Int, columns: Int, cell: CGSize, spacing: CGFloat
-        static func make(count: Int, in size: CGSize, spacing: CGFloat = 12) -> Layout {
+        /// Real herbarium sheets are about 29 x 42 cm, so every sheet here is 2:3 portrait.
+        static let aspect: CGFloat = 2.0 / 3.0
+        static func make(count: Int, in size: CGSize, spacing: CGFloat = 16) -> Layout {
             let n = max(1, count)
-            // More trees, more rows: sheets get smaller as the grove grows, and the rest scroll.
-            let rows = n <= 3 ? 1 : n <= 10 ? 2 : 3
+            // Try one row, then two: keep whichever gives the bigger sheet while they still fit side by side.
+            // Past what fits, two rows of sheets scroll sideways.
+            func fit(_ rows: Int) -> (w: CGFloat, fits: Bool) {
+                let columns = Int((Double(n) / Double(rows)).rounded(.up))
+                let h = (size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
+                let even = (size.width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
+                let w = min(h * aspect, even)
+                return (w, w >= h * aspect * 0.72)
+            }
+            let one = fit(1), two = fit(2)
+            let rows = (one.fits && one.w >= two.w) || n == 1 ? 1 : 2
             let columns = Int((Double(n) / Double(rows)).rounded(.up))
-            let h = (size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
-            let even = (size.width - CGFloat(columns - 1) * spacing) / CGFloat(columns)
-            let w = rows == 1 ? min(even, h * 1.25) : max(h * 0.95, min(even, h * 1.3))
-            return Layout(rows: rows, columns: columns, cell: CGSize(width: floor(w), height: floor(h)), spacing: spacing)
+            let rowH = (size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
+            let w = (rows == 1 ? one : two).fits ? (rows == 1 ? one.w : two.w) : rowH * aspect * 0.72
+            let cell = CGSize(width: floor(w), height: floor(min(rowH, w / aspect)))
+            return Layout(rows: rows, columns: columns, cell: cell, spacing: spacing)
         }
     }
 
@@ -251,6 +255,7 @@ struct GroveOverview: View {
                                             withAnimation(Motion.pick(Motion.page)) { model.page = .tree(tree.id) }
                                         }
                                         .frame(width: L.cell.width, height: L.cell.height)
+                                        .mounted(seed: tree.id)
                                     } else {
                                         Color.clear.frame(width: L.cell.width, height: L.cell.height)
                                     }
@@ -262,7 +267,7 @@ struct GroveOverview: View {
                 }
                 .frame(width: area.width, height: area.height)
                 PlantPlate { withAnimation(Motion.pick(Motion.page)) { model.page = .newTree } }
-                    .frame(width: plate, height: geo.size.height)
+                    .frame(width: plate, height: min(geo.size.height, L.rows == 1 ? L.cell.height : geo.size.height))
             }
         }
     }
@@ -292,19 +297,30 @@ struct SpecimenPlate: View {
             }
             .clipped()
             HStack(alignment: .bottom) {
-                Text(String(format: "Sheet PT-%04d", tree.number))
-                    .font(.typewriter(9.5)).foregroundColor(Palette.ink3)
-                Spacer()
+                if !compact {
+                    Text(String(format: "Sheet PT-%04d", tree.number))
+                        .font(.typewriter(9.5)).foregroundColor(Palette.ink3)
+                }
+                Spacer(minLength: 0)
                 HerbariumLabel(tree: tree, compact: compact, tight: tight)
                     .onTapGesture { onOpen?() }
             }
-            .padding(.horizontal, 8)
-            .padding(.bottom, 6)
+            .padding(.horizontal, compact ? 7 : 8)
+            .padding(.bottom, compact ? 7 : 6)
+        }
+        // In the grove the accession number is stamped at the top, the way a real sheet is numbered.
+        .overlay(alignment: .topLeading) {
+            if compact {
+                Text(String(format: "PT-%04d", tree.number))
+                    .font(.typewriter(8.5)).foregroundColor(Palette.ink3)
+                    .padding(.leading, 8).padding(.top, 7)
+            }
         }
         .background(
             Rectangle().fill(Color(hex: 0xFBF8EE))
-                .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.18), lineWidth: 0.8))
-                .shadow(color: Palette.ink.opacity(0.1), radius: 2, x: 0, y: 1)
+                .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.14), lineWidth: 0.6))
+                .shadow(color: Palette.ink.opacity(0.12), radius: 1.5, x: 0, y: 1)
+                .shadow(color: Palette.ink.opacity(0.08), radius: 10, x: 0, y: 6)
         )
         .contentShape(Rectangle())
         .hoverLift(compact ? 1 : 0)
@@ -313,7 +329,9 @@ struct SpecimenPlate: View {
     }
 }
 
-/// The label in the lower right of a herbarium sheet: name, made-up binomial, what it holds.
+/// The label in the lower right of a herbarium sheet: four lines at most. The catalog line with the count,
+/// the name, the made-up binomial, and one hand-written line, the common name. Where it grew from is
+/// told once, on the tree's own page.
 struct HerbariumLabel: View {
     var tree: PaperTreeData
     var compact: Bool
@@ -323,19 +341,25 @@ struct HerbariumLabel: View {
         if tight { tightBody } else { fullBody }
     }
 
+    private var count: String {
+        "\(tree.papers.count) \(tree.papers.count == 1 ? "paper" : "papers")"
+    }
+
+    private var common: String {
+        tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased()
+    }
+
+    /// Small sheets: the name and the count only.
     private var tightBody: some View {
         VStack(alignment: .leading, spacing: 1) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(tree.displayName).font(.fell(14)).foregroundColor(Palette.ink).lineLimit(1)
-                Text("\(tree.papers.count) \(tree.papers.count == 1 ? "paper" : "papers")")
-                    .font(.typewriter(8.5)).foregroundColor(Palette.ink3).fixedSize()
-            }
-            Text(tree.look.grownFromLine ?? (tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased()))
-                .font(.hand(12)).foregroundColor(tree.look.grownFromLine == nil ? Color(hex: 0x23314A) : Palette.red).lineLimit(1)
+            Text(tree.displayName).font(.fell(14)).foregroundColor(Palette.ink)
+                .lineLimit(2).minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(count).font(.typewriter(8.5)).foregroundColor(Palette.ink3)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 7)
         .padding(.vertical, 5)
-        .frame(maxWidth: 200, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(hex: 0xFFFDF6))
         .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.75), lineWidth: 0.9))
         .rotationEffect(.degrees(-0.6))
@@ -343,23 +367,27 @@ struct HerbariumLabel: View {
 
     private var fullBody: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("Paper Tree Herbarium").font(.typewriter(compact ? 8 : 9)).foregroundColor(Palette.ink3)
-            Text(tree.displayName).font(.fell(compact ? 15 : 19)).foregroundColor(Palette.ink).lineLimit(1)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text("Paper Tree Herbarium").font(.typewriter(8.5))
+                Spacer(minLength: 4)
+                Text(count + (tree.suggestions.isEmpty || compact ? "" : ", \(tree.suggestions.count) suggested"))
+                    .font(.typewriter(8.5)).fixedSize()
+            }
+            .foregroundColor(Palette.ink3)
+            Text(tree.displayName).font(.fell(compact ? 15 : 19)).foregroundColor(Palette.ink)
+                .lineLimit(2).minimumScaleFactor(0.85)
+                .fixedSize(horizontal: false, vertical: true)
             if !tree.look.latinName.isEmpty {
-                Text(tree.look.latinName).font(.textItalic(compact ? 11 : 13)).foregroundColor(Palette.ink2).lineLimit(1)
+                Text(tree.look.latinName).font(.text(compact ? 11.5 : 13)).foregroundColor(Palette.ink2).lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
-            Text(tree.look.commonName.isEmpty ? "a young \(tree.look.species.plainName)" : tree.look.commonName.lowercased())
-                .font(.hand(compact ? 12 : 14)).foregroundColor(Color(hex: 0x23314A)).lineLimit(1)
-            if let why = tree.look.grownFromLine {
-                Text(why).font(.hand(compact ? 11.5 : 13)).foregroundColor(Palette.red).lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Text("\(tree.papers.count) \(tree.papers.count == 1 ? "paper" : "papers")" + (tree.suggestions.isEmpty ? "" : ", \(tree.suggestions.count) suggested"))
-                .font(.typewriter(compact ? 8.5 : 9.5)).foregroundColor(Palette.ink3)
+            Text(common)
+                .font(.hand(compact ? 12.5 : 14)).foregroundColor(Palette.ink.opacity(0.85)).lineLimit(1)
+                .minimumScaleFactor(0.85)
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
-        .frame(maxWidth: compact ? 190 : 260, alignment: .leading)
+        .frame(maxWidth: compact ? CGFloat.infinity : 260, alignment: .leading)
         .background(Color(hex: 0xFFFDF6))
         .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.75), lineWidth: 0.9))
         .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.35), lineWidth: 0.4).padding(2.5))
@@ -367,23 +395,129 @@ struct HerbariumLabel: View {
     }
 }
 
-/// The empty plate at the end of the grove: a dashed outline and a seed.
+/// A sheet mounted in the grove: a slight tilt and a small drop, both seeded from the tree's id,
+/// so each sheet sits a little differently but never moves between launches.
+private struct Mounted: ViewModifier {
+    var seed: UUID
+    func body(content: Content) -> some View {
+        let (tilt, drop) = Self.place(seed)
+        return content
+            .rotationEffect(.degrees(tilt))
+            .offset(y: drop)
+    }
+
+    /// Stable across launches (Swift's hashValue is not), from the UUID's own bytes.
+    static func place(_ id: UUID) -> (Double, CGFloat) {
+        let u = id.uuid
+        let a = Double(u.0 ^ u.5 ^ u.9) / 255
+        let b = Double(u.3 ^ u.11 ^ u.14) / 255
+        return (-0.7 + 1.4 * a, CGFloat(5 * b))
+    }
+}
+
+extension View {
+    fileprivate func mounted(seed: UUID) -> some View { modifier(Mounted(seed: seed)) }
+}
+
+/// The empty plate at the end of the grove: a pencil outline and a sprout.
 private struct PlantPlate: View {
     var action: () -> Void
     var body: some View {
         Button(action: action) {
             VStack(spacing: 10) {
                 Spacer()
-                Image(systemName: "plus").font(.system(size: 20, weight: .light)).foregroundColor(Palette.ink3)
+                Sprout()
+                    .stroke(Palette.ink3, style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
+                    .frame(width: 28, height: 28)
                 Text("New tree").font(.fell(19)).foregroundColor(Palette.ink)
-                Text("start from one paper").font(.hand(13.5)).foregroundColor(Palette.pencil)
+                Text("start from one paper").font(.ui(12.5)).foregroundColor(Palette.ink3)
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .overlay(Rectangle().stroke(Palette.pencil.opacity(0.8), style: StrokeStyle(lineWidth: 1, dash: [4, 4])))
+            .overlay(PencilOutline().stroke(Palette.pencil.opacity(0.7), style: StrokeStyle(lineWidth: 1, lineCap: .round, lineJoin: .round)))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// A rectangle drawn by hand in pencil: each side wanders 2 to 3 pt, the same way every time.
+struct PencilOutline: Shape {
+    var seed: UInt64 = 7
+    func path(in r: CGRect) -> Path {
+        var rnd = SeededRandom(seed, "pencil-outline")
+        let inset = r.insetBy(dx: 2, dy: 2)
+        let corners = [CGPoint(x: inset.minX, y: inset.minY), CGPoint(x: inset.maxX, y: inset.minY),
+                       CGPoint(x: inset.maxX, y: inset.maxY), CGPoint(x: inset.minX, y: inset.maxY)]
+        var p = Path()
+        for i in 0..<4 {
+            let a = corners[i], b = corners[(i + 1) % 4]
+            let len = hypot(b.x - a.x, b.y - a.y)
+            let nx = -(b.y - a.y) / max(1, len), ny = (b.x - a.x) / max(1, len)
+            // Start a hair past the corner and overshoot the end, as a pencil does.
+            let start = CGPoint(x: a.x + rnd.cg(-1.5, 1.5), y: a.y + rnd.cg(-1.5, 1.5))
+            let end = CGPoint(x: b.x + rnd.cg(-1.5, 1.5), y: b.y + rnd.cg(-1.5, 1.5))
+            let w1 = rnd.cg(-3, 3), w2 = rnd.cg(-3, 3)
+            p.move(to: start)
+            p.addCurve(to: end,
+                       control1: CGPoint(x: a.x + (b.x - a.x) * 0.33 + nx * w1, y: a.y + (b.y - a.y) * 0.33 + ny * w1),
+                       control2: CGPoint(x: a.x + (b.x - a.x) * 0.66 + nx * w2, y: a.y + (b.y - a.y) * 0.66 + ny * w2))
+        }
+        return p
+    }
+}
+
+/// The Research mode switch in the island header: a typed label, then "on" and "off",
+/// with the current word circled in pencil, the way you would circle it on a form.
+struct ResearchSwitch: View {
+    var on: Bool
+    var action: () -> Void
+    @Namespace private var ns
+
+    var body: some View {
+        Button(action: { withAnimation(Motion.pick(Motion.snappy)) { action() } }) {
+            HStack(alignment: .firstTextBaseline, spacing: 9) {
+                Text("Research mode").font(.typewriter(11)).foregroundColor(Color.white.opacity(0.7))
+                word("on", selected: on)
+                word("off", selected: !on)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Research mode")
+        .accessibilityValue(on ? "On" : "Off")
+    }
+
+    private func word(_ w: String, selected: Bool) -> some View {
+        Text(w).font(.ui(12.5))
+            .foregroundColor(Color.white.opacity(selected ? 0.95 : 0.45))
+            .padding(.horizontal, 5).padding(.vertical, 1)
+            .background {
+                if selected {
+                    HandCircle()
+                        .stroke(Palette.paper, style: StrokeStyle(lineWidth: 1, lineCap: .round))
+                        .padding(-2)
+                        .matchedGeometryEffect(id: "circle", in: ns)
+                }
+            }
+    }
+}
+
+/// A loose ellipse drawn in one stroke that overshoots where it began.
+struct HandCircle: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        let c = CGPoint(x: r.midX, y: r.midY)
+        let rx = r.width / 2, ry = r.height / 2
+        let steps = 40
+        for i in 0...steps {
+            let f = Double(i) / Double(steps)
+            let ang = -2.2 + f * (2 * .pi + 0.45)
+            let wob = 1 + 0.05 * sin(f * 9) - 0.04 * f
+            let pt = CGPoint(x: c.x + CGFloat(cos(ang) * wob) * rx, y: c.y + CGFloat(sin(ang) * wob) * ry - CGFloat(f) * 0.8)
+            if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
+        }
+        return p
     }
 }
 
@@ -565,7 +699,7 @@ struct TipCardWithCaption: View {
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
                         Text([paper.shortAuthors, paper.year.map(String.init) ?? ""].filter { !$0.isEmpty }.joined(separator: ", "))
-                            .font(.custom(Typeface.textItalic, size: min(13, max(9, size.width * 0.07))))
+                            .font(.custom(Typeface.text, size: min(13, max(9, size.width * 0.07))))
                             .foregroundColor(PlantInk.ink.opacity(0.7))
                             .lineLimit(1)
                     }
@@ -748,7 +882,7 @@ struct SuggestionSlip: View {
                 .font(.ui(12)).foregroundColor(Palette.ink3)
             if let from {
                 Text("It builds on \u{201C}\(from.title)\u{201D}.")
-                    .font(.hand(13.5)).foregroundColor(Color(hex: 0x23314A))
+                    .font(.text(13)).foregroundColor(Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
             }
             HStack(spacing: 12) {
@@ -824,7 +958,7 @@ struct TreeSheetPage: View {
                     RematchPanel(paper: p, treeId: tree.id, store: store, done: { rematching = nil }, preset: rematchPreset)
                         .id(id)
                 }
-                Text("Papers").font(.fellItalic(18)).foregroundColor(Palette.ink).padding(.top, 4)
+                SectionHead(title: "Papers", size: 18).padding(.top, 4)
                 ForEach(Array(tree.papers.sorted { $0.addedAt < $1.addedAt }.enumerated()), id: \.element.id) { i, p in
                     Group {
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -856,11 +990,11 @@ struct TreeSheetPage: View {
                     }
                 }
                 if !tree.suggestions.isEmpty {
-                    Text("Pencil branches").font(.fellItalic(18)).foregroundColor(Palette.ink).padding(.top, 6)
+                    SectionHead(title: "Pencil branches", size: 18).padding(.top, 6)
                     Text("Suggested papers. Keep one and it turns to ink.").font(.text(12.5)).foregroundColor(Palette.ink3)
                     ForEach(tree.suggestions) { s in
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(s.paper.title).font(.hand(14)).foregroundColor(Palette.ink2)
+                            Text(s.paper.title).font(.text(13.5)).foregroundColor(Palette.ink2)
                                 .fixedSize(horizontal: false, vertical: true)
                             HStack(spacing: 12) {
                                 Button("Keep it") { store.keep(s, in: tree.id) }.buttonStyle(InkLinkButtonStyle(color: Palette.green))
@@ -906,7 +1040,7 @@ struct NewTreePage: View {
             ZStack {
                 TreeCanvas(tree: seedTree, store: store)
                 Text("a seed, waiting for its first paper")
-                    .font(.hand(14)).foregroundColor(Palette.pencil)
+                    .font(.ui(12.5)).foregroundColor(Palette.ink3)
                     .offset(y: 70)
             }
             .frame(width: 300, height: 300)
@@ -924,7 +1058,7 @@ struct NewTreePage: View {
                 }
                 if store.plantingNewTree != nil {
                     Text("Waiting for a title. Highlight one and tap right Option.")
-                        .font(.hand(15)).foregroundColor(Palette.green)
+                        .font(.ui(12.5)).foregroundColor(Palette.ink2)
                 }
                 HStack(spacing: 16) {
                     Button("I'm ready, put this away") {
@@ -991,7 +1125,7 @@ struct AddChooser: View {
             switch req.lookup {
             case .looking:
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Looking it up in Semantic Scholar, OpenAlex and Crossref...").font(.hand(14.5)).foregroundColor(Palette.pencil)
+                    Text("Looking it up in Semantic Scholar, OpenAlex and Crossref...").font(.ui(12.5)).foregroundColor(Palette.ink3)
                     Text("\u{201C}\(req.highlighted)\u{201D}").font(.text(14)).foregroundColor(Palette.ink2).lineLimit(2)
                 }
             case .found(let list, _):
@@ -1028,7 +1162,7 @@ struct AddChooser: View {
             case .notFound(let why):
                 VStack(alignment: .leading, spacing: 4) {
                     Text("\u{201C}\(req.highlighted)\u{201D}").font(.text(14)).foregroundColor(Palette.ink).lineLimit(2)
-                    Text("\(why) I can still add it as you highlighted it.").font(.hand(13.5)).foregroundColor(Palette.red)
+                    Text("\(why) I can still add it as you highlighted it.").font(.ui(12.5)).foregroundColor(Palette.red)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
@@ -1046,9 +1180,10 @@ struct AddChooser: View {
             model.onAdded(tree.id)
         } label: {
             VStack(spacing: 4) {
-                Image(systemName: "plus").font(.system(size: 16, weight: .light)).foregroundColor(Palette.ink3)
+                Sprout().stroke(Palette.ink3, style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
+                    .frame(width: 20, height: 20)
                     .frame(width: 84, height: 70)
-                    .overlay(Rectangle().stroke(Palette.pencil, style: StrokeStyle(lineWidth: 1, dash: [3, 3])))
+                    .overlay(PencilOutline(seed: 3).stroke(Palette.pencil.opacity(0.8), lineWidth: 1))
                 Text(store.plantingNewTree.map { $0.isEmpty ? "New tree" : $0 } ?? "New tree")
                     .font(.ui(11.5)).foregroundColor(Palette.ink).lineLimit(1)
             }
@@ -1149,13 +1284,13 @@ struct RematchPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Change the match").font(.fellItalic(18)).foregroundColor(Palette.ink)
+            SectionHead(title: "Change the match", size: 18)
             Text("Right now this branch holds:").font(.text(12.5)).foregroundColor(Palette.ink3)
             Text(paper.title + (paper.byline.isEmpty ? "" : " (\(paper.byline))"))
                 .font(.text(13)).foregroundColor(Palette.ink2).fixedSize(horizontal: false, vertical: true)
             if let list = candidates ?? preset {
                 if list.isEmpty {
-                    Text("No other records share this title.").font(.hand(14)).foregroundColor(Palette.pencil)
+                    Text("No other records share this title.").font(.ui(12.5)).foregroundColor(Palette.ink3)
                 } else {
                     MatchPicker(question: "Pick another match", highlighted: paper.title, candidates: Array(list.prefix(6))) { p in
                         store.replace(paperId: paper.id, in: treeId, with: p)
@@ -1163,9 +1298,9 @@ struct RematchPanel: View {
                     }
                 }
             } else if let problem {
-                Text(problem).font(.hand(14)).foregroundColor(Palette.red)
+                Text(problem).font(.ui(12.5)).foregroundColor(Palette.red)
             } else {
-                Text("Looking it up again...").font(.hand(14)).foregroundColor(Palette.pencil)
+                Text("Looking it up again...").font(.ui(12.5)).foregroundColor(Palette.ink3)
             }
             Button("Keep it as it is") { done() }
                 .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))

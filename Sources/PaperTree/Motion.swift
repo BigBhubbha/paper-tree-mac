@@ -6,16 +6,18 @@ import AppKit
 import SwiftUI
 
 enum Motion {
-    /// The island growing out of the notch: quick, with a little give.
-    static let open = Animation.spring(response: 0.5, dampingFraction: 0.76)
+    /// The island growing out of the notch: quick, with only a breath of give.
+    static let open = Animation.spring(response: 0.52, dampingFraction: 0.82)
     /// Tucking back into the notch: quicker, no bounce.
     static let close = Animation.spring(response: 0.34, dampingFraction: 0.94)
     /// Presses, toggles, small state changes.
     static let snappy = Animation.spring(response: 0.26, dampingFraction: 0.82)
     /// Turning a page in setup, or moving between grove pages.
     static let page = Animation.spring(response: 0.46, dampingFraction: 0.88)
-    /// Things that land, like a stamp.
-    static let land = Animation.spring(response: 0.4, dampingFraction: 0.62)
+    /// Things that land, like a stamp. Nothing in the app is damped below 0.75.
+    static let land = Animation.spring(response: 0.42, dampingFraction: 0.8)
+    /// Sheets, labels and the setup sprig settling into place.
+    static let settle = Animation.spring(response: 0.55, dampingFraction: 0.9)
 
     static var reduced: Bool { NSWorkspace.shared.accessibilityDisplayShouldReduceMotion }
 
@@ -69,14 +71,14 @@ extension AnyTransition {
     }
 }
 
-/// Lifts a touch on hover and sinks on press: for sheets, slips, and cards you can click.
+/// Lifts a touch on hover: paper rises 2 pt toward you and its shadow deepens. It never grows.
 struct HoverLift: ViewModifier {
     var amount: CGFloat = 1
     @State private var hover = false
     func body(content: Content) -> some View {
         content
-            .scaleEffect(hover && !Motion.reduced ? 1 + 0.012 * amount : 1)
-            .shadow(color: Palette.ink.opacity(hover ? 0.16 : 0), radius: hover ? 8 : 0, x: 0, y: hover ? 4 : 0)
+            .offset(y: hover && !Motion.reduced ? -2 * amount : 0)
+            .shadow(color: Palette.ink.opacity(hover ? 0.10 : 0), radius: hover ? 14 : 0, x: 0, y: hover ? 9 : 0)
             .onHover { h in withAnimation(Motion.snappy) { hover = h } }
     }
 }

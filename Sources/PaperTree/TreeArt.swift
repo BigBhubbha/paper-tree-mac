@@ -706,7 +706,7 @@ struct DrawnTitlePage: View {
                 .lineLimit(4)
                 .minimumScaleFactor(0.6)
             if !paper.shortAuthors.isEmpty {
-                Text(paper.shortAuthors).font(.custom(Typeface.textItalic, size: max(3, 4 * s))).foregroundColor(PlantInk.ink.opacity(0.7))
+                Text(paper.shortAuthors).font(.custom(Typeface.text, size: max(3, 4 * s))).foregroundColor(PlantInk.ink.opacity(0.7))
                     .lineLimit(1)
             }
             VStack(spacing: 1.6 * s) {

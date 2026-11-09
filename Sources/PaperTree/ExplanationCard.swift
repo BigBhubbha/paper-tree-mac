@@ -1,5 +1,5 @@
-// The explanation card: a clean note card that opens beside your highlight, in the same style
-// as the card on the Paper Tree website. A short answer, a thin rule, then a mini glossary.
+// The explanation card: a grained sheet of field-journal paper that opens beside your highlight.
+// It is read, so it is set in Newsreader: a short answer, a thin rule, then a mini glossary.
 // CardController measures this view's real height and sizes the window to match, so nothing clips.
 import AppKit
 import SwiftUI
@@ -43,15 +43,14 @@ final class CardModel: ObservableObject {
     var explanation: Explanation? { if case .loaded(let e) = phase { return e } else { return nil } }
 }
 
-/// Colors lifted from the website's card.
+/// The card's inks: the same paper and ink family as the rest of the app.
 enum CardInk {
-    static let paper = Color(hex: 0xFFFEFA)
-    static let border = Color(hex: 0x2B2822)
-    static let text = Color(hex: 0x26231D)
-    static let muted = Color(hex: 0x5F584B)
-    static let faint = Color(hex: 0x8A8272)
-    static let rule = Color(hex: 0xE6DFCF)
-    static let chip = Color(hex: 0xD4CCBA)
+    static let paper = Palette.sheet
+    static let border = Palette.ink
+    static let text = Palette.ink
+    static let muted = Palette.ink2
+    static let faint = Palette.ink3
+    static let rule = Palette.rule
 }
 
 /// The whole card. `scrollBodyHeight` is nil when everything fits; otherwise the answer and
@@ -84,7 +83,11 @@ struct ExplanationCardView: View {
         .padding(.top, 13)
         .padding(.bottom, 12)
         .frame(width: ExplanationCardView.width, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous).fill(CardInk.paper))
+        .background(
+            RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous).fill(CardInk.paper)
+                .overlay(Image(nsImage: PaperGrain.image).resizable(resizingMode: .tile)
+                    .clipShape(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous)))
+        )
         .overlay(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous)
             .strokeBorder(CardInk.border.opacity(0.22), lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: ExplanationCardView.corner, style: .continuous))
@@ -93,10 +96,11 @@ struct ExplanationCardView: View {
     /// One quiet line showing what you highlighted.
     private var quote: some View {
         Text("\u{201C}" + model.selection.replacingOccurrences(of: "\n", with: " ") + "\u{201D}")
-            .font(.ui(12))
-            .foregroundColor(CardInk.faint)
+            .font(.text(13))
+            .foregroundColor(CardInk.muted)
             .lineLimit(1)
             .truncationMode(.tail)
+            .background(Palette.marker.opacity(0.45).padding(.vertical, 1))
             .frame(maxWidth: .infinity, alignment: .leading)
             .help(model.selection)
     }
@@ -107,19 +111,20 @@ private struct CardHeader: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 7) {
-            Sprout().stroke(Palette.green, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
-                .frame(width: 15, height: 15)
+            Sprout().stroke(Palette.green, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                .frame(width: 14, height: 14)
             Text("Paper Tree")
-                .font(.uiBold(13.5))
+                .font(.fell(17))
                 .foregroundColor(CardInk.text)
             Spacer(minLength: 8)
-            Text(model.mode.label)
-                .font(.ui(12))
+            // The catalog number, as on a specimen slip. The selected tab below already names the mode.
+            Text(String(format: "No. %04d", model.specimen))
+                .font(.typewriter(10.5))
                 .foregroundColor(CardInk.faint)
             Button(action: model.onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 9.5, weight: .semibold))
-                    .foregroundColor(CardInk.faint)
+                DrawnCross()
+                    .stroke(CardInk.faint, style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
+                    .frame(width: 8, height: 8)
                     .frame(width: 18, height: 18)
                     .contentShape(Rectangle())
             }
@@ -141,9 +146,9 @@ struct CardBody: View {
                 BuddyView(mood: .thinking, researchMode: true)
                     .frame(width: 36, height: 36)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Reading closely...")
-                        .font(.ui(14))
-                        .foregroundColor(CardInk.muted)
+                    Text("Reading closely")
+                        .font(.hand(15))
+                        .foregroundColor(Palette.pencil)
                     PencilLines().frame(width: 200, height: 18)
                 }
                 Spacer(minLength: 0)
@@ -154,9 +159,9 @@ struct CardBody: View {
         case .streaming(let text):
             VStack(alignment: .leading, spacing: 0) {
                 WritingText(text: text, start: model.writeStart)
-                    .font(.ui(15.5))
+                    .font(.text(16.5))
                     .foregroundColor(CardInk.text)
-                    .lineSpacing(3.5)
+                    .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                 // The pencil keeps writing until the glossary lands.
@@ -169,9 +174,9 @@ struct CardBody: View {
         case .loaded(let e):
             VStack(alignment: .leading, spacing: 0) {
                 WritingText(text: e.text, start: model.writeStart)
-                    .font(.ui(15.5))
+                    .font(.text(16.5))
                     .foregroundColor(CardInk.text)
-                    .lineSpacing(3.5)
+                    .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
@@ -189,10 +194,10 @@ struct CardBody: View {
                                             .fixedSize(horizontal: false, vertical: true)
                                     }
                                 }
-                                .font(.uiBold(13))
+                                .font(.textMedium(13.5))
                                 .foregroundColor(CardInk.text)
                                 Text(t.meaning)
-                                    .font(.ui(13))
+                                    .font(.text(13.5))
                                     .foregroundColor(CardInk.muted)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -208,18 +213,18 @@ struct CardBody: View {
         case .failed(let title, let detail, let canOpenSettings):
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.uiBold(14))
+                    .font(.textMedium(15))
                     .foregroundColor(Palette.red)
                     .fixedSize(horizontal: false, vertical: true)
                 Text(detail)
-                    .font(.ui(13))
+                    .font(.text(13.5))
                     .foregroundColor(CardInk.muted)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 8) {
-                    Button("Try again", action: model.onRetry).buttonStyle(ChipButtonStyle(selected: true))
+                HStack(spacing: 16) {
+                    Button("Try again", action: model.onRetry).buttonStyle(StampButtonStyle(compact: true))
                     if canOpenSettings {
-                        Button("Open Settings", action: model.onSettings).buttonStyle(ChipButtonStyle())
+                        Button("Open Settings", action: model.onSettings).buttonStyle(InkLinkButtonStyle(color: CardInk.muted))
                     }
                 }
                 .padding(.top, 4)
@@ -232,12 +237,12 @@ private struct CardFooter: View {
     @ObservedObject var model: CardModel
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
             ForEach([ExplainMode.plain, .simpler, .detail], id: \.self) { mode in
                 Button(mode == .plain ? "Plain" : mode.label) {
                     if model.mode != mode || model.explanation == nil { model.onMode(mode) }
                 }
-                .buttonStyle(ChipButtonStyle(selected: model.mode == mode))
+                .buttonStyle(TextTabStyle(selected: model.mode == mode))
                 .disabled(model.isLoading)
             }
             Spacer(minLength: 6)
@@ -252,34 +257,40 @@ private struct CardFooter: View {
                     pb.setString(text, forType: .string)
                     model.copied = true
                 }
-                .buttonStyle(ChipButtonStyle(quiet: true))
+                .buttonStyle(InkLinkButtonStyle(color: CardInk.muted))
             }
         }
         .opacity(model.isLoading ? 0.6 : 1)
     }
 }
 
-/// Small outlined button like the website card's "Simpler" and "More detail".
-struct ChipButtonStyle: ButtonStyle {
+/// A word you can pick, like a tab in a notebook: the chosen one is in ink with a green pen line under it.
+struct TextTabStyle: ButtonStyle {
     var selected = false
-    var quiet = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.ui(12))
-            .foregroundColor(selected ? Color(hex: 0xFBF8EF) : (quiet ? CardInk.faint : Color(hex: 0x3A362E)))
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .fill(selected ? Palette.green : Color.clear)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .strokeBorder(selected ? Palette.green : CardInk.chip.opacity(quiet ? 0 : 1), lineWidth: 1)
-            )
+            .font(.ui(12.5))
+            .foregroundColor(selected ? CardInk.text : CardInk.muted)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Palette.green)
+                    .frame(height: 1.5)
+                    .offset(y: 4.5)
+                    .opacity(selected ? 1 : 0)
+            }
             .opacity(configuration.isPressed ? 0.7 : 1)
-            .contentShape(Rectangle())
+            .contentShape(Rectangle().inset(by: -4))
+            .animation(Motion.pick(Motion.snappy), value: selected)
+    }
+}
+
+/// A close mark drawn with two short pen strokes.
+struct DrawnCross: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: r.minX, y: r.minY)); p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        p.move(to: CGPoint(x: r.maxX, y: r.minY)); p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+        return p
     }
 }
 

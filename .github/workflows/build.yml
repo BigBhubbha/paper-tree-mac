@@ -121,22 +121,61 @@ jobs:
         run: |
           rm -rf dist && mkdir -p dist/stage
           ditto "build/Paper Tree.app" "dist/stage/Paper Tree.app"
-          ln -s /Applications dist/stage/Applications
-          cat > "dist/stage/First time - read me.txt" <<'TXT'
+          cat > "dist/stage/First time, read me.txt" <<'TXT'
           Paper Tree for Mac
 
           1. Drag Paper Tree into the Applications folder.
           2. Open Applications, right-click Paper Tree, choose Open, then Open again.
              (Only the first time. Paper Tree isn't signed by Apple yet.)
           3. System Settings > Privacy & Security > Accessibility: switch on Paper Tree.
-          4. Click the flask in your menu bar and turn on Research mode.
+          4. Tap the right Option key twice to turn on Research mode.
+             (Tap it once to open your trees in the notch.)
 
           After this, updates install themselves from the flask's menu.
           TXT
-          hdiutil create -volname "Paper Tree" -srcfolder dist/stage -ov -format UDZO -fs HFS+ dist/Paper_Tree.dmg
+          # The drawn window background (Resources/dmg, made by scripts/make_dmg_background.py),
+          # with the 1x and 2x images joined so Retina screens get the sharp one.
+          tiffutil -cathidpicheck Resources/dmg/background.png Resources/dmg/background@2x.png -out dist/background.tiff
+          brew install create-dmg || true
+          made=false
+          if command -v create-dmg >/dev/null 2>&1; then
+            for attempt in 1 2 3; do
+              rm -f dist/Paper_Tree.dmg
+              if create-dmg \
+                  --volname "Paper Tree" \
+                  --background dist/background.tiff \
+                  --window-pos 200 120 \
+                  --window-size 640 400 \
+                  --icon-size 112 \
+                  --text-size 13 \
+                  --icon "Paper Tree.app" 170 210 \
+                  --hide-extension "Paper Tree.app" \
+                  --app-drop-link 470 210 \
+                  --icon "First time, read me.txt" 320 340 \
+                  --filesystem HFS+ \
+                  --format UDZO \
+                  dist/Paper_Tree.dmg dist/stage; then
+                made=true; break
+              fi
+              echo "create-dmg attempt $attempt failed, trying again"; sleep 5
+            done
+          fi
+          if [[ "$made" != true ]]; then
+            # Finder layout can fail on a headless runner. Ship a plain DMG rather than none.
+            echo "::warning::create-dmg failed, so this DMG has no drawn background"
+            ln -s /Applications dist/stage/Applications
+            hdiutil create -volname "Paper Tree" -srcfolder dist/stage -ov -format UDZO -fs HFS+ dist/Paper_Tree.dmg
+          fi
           hdiutil verify dist/Paper_Tree.dmg
           ditto -c -k --sequesterRsrc --keepParent "build/Paper Tree.app" "dist/Paper-Tree-$VERSION.zip"
           ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: dmg-preview
+          path: dist/Paper_Tree.dmg
+          if-no-files-found: warn
 
       - name: Sign the update and write the appcast
         env:

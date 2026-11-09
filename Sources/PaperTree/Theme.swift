@@ -18,15 +18,13 @@ enum Palette {
     static let rule       = Color(hex: 0x24211B).opacity(0.14)
     static let grid       = Color(hex: 0x506B39).opacity(0.07)
 
-    // Buddy colors (mint flask, pink-lavender halo).
-    static let mintGlass  = Color(hex: 0xD9F3E1)
-    static let mintLight  = Color(hex: 0xC4ECD0)
-    static let mint       = Color(hex: 0x9FDDB4)
-    static let mintDeep   = Color(hex: 0x6FBF8E)
-    static let mintLine   = Color(hex: 0x4F9A6C)
-    static let haloPink   = Color(hex: 0xF4C4E4)
-    static let haloLilac  = Color(hex: 0xDCCBF6)
-    static let blush      = Color(hex: 0xF5A9C8)
+    // The flask buddy, in the green family (no third palette, no glow).
+    static let flaskGlass  = Color(hex: 0xE6EBDA)
+    static let flaskShine  = Color(hex: 0xF4F6EC)
+    static let flaskLiquid = Color(hex: 0x8EA672)
+    static let flaskDeep   = Color(hex: 0x6E8A55)
+    static let flaskLine   = Color(hex: 0x506B39)
+    static let cheek       = Color(hex: 0xB2432C).opacity(0.22)
 }
 
 extension Color {
@@ -43,10 +41,8 @@ extension Color {
 /// SwiftUI falls back to the system font, so nothing breaks.
 enum Typeface {
     static let fell        = "IM_FELL_English_Roman"
-    static let fellItalic  = "IM_FELL_English_Italic"
     static let text        = "PTNewsreader-Regular"
     static let textMedium  = "PTNewsreader-Medium"
-    static let textItalic  = "PTNewsreader-Italic"
     static let ui          = "PTHanken-Regular"
     static let uiBold      = "PTHanken-SemiBold"
     static let hand        = "Kalam-Regular"
@@ -64,10 +60,8 @@ enum Typeface {
 
 extension Font {
     static func fell(_ size: CGFloat) -> Font { .custom(Typeface.fell, size: size) }
-    static func fellItalic(_ size: CGFloat) -> Font { .custom(Typeface.fellItalic, size: size) }
     static func text(_ size: CGFloat) -> Font { .custom(Typeface.text, size: size) }
     static func textMedium(_ size: CGFloat) -> Font { .custom(Typeface.textMedium, size: size) }
-    static func textItalic(_ size: CGFloat) -> Font { .custom(Typeface.textItalic, size: size) }
     static func ui(_ size: CGFloat) -> Font { .custom(Typeface.ui, size: size) }
     static func uiBold(_ size: CGFloat) -> Font { .custom(Typeface.uiBold, size: size) }
     static func hand(_ size: CGFloat) -> Font { .custom(Typeface.hand, size: size) }
@@ -230,5 +224,30 @@ struct InkToggleStyle: ToggleStyle {
         }
         .buttonStyle(.plain)
         .accessibilityValue(configuration.isOn ? "On" : "Off")
+    }
+}
+
+/// A section head: roman IM Fell, then a thin ink rule across the column. The rule, not italics,
+/// marks where a section starts.
+struct SectionHead<Aside: View>: View {
+    var title: String
+    var size: CGFloat = 21
+    @ViewBuilder var aside: Aside
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Text(title).font(.fell(size)).tracking(0.2).foregroundColor(Palette.ink)
+                aside
+                Spacer(minLength: 0)
+            }
+            Rectangle().fill(Palette.ink.opacity(0.8)).frame(height: 0.8)
+        }
+    }
+}
+
+extension SectionHead where Aside == EmptyView {
+    init(title: String, size: CGFloat = 21) {
+        self.init(title: title, size: size) { EmptyView() }
     }
 }

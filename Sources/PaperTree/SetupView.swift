@@ -116,7 +116,7 @@ struct SetupView: View {
         .onReceive(poll) { _ in
             let trusted = Accessibility.isTrusted
             if trusted != state.accessibilityGranted {
-                withAnimation(.spring(response: 0.42, dampingFraction: 0.58)) { state.accessibilityGranted = trusted }
+                withAnimation(Motion.pick(Motion.land)) { state.accessibilityGranted = trusted }
                 state.refreshMood()
                 if trusted { pulse += 1 }
             }
@@ -133,7 +133,7 @@ struct SetupView: View {
     }
 
     private func stamp(_ s: SetupStep) {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) { _ = did.insert(s) }
+        withAnimation(Motion.pick(Motion.land)) { _ = did.insert(s) }
         pulse += 1
     }
 
@@ -144,7 +144,8 @@ struct SetupView: View {
             HStack {
                 Text("Paper Tree, field notes on reading")
                 Spacer()
-                Text("Step \(step.rawValue + 1) of \(SetupStep.allCases.count)  \u{00B7}  \(step.head)")
+                // Only the entry number: the sprig at the bottom is the one progress bar.
+                Text(String(format: "Entry %02d", step.rawValue + 1))
             }
             .font(.typewriter(10.5))
             .foregroundColor(Palette.ink3)
@@ -173,7 +174,7 @@ struct SetupView: View {
             Group {
                 switch step {
                 case .welcome:
-                    Button("Let's start") { go(1) }.buttonStyle(StampButtonStyle())
+                    Button("Begin") { go(1) }.buttonStyle(StampButtonStyle())
                 case .permission where !state.accessibilityGranted:
                     Button("I'll do this later") { go(1) }.buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
                 case .finish:
@@ -216,7 +217,7 @@ struct SetupView: View {
             VStack(spacing: 6) {
                 BuddyStage(act: step.act, research: state.researchMode, granted: state.accessibilityGranted, pulse: pulse)
                     .frame(width: 250, height: 290)
-                (Text("Fig. \(step.rawValue + 1). ").font(.fell(13)) + Text(step.figure).font(.fellItalic(13)))
+                (Text("Fig. \(step.rawValue + 1). ").font(.typewriter(11)) + Text(step.figure).font(.text(13)))
                     .foregroundColor(Palette.ink3)
             }
             .frame(width: 258)
@@ -244,13 +245,13 @@ struct SetupView: View {
     @ViewBuilder private var content: some View {
         switch step {
         case .welcome:
-            kicker("No. 1, a hello")
+            kicker("a hello")
             title("Hello. I'm the flask.")
             line("I live in your Mac's notch. Highlight something hard in a paper and I'll explain it in plain words. Add the papers you read and I'll grow them into trees.")
             handNote("This takes about two minutes, one small step at a time.")
                 .padding(.top, 22)
         case .school:
-            kicker("No. 2, about you")
+            kicker("about you")
             title("What year are you in?")
             line("So I can pitch my notes at your level.")
             SpecimenTag(number: 1, total: 4, label: "year in school", tilt: -0.6) {
@@ -261,7 +262,7 @@ struct SetupView: View {
             }
             .padding(.top, 22)
         case .background:
-            kicker("No. 3, about you")
+            kicker("about you")
             title("How much science have you done?")
             line("Circle the closest one. Nobody else sees this.")
             SpecimenTag(number: 2, total: 4, label: "science background", tilt: 0.5) {
@@ -272,7 +273,7 @@ struct SetupView: View {
             }
             .padding(.top, 22)
         case .fields:
-            kicker("No. 4, about you")
+            kicker("about you")
             title("What do you read?")
             line("Tick as many as you like.")
             SpecimenTag(number: 3, total: 4, label: "fields you read most", tilt: 0.4) {
@@ -284,7 +285,7 @@ struct SetupView: View {
             }
             .padding(.top, 22)
         case .length:
-            kicker("No. 5, about you")
+            kicker("about you")
             title("How long should my notes be?")
             line("You can change this, and the rest, in Settings whenever you like.")
             SpecimenTag(number: 4, total: 4, label: "how long should my notes be", tilt: -0.5) {
@@ -296,32 +297,32 @@ struct SetupView: View {
             .padding(.top, 22)
             FieldNote(state: state).padding(.top, 20).padding(.leading, 6)
         case .permission:
-            kicker("No. 6, permission")
+            kicker("permission")
             title("Let me see what you highlight.")
             line("To read highlights in Preview, Chrome or Word, macOS has to let me in under Accessibility. I only read the words you highlight, and only while Research mode is on. I never see what you type.")
             permissionAction.padding(.top, 20)
         case .tap:
-            kicker("No. 7, try it")
+            kicker("try it")
             title("Tap the right Option key once.")
             line("The island grows out of the notch and shows your trees. Tap again, or press Esc, to put it away.")
             DoneLine(done: did.contains(.tap), waiting: "Waiting for a tap on right Option.", yes: "Opened. That's the island.")
                 .padding(.top, 20)
         case .highlight:
-            kicker("No. 8, try it")
+            kicker("try it")
             title("Highlight a phrase.")
             line("Drag across a few words in the sample, like \"photorespiration\". A note opens right beside them.")
             passageSheet.padding(.top, 14)
             DoneLine(done: did.contains(.highlight), waiting: "Waiting for a highlight.", yes: "Explained. Close the note whenever you like.")
                 .padding(.top, 12)
         case .add:
-            kicker("No. 9, try it")
+            kicker("try it")
             title("Add a paper to a tree.")
             line("Highlight the title below, tap right Option, then choose Add this paper. I'll find it and ask which tree should get it.")
             titleSheet.padding(.top, 14)
             DoneLine(done: did.contains(.add), waiting: "Waiting for Add this paper.", yes: "Found it. Pick a tree, or plant a new one.")
                 .padding(.top, 12)
         case .research:
-            kicker("No. 10, try it")
+            kicker("try it")
             title("Double-tap for Research mode.")
             line("Double-tap right Option. The island flashes, and from then on I explain whatever you highlight, in any app. Double-tap again to stop.")
             DoneLine(done: did.contains(.research),
@@ -329,13 +330,16 @@ struct SetupView: View {
                      yes: "Research mode is on. Goggles on.")
                 .padding(.top, 20)
         case .finish:
-            kicker("No. 11, done")
-            title("You're all set.")
+            kicker("done")
+            HStack(alignment: .center, spacing: 14) {
+                title("You're all set.")
+                FinishStamp()
+            }
             line("I'll be in the notch. Open a paper, turn on Research mode, and highlight whatever slows you down.")
             VStack(alignment: .leading, spacing: 7) {
-                KeyLine(keys: "right option, once", does: "open or close the island, and add what you highlighted")
-                KeyLine(keys: "right option, twice", does: "Research mode on or off")
-                KeyLine(keys: "highlight", does: "it explains, a moment after you let go")
+                KeyLine(taps: 1, does: "Tap right Option once to open or close the island, and add what you highlighted.")
+                KeyLine(taps: 2, does: "Tap it twice for Research mode, on or off.")
+                KeyLine(taps: 0, does: "Highlight a line and it explains, a moment after you let go.")
             }
             .padding(.top, 16)
             FieldNote(state: state).padding(.top, 18)
@@ -357,7 +361,7 @@ struct SetupView: View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 9) {
                 if state.accessibilityGranted {
-                    Text("You're in. I can see highlights now.").font(.hand(16)).foregroundColor(Palette.green)
+                    Text("You're in. I can see highlights now.").font(.text(15)).foregroundColor(Palette.ink2)
                 } else {
                     Button("Let me read highlights") {
                         asked = true
@@ -369,7 +373,7 @@ struct SetupView: View {
                         .font(.typewriter(10.5)).foregroundColor(Palette.ink3)
                     if asked {
                         Text("Already switched on? Switch it off and on again, and I'll see it.")
-                            .font(.hand(13)).foregroundColor(Palette.pencil)
+                            .font(.ui(12.5)).foregroundColor(Palette.ink3)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -416,7 +420,7 @@ struct SetupView: View {
                     PracticeTextView(text: SetupView.paperTitle, size: 15) { _, _ in }
                         .frame(height: 44)
                 }
-                Text(SetupView.reference).font(.text(12.5)).italic().foregroundColor(Palette.ink2)
+                Text(SetupView.reference).font(.text(12.5)).foregroundColor(Palette.ink2)
             }
             .padding(.horizontal, 16).padding(.top, 16).padding(.bottom, 12)
             Tape().rotationEffect(.degrees(4)).offset(x: 180, y: -11)
@@ -449,8 +453,8 @@ private struct DoneLine: View {
             }
             .frame(width: 30, height: 30)
             Text(done ? yes : waiting)
-                .font(.hand(15))
-                .foregroundColor(done ? Palette.green : Palette.pencil)
+                .font(.ui(12.5))
+                .foregroundColor(done ? Palette.green : Palette.ink3)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)
@@ -485,10 +489,15 @@ struct ProgressSprig: View {
                                 .offset(x: 6, y: 0)
                                 .transition(.scale(scale: 0.01, anchor: .leading).combined(with: .opacity))
                         }
+                        if i == count - 1 && current == count - 1 {
+                            // The last page: its leaf unfurls instead of a bud.
+                            UnfurlingLeaf(up: up)
+                        }
+                        let finished = current == count - 1
                         Circle()
-                            .fill(i == current ? Palette.red : (i < current ? Color(hex: 0x6E553F) : Palette.pencil.opacity(0.4)))
-                            .frame(width: i == current ? 9 : 4, height: i == current ? 9 : 4)
-                        if i == current {
+                            .fill(i == current && !finished ? Palette.red : (i <= current ? Color(hex: 0x6E553F) : Palette.pencil.opacity(0.4)))
+                            .frame(width: i == current && !finished ? 9 : 4, height: i == current && !finished ? 9 : 4)
+                        if i == current && !finished {
                             Circle().stroke(Palette.red.opacity(0.5), lineWidth: 1).frame(width: 15, height: 15)
                         }
                     }
@@ -496,7 +505,7 @@ struct ProgressSprig: View {
                 }
             }
         }
-        .animation(Motion.pick(.spring(response: 0.45, dampingFraction: 0.6)), value: current)
+        .animation(Motion.pick(Motion.settle), value: current)
         .accessibilityElement()
         .accessibilityLabel("Step \(current + 1) of \(count)")
     }
@@ -556,7 +565,7 @@ struct FieldNote: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("noted:").font(.hand(14.5))
                 Text(line).font(.hand(14.5)).fixedSize(horizontal: false, vertical: true)
-                    .animation(.easeOut(duration: 0.2), value: line)
+                    .animation(Motion.pick(Motion.snappy), value: line)
             }
             .foregroundColor(Palette.red)
         }
@@ -649,7 +658,7 @@ struct CircleChoices: View {
         FlowLayout(spacing: 16, lineSpacing: 8) {
             ForEach(options) { o in
                 let on = selected.contains(o.id)
-                Button { withAnimation(.easeOut(duration: 0.28)) { pick(o.id) } } label: {
+                Button { withAnimation(Motion.pick(Motion.settle)) { pick(o.id) } } label: {
                     HStack(spacing: 4) {
                         if multiple {
                             ZStack {
@@ -814,17 +823,69 @@ struct PracticeTextView: NSViewRepresentable {
     }
 }
 
+/// A key drawn in ink, the same keycap as Settings Fig. 1 at 0.7 scale (two keys for a double tap,
+/// a marker swipe for a highlight), then what it does in plain words.
 private struct KeyLine: View {
-    var keys: String
+    var taps: Int
     var does: String
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(keys)
-                .font(.typewriter(11.5))
-                .foregroundColor(Palette.ink)
-                .padding(.horizontal, 7).padding(.vertical, 3)
-                .overlay(RoundedRectangle(cornerRadius: 3).stroke(Palette.ink.opacity(0.5), lineWidth: 0.8))
-            Text(does).font(.ui(13)).foregroundColor(Palette.ink2)
+        HStack(alignment: .center, spacing: 12) {
+            HStack(spacing: 5) {
+                if taps == 0 {
+                    Text("highlight").font(.typewriter(11.5)).foregroundColor(Palette.ink)
+                        .padding(.horizontal, 3)
+                        .background(Palette.marker.opacity(0.6).padding(.vertical, 1).rotationEffect(.degrees(-1.5)))
+                } else {
+                    ForEach(0..<taps, id: \.self) { i in
+                        DrawnKey(width: 60, tilt: i == 0 ? -0.5 : 0.6, marked: true) {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HStack { Spacer(); Text("\u{2325}").font(.system(size: 10.5)) }
+                                Spacer(minLength: 0)
+                                Text("option").font(.ui(9.5))
+                            }
+                            .foregroundColor(Palette.ink2)
+                            .padding(.horizontal, 6).padding(.vertical, 5)
+                        }
+                        .scaleEffect(0.7)
+                        .frame(width: 42, height: 30)
+                    }
+                }
+            }
+            .frame(width: 96, alignment: .leading)
+            Text(does).font(.text(14)).foregroundColor(Palette.ink2)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The green APPROVED stamp from the permission page, landing once beside the finish title.
+private struct FinishStamp: View {
+    @State private var landed = false
+    var body: some View {
+        ApprovalStamp(granted: landed || Snapshots.isRendering, caption: "set up")
+            .scaleEffect(0.62)
+            .frame(width: 70, height: 70)
+            .onAppear {
+                guard !landed else { return }
+                withAnimation(Motion.pick(Motion.land).delay(0.1)) { landed = true }
+            }
+    }
+}
+
+/// The sprig's last leaf, unfurling once: it grows from a curl and turns a little as it opens.
+private struct UnfurlingLeaf: View {
+    var up: Bool
+    @State private var open = false
+    var body: some View {
+        let shown = open || Snapshots.isRendering
+        SprigLeaf()
+            .fill(Palette.green.opacity(0.85))
+            .overlay(SprigLeaf().stroke(Palette.ink.opacity(0.55), lineWidth: 0.7))
+            .frame(width: 17, height: 9)
+            .scaleEffect(shown ? 1 : 0.3, anchor: .leading)
+            .rotationEffect(.degrees((up ? -40 : 40) + (shown ? 0 : (up ? -12 : 12))), anchor: .leading)
+            .offset(x: 8, y: 0)
+            .onAppear { withAnimation(Motion.pick(Motion.settle)) { open = true } }
     }
 }

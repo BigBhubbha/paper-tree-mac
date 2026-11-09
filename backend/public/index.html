@@ -1,5 +1,122 @@
-<!doctype html><meta charset="utf-8"><title>Paper Tree explainer</title>
-<body style="font-family:Georgia,serif;background:#efe6d2;color:#24211b;padding:48px;max-width:560px">
-<h1 style="font-weight:400">Paper Tree explainer</h1>
-<p>This site only hosts the explainer the Paper Tree Mac app talks to. It lives at <code>/api/explain</code> and accepts POST requests.</p>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paper Tree for Mac</title>
+<meta name="description" content="Paper Tree lives in your Mac's notch. Highlight a line you don't follow and it explains it in plain words. Add the papers you read and each one becomes a branch on a tree.">
+<link rel="icon" type="image/png" href="icon_64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFE6D2; --sheet:#F8F3E6; --ink:#24211B; --ink2:#4A443A; --ink3:#776F60;
+  --rule:rgba(36,33,27,.16); --accent:#506B39; --marker:#F3E58A;
+  --fell:"IM Fell English","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --read:"Newsreader","Iowan Old Style",Georgia,serif;
+  --type:"Special Elite","Courier Prime","Courier New",monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--paper)}
+body{color:var(--ink);font:400 18px/1.55 var(--read);-webkit-font-smoothing:antialiased;
+  background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .28 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:1120px;margin:0 auto;padding:0 40px}
+.runhead{display:flex;justify-content:space-between;font:13px/1 var(--type);color:var(--ink3);padding:28px 0 12px;border-bottom:1px solid var(--ink)}
+.hero{display:grid;grid-template-columns:5fr 4fr;gap:64px;align-items:center;padding:64px 0 56px}
+h1{font:400 clamp(40px,5.2vw,66px)/1.02 var(--fell);letter-spacing:-.01em;max-width:11ch}
+.lede{font-size:20px;line-height:1.5;color:var(--ink2);max-width:34ch;margin-top:22px}
+.get{margin-top:34px;display:flex;flex-direction:column;align-items:flex-start;gap:12px}
+.stamp{display:inline-block;font:500 17px/1 var(--read);color:var(--sheet);background:var(--ink);text-decoration:none;
+  padding:15px 22px 14px;border-radius:3px;box-shadow:3px 3px 0 var(--accent);transition:transform .16s var(--ease),box-shadow .16s var(--ease)}
+.stamp:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--accent)}
+.stamp:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--accent)}
+.first{font-size:14.5px;line-height:1.45;color:var(--ink3);max-width:38ch}
+.meta{font:12.5px/1.4 var(--type);color:var(--ink3)}
+.plate{position:relative;margin:0;transform:rotate(-.6deg)}
+.plate img{display:block;width:100%;height:auto;border:1px solid var(--rule);box-shadow:0 1px 2px rgba(36,33,27,.12),0 8px 24px -12px rgba(36,33,27,.28)}
+.tape{position:absolute;top:-12px;left:38%;width:96px;height:24px;background:rgba(232,220,180,.75);transform:rotate(-3deg);box-shadow:0 1px 1px rgba(36,33,27,.08)}
+figcaption{font:14px/1.4 var(--read);color:var(--ink3);margin-top:12px;transform:rotate(.6deg)}
+figcaption b{font:400 15px var(--fell);color:var(--ink);margin-right:4px}
+.entries{display:grid;grid-template-columns:3fr 5fr;gap:64px;padding:52px 0;border-top:1px solid var(--rule)}
+h2{font:400 32px/1.1 var(--fell)}
+.entries ol{list-style:none;padding:0;display:grid;gap:22px}
+.entries li{display:grid;grid-template-columns:64px 1fr;gap:10px;padding-bottom:20px;border-bottom:1px dotted var(--rule)}
+.entries li:last-child{border-bottom:0;padding-bottom:0}
+.no{font:13px/1.9 var(--type);color:var(--ink3)}
+.entries p{color:var(--ink2)}
+.entries strong{font-weight:500;color:var(--ink)}
+.card{margin-top:16px!important;background:var(--sheet);border:1px solid rgba(36,33,27,.22);border-radius:12px;padding:16px 18px 14px;max-width:440px;
+  box-shadow:0 12px 28px -14px rgba(36,33,27,.35);margin-top:8px}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--rule);padding-bottom:8px}
+.card .top span:first-child{font:400 17px var(--fell)}
+.card .top span:last-child{font:11.5px var(--type);color:var(--ink3)}
+.card .hl{display:inline;background:linear-gradient(transparent 18%,var(--marker) 18%,var(--marker) 88%,transparent 88%);font-size:14px;color:var(--ink2)}
+.card .ans{font-size:17px;line-height:1.5;margin:10px 0 12px}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14.5px;border-top:1px solid var(--rule);padding-top:10px}
+.card dt{font-weight:500}.card dd{color:var(--ink2)}
+.foot{border-top:1px solid var(--ink);padding:18px 0 36px;font:13px/1.5 var(--type);color:var(--ink3);display:flex;justify-content:space-between}
+.foot a{color:var(--ink)}
+@media (prefers-reduced-motion:no-preference){
+  .plate{animation:settle .9s var(--ease) both .1s}
+  @keyframes settle{from{opacity:0;transform:translateY(14px) rotate(-1.6deg)}to{opacity:1;transform:rotate(-.6deg)}}
+}
+@media (max-width:820px){
+  .wrap{padding:0 20px}
+  .runhead span:last-child{display:none}
+  .hero{grid-template-columns:1fr;gap:36px;padding:36px 0 40px}
+  .plate{max-width:360px}
+  .entries{grid-template-columns:1fr;gap:20px;padding:36px 0}
+  .entries li{grid-template-columns:44px 1fr}
+  .foot{flex-direction:column;gap:6px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="runhead"><span>Paper Tree for Mac</span><span>field notes on reading</span></header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>A flask in your notch that explains hard papers.</h1>
+        <p class="lede">Highlight a line you don't follow and Paper Tree explains it in plain words, on a small card beside the text. Add the papers you read and each one becomes a branch on a tree.</p>
+        <div class="get">
+          <a class="stamp" href="https://github.com/BigBhubbha/paper-tree-mac/releases/latest/download/Paper_Tree.dmg">Download for Mac</a>
+          <span class="meta">Paper_Tree.dmg &middot; version 0.2.7 &middot; macOS 13 or later</span>
+          <p class="first">Paper Tree isn't signed by Apple yet, so the first time, right-click it in Applications, choose Open, then Open again.</p>
+        </div>
+      </div>
+      <figure class="plate">
+        <span class="tape" aria-hidden="true"></span>
+        <img src="oldgrowth.jpg" width="659" height="802" alt="A painted oak on a herbarium sheet, with six papers taped to its branches and a label reading Old growth">
+        <figcaption><b>Fig. 1.</b> A sample tree drawn by the app. Each taped slip is one paper.</figcaption>
+      </figure>
+    </section>
+
+    <section class="entries" aria-labelledby="how">
+      <h2 id="how">How you use it</h2>
+      <ol>
+        <li><span class="no">No. 1</span><p><strong>Tap the right Option key once.</strong> The island grows out of the notch with your trees, and anything you highlighted is ready to add as a paper.</p></li>
+        <li><span class="no">No. 2</span><div><p><strong>Tap it twice for Research mode.</strong> While it is on, highlight a line in Preview, Chrome or Word and a card explains it. Ask again for Simpler or More detail.</p>
+          <div class="card" role="figure" aria-label="Example explanation card">
+            <div class="top"><span>Paper Tree</span><span>No. 0007</span></div>
+            <p style="margin-top:10px"><span class="hl">Brain myeloid cells, including infiltrating monocyte-derived macrophages (MDMs) and microglia&hellip;</span></p>
+            <p class="ans">These are special immune cells in the brain that help clean up damage and manage swelling when someone has a stroke or loses blood flow.</p>
+            <dl><dt>myeloid cells</dt><dd>a type of immune cell</dd><dt>microglia</dt><dd>immune cells that live in the brain</dd><dt>ischemic</dt><dd>caused by a lack of blood flow</dd></dl>
+          </div>
+          <p class="meta" style="margin-top:8px">Fig. 2. A recorded answer from the explainer.</p></div>
+        </li>
+        <li><span class="no">No. 3</span><p><strong>Keep a pencil branch.</strong> Each tree suggests papers from Semantic Scholar in pencil. Keep one and it turns to ink.</p></li>
+        <li><span class="no">No. 4</span><p><strong>One permission.</strong> macOS asks you to allow Paper Tree under Accessibility so it can read the words you highlight. It only reads them while Research mode is on, and never sees what you type. Highlights go to Paper Tree's explainer, which asks Google's Gemini for a short answer.</p></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Made by Shabd Warar</span>
+    <span>Contact: <a href="mailto:CONTACT_EMAIL">CONTACT_EMAIL</a></span>
+  </footer>
+</div>
 </body>
+</html>

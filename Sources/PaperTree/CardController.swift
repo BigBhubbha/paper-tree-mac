@@ -166,7 +166,7 @@ final class CardController {
             } catch {
                 guard !Task.isCancelled else { return }
                 if error is CancellationError { return }
-                self?.model.phase = .failed(title: "Something went wrong.", detail: error.localizedDescription, canOpenSettings: false)
+                self?.model.phase = .failed(title: "No answer this time.", detail: error.localizedDescription, canOpenSettings: false)
             }
             guard let self else { return }
             self.state.mood = .idle

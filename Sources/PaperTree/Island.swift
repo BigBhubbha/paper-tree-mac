@@ -341,7 +341,8 @@ struct IslandView: View {
                     .foregroundColor(.white)
                 Spacer(minLength: 0)
                 Circle()
-                    .fill(on ? Palette.mint : Color.white.opacity(0.3))
+                    .fill(on ? Palette.paper : Color.clear)
+                    .overlay(Circle().strokeBorder(Palette.paper.opacity(on ? 0 : 0.35), lineWidth: 1))
                     .frame(width: 7, height: 7)
             }
             .padding(.horizontal, 22)

@@ -97,7 +97,7 @@ struct SettingsView: View {
                 .font(.fell(34))
                 .foregroundColor(Palette.ink)
                 .padding(.top, 2)
-            Text("How Paper Tree reads alongside you. Answers and switches save the moment you change them.")
+            Text("How Paper Tree reads alongside you.")
                 .font(.text(14.5))
                 .foregroundColor(Palette.ink2)
                 .frame(maxWidth: 420, alignment: .leading)
@@ -119,10 +119,9 @@ struct SettingsView: View {
             HStack(alignment: .center, spacing: 6) {
                 ApprovalStamp(granted: true).scaleEffect(0.72).frame(width: 80, height: 80)
                 Text("macOS lets me read your highlights.")
-                    .font(.hand(14))
-                    .foregroundColor(Palette.green)
+                    .font(.text(13.5))
+                    .foregroundColor(Palette.ink2)
                     .fixedSize(horizontal: false, vertical: true)
-                    .rotationEffect(.degrees(-1.5))
             }
         } else {
             VStack(alignment: .leading, spacing: 6) {
@@ -144,7 +143,7 @@ struct SettingsView: View {
             sectionHead("Switches", aside: "circle on or off")
             VStack(alignment: .leading, spacing: 14) {
                 SpecimenTag(number: 1, label: "research mode", tilt: -0.7) {
-                    switchRow("Highlight anything and the card opens by itself. Double-tap right Option to flip it from anywhere.",
+                    switchRow("Highlight anything and the card opens by itself.",
                               isOn: $state.researchMode, name: "Research mode")
                 }
                 .frame(width: 548)
@@ -186,10 +185,10 @@ struct SettingsView: View {
             OptionKeyFigure()
                 .padding(.top, 12)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("Fig. 1.").font(.fellItalic(14)).foregroundColor(Palette.ink)
+                Text("Fig. 1.").font(.typewriter(11)).foregroundColor(Palette.ink3)
                 Text("The right Option key. One tap opens your trees at the notch, with anything you've highlighted ready to add; two flip Research mode.")
                     .font(.text(13))
-                    .foregroundColor(Palette.ink2)
+                    .foregroundColor(Palette.ink3)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.top, 8)
@@ -239,7 +238,7 @@ struct SettingsView: View {
             }
             if !testStatus.isEmpty {
                 Text(testStatus)
-                    .font(.hand(14))
+                    .font(.ui(12.5))
                     .foregroundColor(testStatus.hasPrefix("Works") ? Palette.green : Palette.red)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -249,10 +248,8 @@ struct SettingsView: View {
     // MARK: Pieces
 
     private func sectionHead(_ title: String, aside: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(title).font(.fellItalic(21)).foregroundColor(Palette.ink)
-            Text(aside).font(.hand(13.5)).foregroundColor(Palette.pencil)
-                .rotationEffect(.degrees(-2))
+        SectionHead(title: title) {
+            Text(aside).font(.ui(12.5)).foregroundColor(Palette.ink3)
         }
     }
 
@@ -321,7 +318,7 @@ private struct ReaderLabel: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(spacing: 1) {
                 Text("Paper Tree Herbarium").font(.fell(15.5)).foregroundColor(Palette.ink)
-                Text("the reader, as determined in setup").font(.textItalic(11.5)).foregroundColor(Palette.ink3)
+                Text("the reader, as determined in setup").font(.text(11.5)).foregroundColor(Palette.ink3)
             }
             .frame(maxWidth: .infinity)
             .padding(.bottom, 10)
@@ -450,15 +447,23 @@ private struct CountSlip: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("specimens so far").font(.typewriter(10.5)).foregroundColor(Palette.ink3)
-            Text(count.formatted())
-                .font(.fell(count > 9999 ? 36 : 46))
-                .foregroundColor(Palette.ink)
-                .padding(.top, 2)
-            Text(count == 0 ? "None yet. Turn on Research mode and highlight a line."
-                            : (count == 1 ? "card opened on this Mac" : "cards opened on this Mac"))
-                .font(.hand(14))
-                .foregroundColor(count == 0 ? Palette.pencil : Palette.ink2)
-                .fixedSize(horizontal: false, vertical: true)
+            if count == 0 {
+                // No numeral for zero: "None yet" already says it, once.
+                Text("None yet. Turn on Research mode and highlight a line.")
+                    .font(.text(14))
+                    .foregroundColor(Palette.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
+            } else {
+                Text(count.formatted())
+                    .font(.fell(count > 9999 ? 36 : 46))
+                    .foregroundColor(Palette.ink)
+                    .padding(.top, 2)
+                Text(count == 1 ? "card opened on this Mac" : "cards opened on this Mac")
+                    .font(.text(14))
+                    .foregroundColor(Palette.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if count > 0 {
                 Text("practice cards count too")
                     .font(.typewriter(9))
@@ -506,7 +511,7 @@ struct HandSwitch: View {
 
     private func word(_ text: String, selected: Bool, action: @escaping () -> Void) -> some View {
         Button {
-            withAnimation(.easeOut(duration: 0.3)) { action() }
+            withAnimation(Motion.pick(Motion.settle)) { action() }
         } label: {
             Text(text)
                 .font(.hand(17))
@@ -576,9 +581,9 @@ struct OptionKeyFigure: View {
     private func playDoubleTap() {
         Task { @MainActor in
             for _ in 0..<2 {
-                withAnimation(.easeOut(duration: 0.07)) { pressed = true }
+                withAnimation(Motion.pick(Motion.snappy)) { pressed = true }
                 try? await Task.sleep(nanoseconds: 110_000_000)
-                withAnimation(.spring(response: 0.18, dampingFraction: 0.5)) { pressed = false }
+                withAnimation(Motion.pick(Motion.snappy)) { pressed = false }
                 try? await Task.sleep(nanoseconds: 140_000_000)
             }
         }
@@ -586,7 +591,7 @@ struct OptionKeyFigure: View {
 }
 
 /// One keycap drawn in ink: a top face over a thicker bottom edge, slightly off square.
-private struct DrawnKey<Label: View>: View {
+struct DrawnKey<Label: View>: View {
     var width: CGFloat
     var tilt: Double = 0
     var marked = false

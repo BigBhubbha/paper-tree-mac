@@ -163,10 +163,11 @@ enum TreeGrowth {
     }
 
     static func easeOut(_ t: CGFloat) -> CGFloat { let u = 1 - max(0, min(1, t)); return 1 - u * u * u }
-    /// A damped spring from 0 to 1 (a little overshoot, then rest), for things that land.
+    /// A damped spring from 0 to 1 for things that land: damping ratio 0.8, so it settles with
+    /// only a hair of overshoot, like the rest of the app's motion.
     static func spring(_ t: CGFloat) -> CGFloat {
         let x = Double(max(0, min(1, t)))
-        return CGFloat(1 - exp(-5.2 * x) * cos(7.8 * x))
+        return CGFloat(1 - exp(-7.2 * x) * cos(5.4 * x))
     }
 }
 

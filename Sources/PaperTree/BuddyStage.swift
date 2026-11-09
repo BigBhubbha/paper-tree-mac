@@ -270,14 +270,14 @@ struct BuddyScene {
         a.move(to: s)
         let mid = CGPoint(x: (s.x + h.x) / 2 + bend * 4, y: (s.y + h.y) / 2 + 3)
         a.addQuadCurve(to: h, control: mid)
-        c.stroke(a, with: .color(Palette.mintLine), style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
+        c.stroke(a, with: .color(Palette.flaskLine), style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
     }
 
     private func hand(_ c: inout GraphicsContext, _ h: CGPoint) {
         let r: CGFloat = 3.1
         let dot = Path(ellipseIn: CGRect(x: h.x - r, y: h.y - r, width: r * 2, height: r * 2))
-        c.fill(dot, with: .color(Palette.mintLight))
-        c.stroke(dot, with: .color(Palette.mintLine), lineWidth: 1.6)
+        c.fill(dot, with: .color(Palette.flaskGlass))
+        c.stroke(dot, with: .color(Palette.flaskLine), lineWidth: 1.6)
     }
 
     // MARK: Props
@@ -420,26 +420,12 @@ struct BuddyScene {
                 let r = 58 * u + CGFloat(sin(t * 3 + Double(i))) * 4 * u
                 sparkle(&ctx, at: CGPoint(x: head.x + CGFloat(cos(a)) * r, y: head.y + 40 * u + CGFloat(sin(a)) * r * 0.8), s: 4 * u)
             }
-        case .celebrate:
-            confetti(&ctx)
         case .knock where granted:
             for i in 0..<3 {
                 sparkle(&ctx, at: CGPoint(x: size.width * 0.82 + CGFloat(i - 1) * 18 * u, y: groundY - 100 * u - CGFloat(i % 2) * 10 * u), s: 4 * u)
             }
         default:
             break
-        }
-        if since < 1.0 {
-            // A burst of little ink rays when something real happened.
-            let a = 1 - since
-            var rays = Path()
-            for i in 0..<8 {
-                let ang = Double(i) / 8 * 2 * .pi
-                let r0 = 60 * u + CGFloat(since) * 30 * u
-                rays.move(to: CGPoint(x: head.x + CGFloat(cos(ang)) * r0, y: head.y + 40 * u + CGFloat(sin(ang)) * r0))
-                rays.addLine(to: CGPoint(x: head.x + CGFloat(cos(ang)) * (r0 + 8 * u), y: head.y + 40 * u + CGFloat(sin(ang)) * (r0 + 8 * u)))
-            }
-            ctx.stroke(rays, with: .color(Palette.red.opacity(a)), style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
         }
     }
 
@@ -523,7 +509,7 @@ struct BuddyScene {
                 let x = r.minX + r.width * (0.3 + 0.2 * CGFloat(i))
                 var stem = Path(); stem.move(to: CGPoint(x: x, y: r.maxY - 8 * u)); stem.addLine(to: CGPoint(x: x, y: r.maxY - 20 * u))
                 c.stroke(stem, with: .color(Color(hex: 0xC9B48A)), lineWidth: 1.2)
-                c.fill(Path(ellipseIn: CGRect(x: x - 6 * u, y: r.maxY - 30 * u, width: 12 * u, height: 12 * u)), with: .color(Palette.mint.opacity(0.9)))
+                c.fill(Path(ellipseIn: CGRect(x: x - 6 * u, y: r.maxY - 30 * u, width: 12 * u, height: 12 * u)), with: .color(Palette.flaskLiquid.opacity(0.9)))
             }
         }
     }
@@ -587,7 +573,7 @@ struct BuddyScene {
         ctx.fill(Path(roundedRect: plate, cornerRadius: 5 * u), with: .color(Color(hex: 0xFBF8EE)))
         ctx.stroke(Path(roundedRect: plate, cornerRadius: 5 * u), with: .color(Palette.ink.opacity(0.8)), lineWidth: 1.1)
         let track = CGRect(x: plate.minX + 8 * u, y: plate.midY - 8 * u, width: 36 * u, height: 16 * u)
-        ctx.fill(Path(roundedRect: track, cornerRadius: 8 * u), with: .color(on ? Palette.mint : Palette.pencil.opacity(0.35)))
+        ctx.fill(Path(roundedRect: track, cornerRadius: 8 * u), with: .color(on ? Palette.green : Palette.pencil.opacity(0.35)))
         ctx.stroke(Path(roundedRect: track, cornerRadius: 8 * u), with: .color(Palette.ink.opacity(0.6)), lineWidth: 0.9)
         let x = on ? track.maxX - 8 * u : track.minX + 8 * u
         let knob = Path(ellipseIn: CGRect(x: x - 7 * u, y: track.midY - 7 * u, width: 14 * u, height: 14 * u))
@@ -601,24 +587,5 @@ struct BuddyScene {
         star.move(to: CGPoint(x: p.x, y: p.y - s * 2)); star.addLine(to: CGPoint(x: p.x, y: p.y + s * 2))
         star.move(to: CGPoint(x: p.x - s * 2, y: p.y)); star.addLine(to: CGPoint(x: p.x + s * 2, y: p.y))
         ctx.stroke(star, with: .color(Color(hex: 0xE8B53A)), style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
-    }
-
-    private func confetti(_ ctx: inout GraphicsContext) {
-        var rnd = SeededRandom(11, "confetti")
-        let colors: [Color] = [Palette.red, Palette.mint, Color(hex: 0xE8B53A), Color(hex: 0x7F9C6B), Color(hex: 0xE89AB0)]
-        for i in 0..<26 {
-            let speed = rnd.range(0.25, 0.45)
-            let f = (t * speed + rnd.next()).truncatingRemainder(dividingBy: 1)
-            let x = rnd.cg(0.05, 0.95) * size.width + CGFloat(sin(t * 2 + Double(i))) * 8 * u
-            let y = CGFloat(f) * size.height
-            var c = ctx
-            c.translateBy(x: x, y: y)
-            c.rotate(by: .radians(t * 3 + Double(i)))
-            if i % 3 == 0 {
-                c.fill(Pen.leaf(at: .zero, angle: 0, length: 10 * u, width: 0.45), with: .color(Color(hex: 0x7F9C6B)))
-            } else {
-                c.fill(Path(CGRect(x: -3 * u, y: -2 * u, width: 6 * u, height: 4 * u)), with: .color(colors[i % colors.count]))
-            }
-        }
     }
 }

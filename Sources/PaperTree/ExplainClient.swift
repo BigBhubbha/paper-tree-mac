@@ -83,8 +83,8 @@ struct ExplainClient {
     func explain(text: String, context: String, mode: ExplainMode,
                  onPartial: (@MainActor (String) -> Void)? = nil) async throws -> Explanation {
         guard configured, let url = URL(string: endpoint.trimmingCharacters(in: .whitespacesAndNewlines)) else {
-            throw ExplainError(title: "No explainer connected yet.",
-                               detail: "Add your Paper Tree server address in Settings, then try again.",
+            throw ExplainError(title: "That explainer address doesn't work.",
+                               detail: "Open Settings, then For tinkerers, and choose Use the built-in explainer.",
                                canOpenSettings: true)
         }
 
