@@ -489,9 +489,9 @@ extension Snapshots {
         }
         shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = writing }, store, "podcast-generating-script", to: dir)
         let playing = listening { r, pm in
-            let at = episode.lines[5].start + 2.2
+            let at = episode.lines[3].start + 2.2
             pm.preset(episode: episode, phase: .ready, time: at, playing: true)
-            r.follow(episode.lines[5].quote)
+            r.follow(episode.lines[3].quote)
         }
         shootIsland(island { $0.page = .paper(host.id, sample.id); $0.readerPreset = playing }, store, "podcast-playing", to: dir)
         let fresh = listening { _, pm in

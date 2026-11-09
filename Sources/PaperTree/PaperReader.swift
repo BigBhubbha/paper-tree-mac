@@ -626,15 +626,16 @@ struct ReaderRail: View {
             }
             .buttonStyle(InkLinkButtonStyle(color: Palette.ink2))
             Text("from \(tree.displayName)").font(.typewriter(9.5)).foregroundColor(Palette.ink3)
-            Text(paper.title).font(.fell(19)).foregroundColor(Palette.ink)
-                .fixedSize(horizontal: false, vertical: true).lineLimit(5)
-            if !paper.authors.isEmpty {
+            let listening = reader.rail == .listen || reader.status == .unavailable
+            Text(paper.title).font(.fell(listening ? 16 : 19)).foregroundColor(listening ? Palette.ink2 : Palette.ink)
+                .fixedSize(horizontal: false, vertical: true).lineLimit(listening ? 2 : 5)
+            if !listening && !paper.authors.isEmpty {
                 Text(paper.authors.prefix(5).joined(separator: ", ") + (paper.authors.count > 5 ? ", et al." : ""))
                     .font(.text(12.5)).foregroundColor(Palette.ink2).lineLimit(3)
             }
             let meta = [paper.year.map(String.init) ?? "", paper.venue].filter { !$0.isEmpty }.joined(separator: ", ")
-            if !meta.isEmpty { Text(meta).font(.typewriter(10)).foregroundColor(Palette.ink3).lineLimit(2) }
-            if let u = paper.openURL {
+            if !listening && !meta.isEmpty { Text(meta).font(.typewriter(10)).foregroundColor(Palette.ink3).lineLimit(2) }
+            if !listening, let u = paper.openURL {
                 Button("Open in browser") { NSWorkspace.shared.open(u) }
                     .buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
                     .font(.ui(11))

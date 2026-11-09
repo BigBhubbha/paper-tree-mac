@@ -606,9 +606,10 @@ struct PodcastDeck: View {
                         skip("goforward.15", "Forward 15 seconds") { podcast.skip(15) }
                     }
                 }
-                Rectangle().fill(Palette.ink.opacity(0.16)).frame(width: 0.8).padding(.vertical, 4)
+                Rectangle().fill(Palette.ink.opacity(0.16)).frame(width: 0.8, height: 70)
                 SpeedPicker(podcast: podcast)
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.leading, 14).padding(.trailing, 16).padding(.vertical, 12)
             .frame(maxWidth: 720)
             .background(

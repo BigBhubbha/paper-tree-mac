@@ -154,7 +154,7 @@ enum PodcastAudio {
         return nil
     }
 
-    /// Loudness in `count` steps, each 0...1, with a gentle curve so quiet speech still shows.
+    /// Loudness in `count` steps, each 0...1: loud speech near the top, breaths and pauses low.
     static func peaks(_ samples: [Int16], count: Int) -> [Float] {
         guard !samples.isEmpty, count > 0 else { return [] }
         let per = max(1, samples.count / count)
@@ -167,11 +167,11 @@ enum PodcastAudio {
             var sum: Float = 0
             var k = a
             while k < e { let v = Float(samples[k]) / 32768; sum += v * v; k += 4 }
-            let rms = (sum / Float(max(1, (e - a) / 4))).squareRoot()
-            out.append(rms)
+            out.append((sum / Float(max(1, (e - a) / 4))).squareRoot())
         }
-        let m = max(out.max() ?? 1, 0.0001)
-        return out.map { min(1, ($0 / m).squareRoot()) }
+        let sorted = out.sorted()
+        let top = max(sorted[min(sorted.count - 1, Int(Double(sorted.count) * 0.96))], 0.0001)
+        return out.map { Float(pow(Double(min(1, $0 / top)), 0.8)) }
     }
 }
 
@@ -385,7 +385,7 @@ final class PodcastModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
                         while next < parts.count && next < 3 { let k = next; next += 1; group.addTask { try await one(k) } }
                         while let done = try await group.next() {
                             got.append(done)
-                            await self.landPart(done.0, done.1, parts)
+                            self.landPart(done.0, done.1, parts)
                             if next < parts.count { let k = next; next += 1; group.addTask { try await one(k) } }
                         }
                         return got
