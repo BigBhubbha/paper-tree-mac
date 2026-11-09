@@ -225,10 +225,10 @@ struct GroveOverview: View {
                 return (w, w >= h * aspect * 0.72)
             }
             let one = fit(1), two = fit(2)
-            let rows = (one.fits && one.w >= two.w) || n == 1 ? 1 : 2
+            let rows = (n == 1 || one.w >= two.w) ? 1 : 2
             let columns = Int((Double(n) / Double(rows)).rounded(.up))
             let rowH = (size.height - CGFloat(rows - 1) * spacing) / CGFloat(rows)
-            let w = (rows == 1 ? one : two).fits ? (rows == 1 ? one.w : two.w) : rowH * aspect * 0.72
+            let w = rows == 1 ? one.w : (two.fits ? two.w : rowH * aspect * 0.72)
             let cell = CGSize(width: floor(w), height: floor(min(rowH, w / aspect)))
             return Layout(rows: rows, columns: columns, cell: cell, spacing: spacing)
         }

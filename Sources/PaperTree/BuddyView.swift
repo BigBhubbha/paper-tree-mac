@@ -135,13 +135,7 @@ enum BuddyArt {
         c.stroke(sheen, with: .color(.white.opacity(0.75)), style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
         c.fill(Path(ellipseIn: CGRect(x: 44, y: 26, width: 2.4, height: 9)), with: .color(.white.opacity(0.7)))
 
-        // 8. Cheeks, in red pen.
-        for cx in [CGFloat(32.5), CGFloat(67.5)] {
-            c.fill(Path(ellipseIn: CGRect(x: cx - 4.2, y: 76.5, width: 8.4, height: 4.4)),
-                   with: .color(Palette.cheek))
-        }
-
-        // 9. Goggles in research mode (drawn under the eyes so the eyes show through).
+        // 8. Goggles in research mode (drawn under the eyes so the eyes show through).
         if research {
             let frame = Palette.ink
             var strap = Path()

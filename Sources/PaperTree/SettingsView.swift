@@ -462,7 +462,7 @@ private struct CountSlip: View {
                     .padding(.top, 4)
             } else {
                 Text(count.formatted())
-                    .font(.fell(count > 9999 ? 36 : 46))
+                    .font(.text(count > 9999 ? 34 : 42))
                     .foregroundColor(Palette.ink)
                     .padding(.top, 2)
                 Text(count == 1 ? "card opened on this Mac" : "cards opened on this Mac")
