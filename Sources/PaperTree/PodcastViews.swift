@@ -124,17 +124,17 @@ struct HostTag: View {
         }
         .padding(.leading, 9).padding(.trailing, 10).padding(.vertical, 6)
         .background(
-            TagShape().fill(Color(hex: 0xEADDB9))
-                .overlay(Image(nsImage: PaperGrain.image).resizable(resizingMode: .tile).opacity(0.5).clipShape(TagShape()))
+            HostTagShape().fill(Color(hex: 0xEADDB9))
+                .overlay(Image(nsImage: PaperGrain.image).resizable(resizingMode: .tile).opacity(0.5).clipShape(HostTagShape()))
                 .shadow(color: .black.opacity(0.14), radius: 1.5, x: 0.5, y: 1)
         )
-        .overlay(TagShape().stroke(Palette.ink.opacity(0.22), lineWidth: 0.7))
+        .overlay(HostTagShape().stroke(Palette.ink.opacity(0.22), lineWidth: 0.7))
         .accessibilityElement(children: .combine)
     }
 }
 
 /// A shipping tag: square on the right, corners clipped on the left where the string goes.
-struct TagShape: Shape {
+struct HostTagShape: Shape {
     func path(in r: CGRect) -> Path {
         let c = min(9, r.height * 0.3)
         var p = Path()
@@ -250,7 +250,7 @@ struct PodcastSession: View {
 
     @ViewBuilder private var scriptPreview: some View {
         if podcast.draft.isEmpty {
-            PencilLines(count: 6).frame(height: 96).padding(.top, 4)
+            ScriptScribble(count: 6).frame(height: 96).padding(.top, 4)
         } else {
             GroveScroll(axis: .vertical) {
                 VStack(alignment: .leading, spacing: 7) {
@@ -303,7 +303,7 @@ struct PencilDots: View {
 }
 
 /// Lines of pencil writing themselves, while the script is being written.
-struct PencilLines: View {
+struct ScriptScribble: View {
     var count: Int
     var body: some View {
         TimelineView(.animation(minimumInterval: 1.0 / 30, paused: Motion.reduced || Snapshots.isRendering)) { tl in
