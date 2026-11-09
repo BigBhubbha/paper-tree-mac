@@ -926,7 +926,8 @@ async function treeSpecies(req, waitUntil) {
     "conifer = rigorous and structured, mathematics, physics, engineering, statistics; flytrap = medicine, disease, immunology, infection, predators and parasites, pharmacology; " +
     "alien = computing, AI, space, quantum, anything futuristic; coral = chemistry, materials, oceans, climate, earth science.\n" +
     "commonName: a playful two or three word name for this particular plant, like \"Lantern-pod Transformer Tree\". latinName: a made-up binomial in Latin style. " +
-    "note: one plain sentence under 18 words saying why this plant fits the papers. No em dashes. " +
+    "note: one plain sentence under 18 words saying why this plant fits the papers. Name the shared subject in plain words. " +
+    "Do not use captures, complex, rapid, evolution, journey, landscape, or tapestry. No em dashes. " +
     "leafTone: a color that suits the topics. vigor, twist, droop: numbers from 0 to 1 for how bushy, how twisty, how drooping the plant is.\n\n" +
     `Fields: ${fields.join(", ") || "unknown"}\nPaper titles:\n- ${titles.join("\n- ")}`;
   const key = await cacheKey(["species-v1", prompt]);

@@ -302,7 +302,7 @@ struct BuddyScene {
         case .ponder:
             pencil(&c, at: p.right, angle: -1.2)
         case .juggle:
-            let colors: [UInt32] = [0xC8423B, 0x3E8C86, 0xE8B53A]
+            let colors: [UInt32] = [0x4A443A, 0xEFE6D2, 0x506B39]   // ink2, paper, green
             for i in 0..<3 {
                 let f = (k / act.loop + Double(i) / 3).truncatingRemainder(dividingBy: 1)
                 let x = 50 + CGFloat(cos(f * 2 * .pi)) * 30
@@ -586,6 +586,6 @@ struct BuddyScene {
         var star = Path()
         star.move(to: CGPoint(x: p.x, y: p.y - s * 2)); star.addLine(to: CGPoint(x: p.x, y: p.y + s * 2))
         star.move(to: CGPoint(x: p.x - s * 2, y: p.y)); star.addLine(to: CGPoint(x: p.x + s * 2, y: p.y))
-        ctx.stroke(star, with: .color(Color(hex: 0xE8B53A)), style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
+        ctx.stroke(star, with: .color(Palette.ink3), style: StrokeStyle(lineWidth: 1.4, lineCap: .round))
     }
 }

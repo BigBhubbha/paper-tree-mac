@@ -24,7 +24,7 @@ enum Palette {
     static let flaskLiquid = Color(hex: 0x8EA672)
     static let flaskDeep   = Color(hex: 0x6E8A55)
     static let flaskLine   = Color(hex: 0x506B39)
-    static let cheek       = Color(hex: 0xB2432C).opacity(0.22)
+    static let cheek       = Color(hex: 0xB2432C).opacity(0.35)
 }
 
 extension Color {

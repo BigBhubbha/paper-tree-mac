@@ -336,14 +336,18 @@ struct IslandView: View {
             HStack(spacing: 10) {
                 BuddyView(mood: .idle, researchMode: on, compact: true)
                     .frame(width: 22, height: 22)
-                Text(on ? "Research mode on" : "Research mode off")
-                    .font(.uiBold(13))
-                    .foregroundColor(.white)
+                // Same voice as the grove header: a typed label, then the state circled in pencil.
+                HStack(alignment: .firstTextBaseline, spacing: 9) {
+                    Text("Research mode")
+                        .font(.typewriter(12))
+                        .foregroundColor(.white.opacity(0.7))
+                    Text(on ? "on" : "off")
+                        .font(.ui(13))
+                        .foregroundColor(.white.opacity(0.95))
+                        .padding(.horizontal, 5).padding(.vertical, 1)
+                        .background(HandCircle().stroke(Palette.paper, style: StrokeStyle(lineWidth: 1, lineCap: .round)).padding(-2))
+                }
                 Spacer(minLength: 0)
-                Circle()
-                    .fill(on ? Palette.paper : Color.clear)
-                    .overlay(Circle().strokeBorder(Palette.paper.opacity(on ? 0 : 0.35), lineWidth: 1))
-                    .frame(width: 7, height: 7)
             }
             .padding(.horizontal, 22)
             .frame(height: IslandModel.flashExtraHeight)

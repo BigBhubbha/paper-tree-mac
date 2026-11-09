@@ -211,8 +211,8 @@ struct GroveOverview: View {
     /// fits, the rows scroll sideways; the New tree sheet stays pinned outside the scroll.
     struct Layout {
         var rows: Int, columns: Int, cell: CGSize, spacing: CGFloat
-        /// Real herbarium sheets are about 29 x 42 cm, so every sheet here is 2:3 portrait.
-        static let aspect: CGFloat = 2.0 / 3.0
+        /// Sheets are 3:4 portrait: close to a real herbarium sheet, with less empty paper under the plant.
+        static let aspect: CGFloat = 3.0 / 4.0
         static func make(count: Int, in size: CGSize, spacing: CGFloat = 16) -> Layout {
             let n = max(1, count)
             // Try one row, then two: keep whichever gives the bigger sheet while they still fit side by side.
@@ -254,10 +254,12 @@ struct GroveOverview: View {
                         ForEach(0..<L.columns, id: \.self) { c in
                             VStack(spacing: L.spacing) {
                                 ForEach(0..<L.rows, id: \.self) { r in
-                                    let i = c * L.rows + r
+                                    // Row by row when it all fits (1, 2, 3 across the top); column by column
+                                    // when it scrolls, so new trees appear at the scrolling end.
+                                    let i = overflow ? c * L.rows + r : r * L.columns + c
                                     if i < trees.count {
                                         let tree = trees[i]
-                                        SpecimenPlate(tree: tree, store: store, compact: true, tight: L.rows > 1) {
+                                        SpecimenPlate(tree: tree, store: store, compact: true, tight: L.rows > 1, sheetWidth: L.cell.width) {
                                             withAnimation(Motion.pick(Motion.page)) { model.page = .tree(tree.id) }
                                         }
                                         .frame(width: L.cell.width, height: L.cell.height)
@@ -289,6 +291,8 @@ struct SpecimenPlate: View {
     var compact: Bool
     /// Short sheets (two rows in the grove): a smaller label, so the plant keeps the room.
     var tight = false
+    /// The sheet's width in the grove, so the label can sit lower right at a fraction of it.
+    var sheetWidth: CGFloat? = nil
     var onOpen: (() -> Void)? = nil
     /// On the tree's own page: zoom and pan, and papers open in the reader.
     var onOpenPaper: ((Paper, CGPoint) -> Void)? = nil
@@ -301,7 +305,7 @@ struct SpecimenPlate: View {
                 if let open = onOpenPaper {
                     TreeViewport(tree: tree, store: store, startZoom: startZoom, startPan: startPan, onOpenPaper: open)
                 } else {
-                    TreeCanvas(tree: tree, store: store, lively: !compact)
+                    TreeCanvas(tree: tree, store: store, lively: !compact, groundedAt: compact ? 10 : nil)
                 }
             }
             .clipped()
@@ -311,7 +315,7 @@ struct SpecimenPlate: View {
                         .font(.typewriter(9.5)).foregroundColor(Palette.ink3)
                 }
                 Spacer(minLength: 0)
-                HerbariumLabel(tree: tree, compact: compact, tight: tight)
+                HerbariumLabel(tree: tree, compact: compact, tight: tight, sheetWidth: sheetWidth)
                     .onTapGesture { onOpen?() }
             }
             .padding(.horizontal, compact ? 7 : 8)
@@ -345,6 +349,7 @@ struct HerbariumLabel: View {
     var tree: PaperTreeData
     var compact: Bool
     var tight = false
+    var sheetWidth: CGFloat? = nil
 
     var body: some View {
         if tight { tightBody } else { fullBody }
@@ -361,14 +366,15 @@ struct HerbariumLabel: View {
     /// Small sheets: the name and the count only.
     private var tightBody: some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(tree.displayName).font(.fell(14)).foregroundColor(Palette.ink)
+            tree.nameText(14).foregroundColor(Palette.ink)
                 .lineLimit(2).minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             Text(count).font(.typewriter(8.5)).foregroundColor(Palette.ink3)
         }
         .padding(.horizontal, 7)
         .padding(.vertical, 5)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(width: sheetWidth.map { $0 * 0.62 }, alignment: .leading)
+        .frame(maxWidth: sheetWidth == nil ? CGFloat.infinity : nil, alignment: .leading)
         .background(Color(hex: 0xFFFDF6))
         .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.75), lineWidth: 0.9))
         .rotationEffect(.degrees(-0.6))
@@ -383,7 +389,7 @@ struct HerbariumLabel: View {
                     .font(.typewriter(8.5)).fixedSize()
             }
             .foregroundColor(Palette.ink3)
-            Text(tree.displayName).font(.fell(compact ? 15 : 19)).foregroundColor(Palette.ink)
+            tree.nameText(compact ? 15 : 19).foregroundColor(Palette.ink)
                 .lineLimit(2).minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             if !tree.look.latinName.isEmpty {
@@ -396,7 +402,8 @@ struct HerbariumLabel: View {
         }
         .padding(.horizontal, 9)
         .padding(.vertical, 7)
-        .frame(maxWidth: compact ? CGFloat.infinity : 260, alignment: .leading)
+        .frame(width: compact ? sheetWidth.map { $0 * 0.68 } : nil, alignment: .leading)
+        .frame(maxWidth: compact ? (sheetWidth == nil ? CGFloat.infinity : nil) : 260, alignment: .leading)
         .background(Color(hex: 0xFFFDF6))
         .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.75), lineWidth: 0.9))
         .overlay(Rectangle().strokeBorder(Palette.ink.opacity(0.35), lineWidth: 0.4).padding(2.5))
@@ -488,6 +495,7 @@ struct ResearchSwitch: View {
             HStack(alignment: .firstTextBaseline, spacing: 9) {
                 Text("Research mode").font(.typewriter(11)).foregroundColor(Color.white.opacity(0.7))
                 word("on", selected: on)
+                Text("/").font(.ui(12.5)).foregroundColor(.white.opacity(0.35))
                 word("off", selected: !on)
             }
             .contentShape(Rectangle())
@@ -543,6 +551,8 @@ struct TreeCanvas: View {
     var pan: CGSize = .zero
     /// On a tree's own page: papers open in the reader and get readable captions up close.
     var onOpenPaper: ((Paper, CGPoint) -> Void)? = nil
+    /// Grove sheets: the drawing sits on the bottom edge, this many points above it, instead of centered.
+    var groundedAt: CGFloat? = nil
     @State private var openGhost: String?
     @State private var appeared = Date()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -557,10 +567,17 @@ struct TreeCanvas: View {
     }
 
     /// Drawing coordinates to view coordinates: fit everything drawn, then zoom and pan.
-    static func camera(_ g: TreeGeometry, in size: CGSize, zoom: CGFloat, pan: CGSize, pad: CGFloat) -> (CGAffineTransform, CGFloat) {
+    static func camera(_ g: TreeGeometry, in size: CGSize, zoom: CGFloat, pan: CGSize, pad: CGFloat,
+                       groundedAt: CGFloat? = nil) -> (CGAffineTransform, CGFloat) {
         let b = g.contentBounds.isEmpty ? CGRect(origin: .zero, size: size) : g.contentBounds
-        let fit = min((size.width - pad * 2) / max(1, b.width), (size.height - pad * 2) / max(1, b.height))
+        let fit = min((size.width - pad * 2) / max(1, b.width), (size.height - pad - (groundedAt ?? pad)) / max(1, b.height))
         let s = max(0.01, fit * zoom)
+        if let ground = groundedAt {
+            let t = CGAffineTransform(translationX: size.width / 2 + pan.width, y: size.height - ground + pan.height)
+                .scaledBy(x: s, y: s)
+                .translatedBy(x: -b.midX, y: -b.maxY)
+            return (t, s)
+        }
         let t = CGAffineTransform(translationX: size.width / 2 + pan.width, y: size.height / 2 + pan.height)
             .scaledBy(x: s, y: s)
             .translatedBy(x: -b.midX, y: -b.midY)
@@ -605,7 +622,7 @@ struct TreeCanvas: View {
                 sketch[gh.id] = CGFloat(max(0, min(1, (now.timeIntervalSince(sketchFrom) - 0.35 - Double(k) * 0.22) / 0.9)))
             }
         }
-        let (cam, scale) = Self.camera(g, in: size, zoom: zoom, pan: pan, pad: onOpenPaper == nil ? 6 : 18)
+        let (cam, scale) = Self.camera(g, in: size, zoom: zoom, pan: pan, pad: onOpenPaper == nil ? 6 : 18, groundedAt: groundedAt)
         let card = CGSize(width: g.cardSize.width * scale, height: g.cardSize.height * scale)
         let papers = tree.papers.sorted { $0.addedAt < $1.addedAt }
         let morph = still ? nil : Self.morph(tree, now: now)
@@ -951,14 +968,14 @@ struct TreeSheetPage: View {
     private var notes: some View {
         GroveScroll(axis: .vertical) {
             VStack(alignment: .leading, spacing: 12) {
-                Text(tree.displayName).font(.fell(28)).foregroundColor(Palette.ink)
+                tree.nameText(28).foregroundColor(Palette.ink)
                 if let why = tree.look.grownFromLine {
                     (Text("A \(tree.look.species.plainName), ").font(.typewriter(10.5)) + Text(why).font(.typewriter(10.5)))
                         .foregroundColor(Palette.ink3)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if !tree.look.note.isEmpty {
-                    Text(tree.look.note).font(.hand(14.5)).foregroundColor(Palette.red)
+                    Text(tree.look.note).font(.hand(14.5)).foregroundColor(Palette.ink2)
                         .fixedSize(horizontal: false, vertical: true)
                         .rotationEffect(.degrees(-0.8))
                 }
@@ -1326,5 +1343,16 @@ struct RematchPanel: View {
                 problem = "I couldn't reach the paper databases. Try again in a moment."
             }
         }
+    }
+}
+
+extension PaperTreeData {
+    /// The tree's name for a heading. IM Fell's old-style 1 reads as a dotless i, so the number in a
+    /// default name ("Tree No. 1") is set in Newsreader's lining figures.
+    func nameText(_ size: CGFloat) -> Text {
+        if name.isEmpty {
+            return Text("Tree No. ").font(.fell(size)) + Text("\(number)").font(.text(size * 0.94))
+        }
+        return Text(name).font(.fell(size))
     }
 }

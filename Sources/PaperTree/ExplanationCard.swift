@@ -76,7 +76,7 @@ struct ExplanationCardView: View {
                     CardBody(model: model)
                 }
             }
-            .padding(.top, 10)
+            .padding(.top, 14)
             CardFooter(model: model).padding(.top, 12)
         }
         .padding(.horizontal, 16)

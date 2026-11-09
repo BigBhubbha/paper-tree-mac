@@ -116,13 +116,8 @@ struct SettingsView: View {
 
     @ViewBuilder private var permission: some View {
         if state.accessibilityGranted {
-            HStack(alignment: .center, spacing: 6) {
-                ApprovalStamp(granted: true).scaleEffect(0.72).frame(width: 80, height: 80)
-                Text("macOS lets me read your highlights.")
-                    .font(.text(13.5))
-                    .foregroundColor(Palette.ink2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            // The stamp says it: approved, access on.
+            ApprovalStamp(granted: true).scaleEffect(0.72).frame(width: 80, height: 80)
         } else {
             VStack(alignment: .leading, spacing: 6) {
                 Text("I can't read highlights yet. macOS needs to let me in first.")
@@ -186,7 +181,7 @@ struct SettingsView: View {
                 .padding(.top, 12)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text("Fig. 1.").font(.typewriter(11)).foregroundColor(Palette.ink3)
-                Text("The right Option key. One tap opens your trees at the notch, with anything you've highlighted ready to add; two flip Research mode.")
+                Text("The right Option key.")
                     .font(.text(13))
                     .foregroundColor(Palette.ink3)
                     .fixedSize(horizontal: false, vertical: true)
@@ -257,7 +252,18 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.typewriter(10.5)).foregroundColor(Palette.ink3)
             Group {
-                if secure { SecureField(placeholder, text: text) } else { TextField(placeholder, text: text) }
+                if Snapshots.isRendering {
+                    // ImageRenderer can't draw AppKit text fields, so snapshots show the text itself.
+                    let value = text.wrappedValue
+                    Text(value.isEmpty ? placeholder : (secure ? String(repeating: "\u{2022}", count: min(12, value.count)) : value))
+                        .foregroundColor(value.isEmpty ? Palette.pencil : Palette.ink)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if secure {
+                    SecureField(placeholder, text: text)
+                } else {
+                    TextField(placeholder, text: text)
+                }
             }
             .textFieldStyle(.plain)
             .font(.typewriter(12.5))
@@ -521,7 +527,7 @@ struct HandSwitch: View {
                 .background(
                     PencilCircle(seed: text.count + 2)
                         .trim(from: 0, to: selected ? 1 : 0)
-                        .stroke(selected && text == "on" ? Palette.green : Palette.red.opacity(0.85),
+                        .stroke(selected && text == "on" ? Palette.green : Palette.ink.opacity(0.7),
                                 style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
                         .padding(.horizontal, -2)
                         .padding(.vertical, -1)

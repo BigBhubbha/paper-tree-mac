@@ -135,6 +135,9 @@ jobs:
           TXT
           # The drawn window background (Resources/dmg, made by scripts/make_dmg_background.py),
           # with the 1x and 2x images joined so Retina screens get the sharp one.
+          # Redraw it for this version so the label never goes stale (Pillow only if the runner lacks it).
+          python3 -m pip install --quiet --user pillow 2>/dev/null || python3 -m pip install --quiet --break-system-packages pillow || true
+          python3 scripts/make_dmg_background.py "$VERSION" || echo "::warning::kept the committed DMG background"
           tiffutil -cathidpicheck Resources/dmg/background.png Resources/dmg/background@2x.png -out dist/background.tiff
           brew install create-dmg || true
           made=false
