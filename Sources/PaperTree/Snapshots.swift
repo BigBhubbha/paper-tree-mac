@@ -39,10 +39,8 @@ enum Snapshots {
 
     private static func render(to dir: URL) {
         let state = AppState.shared
-        state.profileSchool = "hs11"
-        state.profileExpertise = "classes"
-        state.profileFields = ["biology", "chemistry"]
-        state.profileLength = "balanced"
+        // Sample answers in a reader's own words (setup asks in long form since 0.2.8).
+        for (q, words) in sampleAnswers { state.setAnswer(q, words) }
 
         // Explanation card with a real answer from the explainer (recorded, not live).
         let model = CardModel()
@@ -71,6 +69,7 @@ enum Snapshots {
             save(SetupView(state: state, island: island, initialStep: step.rawValue, explainPractice: { _, _, _ in }, done: {}),
                  "setup-" + String(format: "%02d", step.rawValue + 1) + "-\(step)", to: dir)
         }
+        renderLongForm(state: state, island: island, to: dir)
         // Settings as this build machine really is (no cards opened, no Accessibility).
         save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
                 .background(DeskBackground()), "settings", to: dir)
@@ -81,6 +80,49 @@ enum Snapshots {
                 .background(DeskBackground()), "settings-sample-count", to: dir)
         save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}, showTinkerers: true).content
                 .background(DeskBackground()), "settings-tinkerers", to: dir)
+    }
+
+    static let sampleAnswers: [(ReaderQuestion, String)] = [
+        (.school, "I'm a junior in high school, taking AP Bio and chemistry this year."),
+        (.background, "Two years of school science and a summer helping in a plant lab. Still new to reading real papers."),
+        (.fields, "Plant biology mostly, some chemistry, and anything about drought and climate."),
+        (.length, "Short, please. Two or three sentences, and explain the hard word."),
+    ]
+
+    /// The long-form setup questions: each page with a written answer and empty, the finish
+    /// summary, the Settings label and its writing slip, and how an older build's answers come back.
+    private static func renderLongForm(state: AppState, island: IslandModel, to dir: URL) {
+        let out = dir.appendingPathComponent("setup-longform", isDirectory: true)
+        try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+        func setup(_ step: SetupStep, _ name: String) {
+            save(SetupView(state: state, island: island, initialStep: step.rawValue, explainPractice: { _, _, _ in }, done: {}),
+                 name, to: out)
+        }
+        let pages: [(SetupStep, String)] = [(.school, "1-school"), (.background, "2-background"),
+                                            (.fields, "3-fields"), (.length, "4-length")]
+        for (step, name) in pages { setup(step, "question-\(name)") }
+        setup(.finish, "finish-summary")
+        save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
+                .background(DeskBackground()), "settings-profile", to: out)
+        save(AnswerSlip(question: .background, text: .constant(sampleAnswers[1].1), done: {})
+                .padding(24).background(DeskBackground()), "settings-answer-slip", to: out)
+
+        // Blank pages: the pencil placeholder, the hint, and Skip for now.
+        let saved = ReaderQuestion.allCases.map { state.answer($0) }
+        for q in ReaderQuestion.allCases { state.setAnswer(q, "") }
+        for (step, name) in pages { setup(step, "question-\(name)-blank") }
+        setup(.finish, "finish-summary-blank")
+
+        // A reader coming from 0.2.7: their old option ids come back as words to edit.
+        state.setAnswer(.school, ReaderProfile.migrated("hs11", from: ReaderProfile.schoolYears))
+        state.setAnswer(.background, ReaderProfile.migrated("classes", from: ReaderProfile.expertise))
+        state.setAnswer(.fields, ReaderProfile.migratedFields(["biology", "chemistry", "csai"]))
+        state.setAnswer(.length, ReaderProfile.migrated("balanced", from: ReaderProfile.lengths))
+        setup(.school, "migrated-question-1-school")
+        save(SettingsView(state: state, showWelcome: {}, checkForUpdates: {}).content
+                .background(DeskBackground()), "migrated-settings-profile", to: out)
+
+        for (q, words) in zip(ReaderQuestion.allCases, saved) { state.setAnswer(q, words) }
     }
 
     // MARK: The grove

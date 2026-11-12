@@ -227,3 +227,11 @@ What it is: the reader's Listen tab turns the open paper into a short talk betwe
 - The transcript highlights the spoken line with a sweep of marker, and the matching passage on the page gets the same marker. Tap a line to play from there.
 - Honest about what it is: "AI voices", "made by AI from the paper's text", real steps and real elapsed time while it works, and the server blanks any quote it can't find in the paper.
 - Colors: Juniper is rose, Rowan is sage (two of the existing inks), marker yellow means "being read now", green means done (the pen ticks, the RECORDED stamp).
+
+## Setup questions in long form (0.2.8)
+
+- The four "about you" questions no longer offer fixed options. Each page asks for a sentence ("Where are you in school?", "Tell me about your science so far.", "What do you like to read?", "How should my notes read?") and gives a strip of ruled field-journal paper on the specimen tag to write on: pale blue rules under each written line, a red margin line ruled slightly by hand, the answer in Kalam in blue-black fountain pen ink, pencil placeholder words in the same hand.
+- A quiet Newsreader hint sits under the tag ("a year, a grade, or wherever you are in school. Out of school counts too."). Nothing is required: with the field empty the footer says "Skip for now" instead of Next.
+- The flask still acts out each page, and hops when you start writing and at the end of each sentence.
+- The finish page's red-pen note quotes the reader's own words back ("noted, in your words:"), trimmed at a word with an ellipsis. The Settings label shows the same words; clicking one opens the same ruled slip.
+- Answers from older builds (option ids) are turned into their words once, on first launch, so nobody sees "hs11".

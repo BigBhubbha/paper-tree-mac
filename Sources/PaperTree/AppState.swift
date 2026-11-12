@@ -40,6 +40,8 @@ final class AppState: ObservableObject {
         static let fields = "profileFields"
         static let length = "profileLength"
         static let lastSeenBuild = "lastSeenBuild"
+        /// Set once the saved answers have been turned from option ids into words (0.2.8).
+        static let profileInWords = "profileAnswersInWords"
     }
 
     private let defaults = UserDefaults.standard
@@ -67,17 +69,36 @@ final class AppState: ObservableObject {
     /// Called when setup is finished or skipped, so it does not replay again until the next build.
     func markSetupSeenForThisBuild() { defaults.set(AppState.currentBuild, forKey: Key.lastSeenBuild) }
 
-    // About the reader (empty string means "not answered").
+    // About the reader, in their own words (empty string means "not answered").
     @Published var profileSchool: String { didSet { defaults.set(profileSchool, forKey: Key.school) } }
     @Published var profileExpertise: String { didSet { defaults.set(profileExpertise, forKey: Key.expertise) } }
-    @Published var profileFields: [String] { didSet { defaults.set(profileFields, forKey: Key.fields) } }
+    /// What they read. Saved as one string since 0.2.8 (older builds saved a list of option ids).
+    @Published var profileFields: String { didSet { defaults.set(profileFields, forKey: Key.fields) } }
     @Published var profileLength: String { didSet { defaults.set(profileLength, forKey: Key.length) } }
 
+    /// The answer to one of the setup questions, read and written by question.
+    func answer(_ q: ReaderQuestion) -> String {
+        switch q {
+        case .school: return profileSchool
+        case .background: return profileExpertise
+        case .fields: return profileFields
+        case .length: return profileLength
+        }
+    }
+
+    func setAnswer(_ q: ReaderQuestion, _ text: String) {
+        let capped = String(text.prefix(ReaderProfile.maxAnswer))
+        switch q {
+        case .school: profileSchool = capped
+        case .background: profileExpertise = capped
+        case .fields: profileFields = capped
+        case .length: profileLength = capped
+        }
+    }
+
     var profilePayload: ProfilePayload? {
-        let p = ProfilePayload(school: profileSchool.isEmpty ? nil : profileSchool,
-                               expertise: profileExpertise.isEmpty ? nil : profileExpertise,
-                               fields: profileFields.isEmpty ? nil : profileFields,
-                               length: profileLength.isEmpty ? nil : profileLength)
+        let p = ProfilePayload(school: profileSchool, expertise: profileExpertise,
+                               fields: profileFields, length: profileLength)
         return p.isEmpty ? nil : p
     }
 
@@ -106,10 +127,25 @@ final class AppState: ObservableObject {
         copyFallbackEnabled = defaults.bool(forKey: Key.copyFallback)
         hasOnboarded = defaults.bool(forKey: Key.onboarded)
         setupVersionCompleted = defaults.integer(forKey: Key.setupVersion)
-        profileSchool = defaults.string(forKey: Key.school) ?? ""
-        profileExpertise = defaults.string(forKey: Key.expertise) ?? ""
-        profileFields = defaults.stringArray(forKey: Key.fields) ?? []
-        profileLength = defaults.string(forKey: Key.length) ?? ""
+        // Answers from older builds are option ids; they come back as the words they stood for,
+        // so a returning reader sees "High school, junior" to edit, never "hs11".
+        let savedSchool = defaults.string(forKey: Key.school) ?? ""
+        let savedExpertise = defaults.string(forKey: Key.expertise) ?? ""
+        let savedLength = defaults.string(forKey: Key.length) ?? ""
+        let oldFieldIDs = defaults.stringArray(forKey: Key.fields)
+        let savedFields = defaults.string(forKey: Key.fields) ?? ""
+        // Only once, so a reader who later writes just "grad" keeps their own word.
+        let migrate = !defaults.bool(forKey: Key.profileInWords)
+        profileSchool = migrate ? ReaderProfile.migrated(savedSchool, from: ReaderProfile.schoolYears) : savedSchool
+        profileExpertise = migrate ? ReaderProfile.migrated(savedExpertise, from: ReaderProfile.expertise) : savedExpertise
+        profileLength = migrate ? ReaderProfile.migrated(savedLength, from: ReaderProfile.lengths) : savedLength
+        profileFields = oldFieldIDs.map(ReaderProfile.migratedFields) ?? savedFields
+        // Write the migrated words back (didSet does not run in init).
+        if profileSchool != savedSchool { defaults.set(profileSchool, forKey: Key.school) }
+        if profileExpertise != savedExpertise { defaults.set(profileExpertise, forKey: Key.expertise) }
+        if profileLength != savedLength { defaults.set(profileLength, forKey: Key.length) }
+        if oldFieldIDs != nil { defaults.set(profileFields, forKey: Key.fields) }
+        if migrate { defaults.set(true, forKey: Key.profileInWords) }
     }
 
     /// True when the endpoint still looks like the placeholder or is not a usable https URL.

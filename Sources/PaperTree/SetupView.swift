@@ -1,5 +1,5 @@
 // First-run setup, one small step per page, with the flask buddy acting out each one:
-//   welcome; four "about you" questions, one per page; Accessibility; then four hands-on steps
+//   welcome; four "about you" questions, one per page, answered in your own words; Accessibility; then four hands-on steps
 //   (tap once to open the island, highlight to explain, add a paper, double-tap Research mode);
 //   and a last page to celebrate. Pages turn like a notebook; a sprig along the bottom grows a
 //   leaf for every page done. Re-open any time from Settings > Redo setup.
@@ -56,6 +56,17 @@ enum SetupStep: Int, CaseIterable {
     }
 
     var isPractice: Bool { [.tap, .highlight, .add, .research].contains(self) }
+
+    /// The "about you" question this page asks, if any.
+    var question: ReaderQuestion? {
+        switch self {
+        case .school: return .school
+        case .background: return .background
+        case .fields: return .fields
+        case .length: return .length
+        default: return nil
+        }
+    }
 }
 
 struct SetupView: View {
@@ -180,7 +191,10 @@ struct SetupView: View {
                 case .finish:
                     Button("Start reading") { done() }.buttonStyle(StampButtonStyle())
                 default:
-                    if step.isPractice && !did.contains(step) {
+                    if let q = step.question,
+                       state.answer(q).trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Button("Skip for now") { go(1) }.buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
+                    } else if step.isPractice && !did.contains(step) {
                         Button("Skip this step") { go(1) }.buttonStyle(InkLinkButtonStyle(color: Palette.ink3))
                     } else {
                         Button("Next") { go(1) }.buttonStyle(StampButtonStyle())
@@ -250,52 +264,8 @@ struct SetupView: View {
             line("I live in your Mac's notch. Highlight something hard in a paper and I'll explain it in plain words. Add the papers you read and I'll grow them into trees.")
             handNote("This takes about two minutes, one small step at a time.")
                 .padding(.top, 22)
-        case .school:
-            kicker("about you")
-            title("What year are you in?")
-            line("So I can pitch my notes at your level.")
-            SpecimenTag(number: 1, total: 4, label: "year in school", tilt: -0.6) {
-                CircleChoices(options: ReaderProfile.schoolYears, selected: [state.profileSchool]) { id in
-                    state.profileSchool = state.profileSchool == id ? "" : id
-                    pulse += 1
-                }
-            }
-            .padding(.top, 22)
-        case .background:
-            kicker("about you")
-            title("How much science have you done?")
-            line("Circle the closest one. Nobody else sees this.")
-            SpecimenTag(number: 2, total: 4, label: "science background", tilt: 0.5) {
-                CircleChoices(options: ReaderProfile.expertise, selected: [state.profileExpertise]) { id in
-                    state.profileExpertise = state.profileExpertise == id ? "" : id
-                    pulse += 1
-                }
-            }
-            .padding(.top, 22)
-        case .fields:
-            kicker("about you")
-            title("What do you read?")
-            line("Tick as many as you like.")
-            SpecimenTag(number: 3, total: 4, label: "fields you read most", tilt: 0.4) {
-                CircleChoices(options: ReaderProfile.fields, selected: Set(state.profileFields), multiple: true) { id in
-                    if let i = state.profileFields.firstIndex(of: id) { state.profileFields.remove(at: i) }
-                    else { state.profileFields.append(id) }
-                    pulse += 1
-                }
-            }
-            .padding(.top, 22)
-        case .length:
-            kicker("about you")
-            title("How long should my notes be?")
-            line("You can change this, and the rest, in Settings whenever you like.")
-            SpecimenTag(number: 4, total: 4, label: "how long should my notes be", tilt: -0.5) {
-                CircleChoices(options: ReaderProfile.lengths, selected: [state.profileLength]) { id in
-                    state.profileLength = state.profileLength == id ? "" : id
-                    pulse += 1
-                }
-            }
-            .padding(.top, 22)
-            FieldNote(state: state).padding(.top, 20).padding(.leading, 6)
+        case .school, .background, .fields, .length:
+            if let q = step.question { question(q) }
         case .permission:
             kicker("permission")
             title("Let me see what you highlight.")
@@ -344,6 +314,36 @@ struct SetupView: View {
             .padding(.top, 16)
             FieldNote(state: state).padding(.top, 18)
         }
+    }
+
+    /// One "about you" question: the prompt, then a specimen tag with ruled lines to write on,
+    /// and a quiet hint underneath. Nothing is required; an empty answer just moves on.
+    @ViewBuilder private func question(_ q: ReaderQuestion) -> some View {
+        kicker("about you")
+        title(q.title)
+        line(q.invite)
+        SpecimenTag(number: q.rawValue + 1, total: ReaderQuestion.allCases.count, label: q.tag,
+                    tilt: [-0.6, 0.5, 0.4, -0.5][q.rawValue]) {
+            LongAnswerField(text: answerBinding(q), placeholder: q.placeholder,
+                            accessibilityName: q.accessibilityName, focusOnAppear: true)
+        }
+        .padding(.top, 18)
+        Text(q.hint)
+            .font(.text(12.5))
+            .foregroundColor(Palette.ink3)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.top, 9)
+            .padding(.leading, 46)
+    }
+
+    private func answerBinding(_ q: ReaderQuestion) -> Binding<String> {
+        Binding(get: { state.answer(q) }, set: { new in
+            let old = state.answer(q)
+            state.setAnswer(q, new)
+            // The flask answers when you start writing, and again at the end of each sentence.
+            let ended = new.count > old.count && (new.last.map { ".!?".contains($0) } ?? false)
+            if (old.isEmpty && !new.isEmpty) || ended { pulse += 1 }
+        })
     }
 
     private func handNote(_ s: String) -> some View {
@@ -538,23 +538,20 @@ private struct SprigLeaf: Shape {
 
 // MARK: - Shared pieces (also used by Settings)
 
-/// A red-pen line that rewrites itself from the answers, so you can see they were heard.
+/// A red-pen note that quotes the reader's own answers back, so they can see they were heard.
 struct FieldNote: View {
     @ObservedObject var state: AppState
+    /// Longest quote per answer, in characters.
+    var limit = 46
+
+    private var quotes: [String] {
+        ReaderQuestion.allCases.compactMap { ReaderProfile.quote(state.answer($0), limit: limit) }
+    }
 
     private var line: String {
-        var bits: [String] = []
-        if let s = ReaderProfile.schoolYears.first(where: { $0.id == state.profileSchool }) { bits.append(s.label.lowercased()) }
-        if let e = ReaderProfile.expertise.first(where: { $0.id == state.profileExpertise }) { bits.append(e.short) }
-        let fields = ReaderProfile.fields.filter { state.profileFields.contains($0.id) && $0.id != "other" }.map(\.short)
-        if !fields.isEmpty { bits.append("reads " + fields.joined(separator: ", ")) }
-        switch state.profileLength {
-        case "shortest": bits.append("wants the shortest notes")
-        case "thorough": bits.append("likes a little more detail")
-        case "balanced": bits.append("likes balanced notes")
-        default: break
-        }
-        return bits.isEmpty ? "nothing noted yet. That's fine too, I'll assume a curious high schooler." : bits.joined(separator: "; ") + "."
+        let q = quotes
+        if q.isEmpty { return "nothing noted yet. That's fine too, I'll assume a curious high schooler." }
+        return q.map { "\u{201C}\($0)\u{201D}" }.joined(separator: "  ")
     }
 
     var body: some View {
@@ -563,13 +560,15 @@ struct FieldNote: View {
                 .stroke(Palette.red.opacity(0.85), style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round))
                 .frame(width: 8, height: 40)
             VStack(alignment: .leading, spacing: 2) {
-                Text("noted:").font(.hand(14.5))
+                Text(quotes.isEmpty ? "noted:" : "noted, in your words:").font(.hand(14.5))
                 Text(line).font(.hand(14.5)).fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(5)
                     .animation(Motion.pick(Motion.snappy), value: line)
             }
             .foregroundColor(Palette.red)
         }
         .rotationEffect(.degrees(-0.6))
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -647,54 +646,6 @@ private struct TagString: Shape {
     }
 }
 
-/// Answers written by hand. Picking one circles it in red pencil (or ticks it, for multiple choice).
-struct CircleChoices: View {
-    var options: [ProfileOption]
-    var selected: Set<String>
-    var multiple = false
-    var pick: (String) -> Void
-
-    var body: some View {
-        FlowLayout(spacing: 16, lineSpacing: 8) {
-            ForEach(options) { o in
-                let on = selected.contains(o.id)
-                Button { withAnimation(Motion.pick(Motion.settle)) { pick(o.id) } } label: {
-                    HStack(spacing: 4) {
-                        if multiple {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 1.5).stroke(Palette.ink.opacity(0.55), lineWidth: 0.9)
-                                    .frame(width: 12, height: 12)
-                                if on {
-                                    CheckMark().stroke(Palette.green, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
-                                        .frame(width: 13, height: 11).offset(x: 2, y: -2)
-                                        .transition(.scale(scale: 1.6).combined(with: .opacity))
-                                }
-                            }
-                        }
-                        Text(o.short)
-                            .font(.hand(16.5))
-                            .foregroundColor(on ? Palette.ink : Palette.ink2)
-                    }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 1)
-                    .background(
-                        PencilCircle(seed: o.id.count)
-                            .trim(from: 0, to: (on && !multiple) ? 1 : 0)
-                            .stroke(Palette.red.opacity(0.85), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
-                            .padding(.horizontal, -3)
-                            .padding(.vertical, -2)
-                    )
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .help(o.label)
-                .accessibilityLabel(o.label)
-                .accessibilityAddTraits(on ? .isSelected : [])
-            }
-        }
-    }
-}
-
 /// A hand-drawn loop: not quite an ellipse, and it overshoots where the pencil started.
 struct PencilCircle: Shape {
     var seed: Int = 0
@@ -713,36 +664,6 @@ struct PencilCircle: Shape {
             if i == 0 { p.move(to: pt) } else { p.addLine(to: pt) }
         }
         return p
-    }
-}
-
-/// Wraps its children into lines, like words on a page.
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 10
-    var lineSpacing: CGFloat = 6
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxW = proposal.width ?? .infinity
-        var x: CGFloat = 0, y: CGFloat = 0, lineH: CGFloat = 0, widest: CGFloat = 0
-        for s in subviews {
-            let sz = s.sizeThatFits(.unspecified)
-            if x > 0 && x + sz.width > maxW { y += lineH + lineSpacing; x = 0; lineH = 0 }
-            x += sz.width + spacing
-            lineH = max(lineH, sz.height)
-            widest = max(widest, x - spacing)
-        }
-        return CGSize(width: maxW.isFinite ? maxW : widest, height: y + lineH)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x: CGFloat = 0, y: CGFloat = 0, lineH: CGFloat = 0
-        for s in subviews {
-            let sz = s.sizeThatFits(.unspecified)
-            if x > 0 && x + sz.width > bounds.width { y += lineH + lineSpacing; x = 0; lineH = 0 }
-            s.place(at: CGPoint(x: bounds.minX + x, y: bounds.minY + y), proposal: ProposedViewSize(sz))
-            x += sz.width + spacing
-            lineH = max(lineH, sz.height)
-        }
     }
 }
 

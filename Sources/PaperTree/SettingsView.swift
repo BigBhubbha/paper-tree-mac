@@ -329,10 +329,7 @@ private struct ReaderLabel: View {
             .frame(maxWidth: .infinity)
             .padding(.bottom, 10)
 
-            row("year", options: ReaderProfile.schoolYears, value: $state.profileSchool)
-            row("background", options: ReaderProfile.expertise, value: $state.profileExpertise)
-            fieldsRow
-            row("notes", options: ReaderProfile.lengths, value: $state.profileLength)
+            ForEach(ReaderQuestion.allCases, id: \.self) { q in row(q) }
 
             HStack(alignment: .firstTextBaseline) {
                 Text("det. you").font(.typewriter(9.5)).foregroundColor(Palette.ink3)
@@ -353,37 +350,20 @@ private struct ReaderLabel: View {
         .accessibilityLabel("About you")
     }
 
-    private func row(_ title: String, options: [ProfileOption], value: Binding<String>) -> some View {
-        line(title) {
-            AnswerPicker(title: title,
-                         shown: ReaderProfile.label(value.wrappedValue, in: options),
-                         options: options,
-                         selected: value.wrappedValue.isEmpty ? [] : [value.wrappedValue],
-                         multiple: false) { id in
-                value.wrappedValue = value.wrappedValue == id ? "" : id
-            }
-        }
-    }
-
-    private var fieldsRow: some View {
-        let picked = ReaderProfile.fields.filter { state.profileFields.contains($0.id) }.map(\.short)
-        return line("reads") {
-            AnswerPicker(title: "fields you read",
-                         shown: picked.isEmpty ? nil : picked.joined(separator: ", "),
-                         options: ReaderProfile.fields,
-                         selected: Set(state.profileFields),
-                         multiple: true) { id in
-                if let i = state.profileFields.firstIndex(of: id) { state.profileFields.remove(at: i) }
-                else { state.profileFields.append(id) }
-            }
+    private func row(_ q: ReaderQuestion) -> some View {
+        line(q.field) {
+            AnswerWriter(question: q, shown: ReaderProfile.quote(state.answer(q), limit: 70),
+                         text: Binding(get: { state.answer(q) }, set: { state.setAnswer(q, $0) }))
         }
     }
 
     static func answer(_ text: String?) -> some View {
-        Text(text ?? "blank, tap to fill in")
+        Text(text ?? "blank, click to write a line")
             .font(.hand(text == nil ? 14 : 16))
             .foregroundColor(text == nil ? Palette.pencil : Color(hex: 0x23314A)) // blue-black fountain pen ink
-            .lineLimit(1)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     /// A typed field name, then the handwritten answer sitting on a dotted ruled line.
@@ -403,35 +383,51 @@ private struct ReaderLabel: View {
     }
 }
 
-/// The handwritten answer on the label. Clicking it opens a small slip of choices to circle,
-/// the same way the setup questions work.
-private struct AnswerPicker: View {
-    var title: String
+/// The handwritten answer on the label. Clicking it opens a slip of ruled paper with the same
+/// question and field as setup, to rewrite the answer in your own words.
+private struct AnswerWriter: View {
+    var question: ReaderQuestion
     var shown: String?
-    var options: [ProfileOption]
-    var selected: Set<String>
-    var multiple: Bool
-    var pick: (String) -> Void
+    @Binding var text: String
     @State private var open = false
 
     var body: some View {
         Button { open.toggle() } label: { ReaderLabel.answer(shown) }
             .buttonStyle(.plain)
-            .accessibilityLabel(title)
+            .help(text.isEmpty ? question.title : ReaderProfile.tidy(text))
+            .accessibilityLabel(question.accessibilityName)
             .accessibilityValue(shown ?? "blank")
             .popover(isPresented: $open, arrowEdge: .bottom) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(multiple ? "\(title), tick any" : "\(title), circle one")
-                        .font(.typewriter(10.5)).foregroundColor(Palette.ink3)
-                    CircleChoices(options: options, selected: selected, multiple: multiple) { id in
-                        pick(id)
-                        if !multiple { open = false }
-                    }
-                }
-                .padding(16)
-                .frame(width: 340, alignment: .leading)
-                .background(PaperSheet(corner: 0))
+                AnswerSlip(question: question, text: $text, done: { open = false })
             }
+    }
+}
+
+/// The slip in the popover: the question, ruled lines to write on, the hint, and Done.
+struct AnswerSlip: View {
+    var question: ReaderQuestion
+    @Binding var text: String
+    var done: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(question.tag).font(.typewriter(10.5)).foregroundColor(Palette.ink3)
+            Text(question.title).font(.fell(20)).foregroundColor(Palette.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            LongAnswerField(text: $text, placeholder: question.placeholder, lines: 4,
+                            accessibilityName: question.accessibilityName, focusOnAppear: true)
+                .padding(.top, 4)
+            HStack(alignment: .firstTextBaseline) {
+                Text(question.hint).font(.text(12)).foregroundColor(Palette.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 12)
+                Button("Done") { done() }.buttonStyle(StampButtonStyle(compact: true))
+            }
+            .padding(.top, 2)
+        }
+        .padding(18)
+        .frame(width: 380, alignment: .leading)
+        .background(PaperSheet(corner: 0))
     }
 }
 
