@@ -352,7 +352,7 @@ private struct ReaderLabel: View {
 
     private func row(_ q: ReaderQuestion) -> some View {
         line(q.field) {
-            AnswerWriter(question: q, shown: ReaderProfile.quote(state.answer(q), limit: 70),
+            AnswerWriter(question: q, shown: ReaderProfile.quote(state.answer(q), limit: 52),
                          text: Binding(get: { state.answer(q) }, set: { state.setAnswer(q, $0) }))
         }
     }

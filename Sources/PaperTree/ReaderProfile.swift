@@ -140,7 +140,7 @@ enum ReaderQuestion: Int, CaseIterable {
         case .school: return "year in school"
         case .background: return "science background"
         case .fields: return "what you read"
-        case .length: return "how my notes should read"
+        case .length: return "length of notes"
         }
     }
 
