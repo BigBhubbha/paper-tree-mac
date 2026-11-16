@@ -61,6 +61,13 @@ enum LocalAIDemo {
         }
     }
 
+    nonisolated static let t0 = Date()
+    /// Progress on stderr (unbuffered), so a slow CI step shows where it is.
+    nonisolated static func log(_ s: String) {
+        let line = String(format: "[%6.1fs] ", Date().timeIntervalSince(t0)) + s + "\n"
+        FileHandle.standardError.write(Data(line.utf8))
+    }
+
     static func sysctl(_ name: String) -> String {
         var size = 0
         guard sysctlbyname(name, nil, &size, nil, 0) == 0, size > 0 else { return "" }
@@ -126,15 +133,20 @@ enum LocalAIDemo {
             if let d = try? enc.encode(report), let s = String(data: d, encoding: .utf8) { print(s) }
         }
 
+        log("hardware \(report.hardware), writer \(report.writerModel)")
         // 1. Explanations: the same highlight for two different readers.
         do {
             let (e, t) = try wait { try await LocalWriter.explain(text: hl, context: section2, mode: .plain, reader: profiled) }
             explanation = e
+            log("explain 1 done in \(String(format: "%.1f", t.seconds)) s (prompt \(t.stats.promptTokens) tok in \(String(format: "%.1f", t.stats.promptSeconds)) s, \(t.stats.generatedTokens) tok at \(String(format: "%.1f", t.stats.tokensPerSecond)) tok/s, GPU \(t.stats.usedGPU)): \(e.text)")
             report.steps.append(step("explain (high school junior, short)", t, output: e.text + " | " + e.terms.map { "\($0.term): \($0.meaning)" }.joined(separator: "; ")))
+            if explainOnly { throw CancellationError() }
             let (e2, t2) = try wait { try await LocalWriter.explain(text: hl, context: section2, mode: .plain, reader: phd) }
+            log("explain 2 done in \(t2.seconds) s")
             report.steps.append(step("explain (PhD student)", t2, output: e2.text + " | " + e2.terms.map { "\($0.term): \($0.meaning)" }.joined(separator: "; ")))
             let (e3, t3) = try wait { try await LocalWriter.explain(text: "photorespiration increases", context: abstract, mode: .detail, reader: profiled) }
             report.steps.append(step("explain, more detail (high school junior)", t3, output: e3.text))
+        } catch is CancellationError {
         } catch {
             report.notes.append("explain failed: \(error)")
             code = 1
@@ -145,6 +157,7 @@ enum LocalAIDemo {
         Snapshots.save(ExplanationCardView(model: model).padding(20).background(Color(hex: 0xF3EFE6)), "local-explanation-\(tag)", to: dir)
         if explainOnly { LocalLLM.shared.unload(); finish(); return code }
 
+        log("explanations done")
         // 2. Tree label.
         do {
             let titles = Array(SampleGrove.trees().first?.papers.prefix(5).map(\.title) ?? [paper.title])
@@ -152,6 +165,7 @@ enum LocalAIDemo {
             report.steps.append(step("tree note", t, output: "\(n.commonName) / \(n.latinName) / \(n.note)"))
         } catch { report.notes.append("tree note failed: \(error)") }
 
+        log("tree note done")
         // 3. The podcast: script, then voices.
         let text = sampleText
         var script: PodcastClient.Script?
@@ -161,6 +175,7 @@ enum LocalAIDemo {
             let (s, t) = try wait {
                 try await LocalWriter.podcastScript(paper: paper, text: text, source: "paper") { _, lines in
                     if lines.count == 7 { partial.value = lines }
+                    if !lines.isEmpty, lines.count % 5 == 0 { log("script: \(lines.count) lines") }
                 }
             }
             script = s
@@ -183,7 +198,10 @@ enum LocalAIDemo {
                 let started = Date()
                 let results = try wait {
                     var out: [PodcastClient.Part] = []
-                    for p in parts { out.append(try await KokoroVoice.shared.voice(p)) }
+                    for (k, p) in parts.enumerated() {
+                        out.append(try await KokoroVoice.shared.voice(p))
+                        log("voiced part \(k + 1) of \(parts.count)")
+                    }
                     return out
                 }
                 let (ep, samples) = pm.assemble(parts, results, title: script.title, source: "paper", take: 0,
@@ -212,6 +230,7 @@ enum LocalAIDemo {
         }
         KokoroVoice.shared.unload()
 
+        log("drawing screens")
         shootScreens(dir: dir, paper: paper, episode: episode, draft: firstLines)
         finish()
         return code

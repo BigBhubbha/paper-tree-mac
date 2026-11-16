@@ -162,9 +162,10 @@ jobs:
 
       - name: Local reader demo (2B sibling, CPU)
         if: inputs.local_ai_demo && github.ref != 'refs/heads/main'
-        timeout-minutes: 30
+        timeout-minutes: 40
         env:
           PAPER_TREE_LLM_CPU: "1"
+          PAPER_TREE_LLM_LOG: "1"
         run: |
           M="$HOME/paper-tree-models"
           PAPER_TREE_WRITER_MODEL="$M/Qwen3.5-2B-Q4_K_M.gguf" PAPER_TREE_VOICE_DIR="$M/kokoro-v1.0" \
@@ -172,16 +173,18 @@ jobs:
           ls -la "$RUNNER_TEMP/local-ai"
 
       - name: Local reader, one explanation on Metal (2B)
-        if: inputs.local_ai_demo && github.ref != 'refs/heads/main'
+        if: inputs.local_ai_demo && github.ref != 'refs/heads/main' && !cancelled()
         continue-on-error: true
         timeout-minutes: 10
+        env:
+          PAPER_TREE_LLM_LOG: "1"
         run: |
           M="$HOME/paper-tree-models"
           PAPER_TREE_WRITER_MODEL="$M/Qwen3.5-2B-Q4_K_M.gguf" \
             "build/Paper Tree.app/Contents/MacOS/PaperTree" --paper-tree-local-ai-demo "$RUNNER_TEMP/local-ai" --explain-only --tag 2b-metal
 
-      - name: Local reader, explanations with the full 9B writer (CPU)
-        if: inputs.local_ai_demo && inputs.full_writer && github.ref != 'refs/heads/main'
+      - name: Local reader, one explanation with the full 9B writer (CPU)
+        if: inputs.local_ai_demo && inputs.full_writer && github.ref != 'refs/heads/main' && !cancelled()
         continue-on-error: true
         timeout-minutes: 25
         env:

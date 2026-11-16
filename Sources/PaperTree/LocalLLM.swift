@@ -50,6 +50,14 @@ final class LocalLLM: @unchecked Sendable {
     /// Let the model go after this long unused (it holds a few GB).
     static var idleSeconds: Double = 300
 
+    /// Apple Silicon's performance cores (the efficiency cores slow generation down), if known.
+    static let performanceCores: Int? = {
+        var n: Int32 = 0
+        var size = MemoryLayout<Int32>.size
+        guard sysctlbyname("hw.perflevel0.physicalcpu", &n, &size, nil, 0) == 0, n > 0 else { return nil }
+        return Int(n)
+    }()
+
     private init() {
         llama_backend_init()
         // Quiet: llama.cpp logs a lot to stderr. Errors still show.
@@ -108,10 +116,13 @@ final class LocalLLM: @unchecked Sendable {
             cp.n_ctx = Self.contextSize
             cp.n_batch = 512
             cp.n_ubatch = 512
-            let cores = max(2, ProcessInfo.processInfo.activeProcessorCount)
-            cp.n_threads = Int32(max(1, min(8, cores - 2)))
+            let cores = max(1, ProcessInfo.processInfo.activeProcessorCount)
+            cp.n_threads = Int32(min(8, Self.performanceCores ?? max(1, cores <= 4 ? cores : cores - 2)))
             cp.n_threads_batch = Int32(max(1, min(8, cores)))
             cp.offload_kqv = gpu
+            // On the CPU path keep everything on the CPU: no big batches handed to the GPU either
+            // (a virtual Mac's GPU can be far slower than its cores).
+            cp.op_offload = gpu
             guard let c = llama_init_from_model(m, cp) else { llama_model_free(m); return nil }
             return (m, c)
         }
@@ -189,6 +200,9 @@ final class LocalLLM: @unchecked Sendable {
             at += n
         }
         stats.promptSeconds = Date().timeIntervalSince(t1)
+        let verbose = ProcessInfo.processInfo.environment["PAPER_TREE_LLM_LOG"] == "1"
+        func say(_ s: String) { if verbose { FileHandle.standardError.write(Data(("[llm] " + s + "\n").utf8)) } }
+        say("prompt \(tokens.count) tokens in \(String(format: "%.1f", stats.promptSeconds)) s, GPU \(usedGPU)")
 
         // Samplers: the usual chain, and the grammar on the side.
         let nVocab = llama_vocab_n_tokens(vocab)
@@ -245,6 +259,7 @@ final class LocalLLM: @unchecked Sendable {
             if let grammar { llama_sampler_accept(grammar, token) }
             bytes += piece(vocab, token)
             produced += 1
+            if verbose, produced % 100 == 0 { say("\(produced) tokens, \(String(format: "%.1f", Date().timeIntervalSince(t2))) s") }
             if let onText, produced - lastSent >= 3 {
                 lastSent = produced
                 onText(Self.validUTF8(bytes))
