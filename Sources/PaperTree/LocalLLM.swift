@@ -213,8 +213,9 @@ final class LocalLLM: @unchecked Sendable {
         llama_sampler_chain_add(chain, llama_sampler_init_penalties(nVocab, 64, req.repeatPenalty, 0, 0))
         if req.dry > 0 {
             // Breakers end a match, so the JSON around each line isn't counted as repeating.
-            let breakers = ["\n", ":", "\"", "*"].compactMap { strdup($0) }
-            var ptrs: [UnsafePointer<CChar>?] = breakers.map { UnsafePointer($0) }
+            let breakerText: [String] = ["\n", ":", "\"", "*"]
+            let breakers: [UnsafeMutablePointer<CChar>] = breakerText.compactMap { (t: String) -> UnsafeMutablePointer<CChar>? in strdup(t) }
+            var ptrs: [UnsafePointer<CChar>?] = breakers.map { (m: UnsafeMutablePointer<CChar>) -> UnsafePointer<CChar>? in UnsafePointer(m) }
             let dry = ptrs.withUnsafeMutableBufferPointer { b in
                 llama_sampler_init_dry(vocab, req.dry, 1.75, 2, -1, b.baseAddress, b.count)
             }
