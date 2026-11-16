@@ -52,10 +52,10 @@ enum LocalAIDemo {
         Task.detached(priority: .userInitiated) {
             let r: Result<T, Error>
             do { r = .success(try await work()) } catch { r = .failure(error) }
-            lock.lock(); box.value = r; lock.unlock()
+            lock.withLock { box.value = r }
         }
         while true {
-            lock.lock(); let r = box.value; lock.unlock()
+            let r = lock.withLock { box.value }
             if let r { return try r.get() }
             RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         }

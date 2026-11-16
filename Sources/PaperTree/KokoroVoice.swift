@@ -55,10 +55,11 @@ final class KokoroVoice: @unchecked Sendable {
         tokens = set
 
         var c = SherpaOnnxOfflineTtsConfig()
-        let strings = [d.appendingPathComponent("model.onnx").path, d.appendingPathComponent("voices.bin").path,
-                       d.appendingPathComponent("tokens.txt").path, d.appendingPathComponent("lexicon-us-en.txt").path, "cpu", "en-us"]
-            .map { strdup($0) }
-        defer { strings.forEach { Foundation.free($0) } }
+        let paths: [String] = [d.appendingPathComponent("model.onnx").path, d.appendingPathComponent("voices.bin").path,
+                               d.appendingPathComponent("tokens.txt").path, d.appendingPathComponent("lexicon-us-en.txt").path, "cpu", "en-us"]
+        let strings: [UnsafeMutablePointer<CChar>] = paths.compactMap { strdup($0) }
+        defer { for s in strings { Darwin.free(s) } }
+        guard strings.count == paths.count else { throw LocalLLMError(description: "Out of memory opening the voices.") }
         c.model.kokoro.model = UnsafePointer(strings[0])
         c.model.kokoro.voices = UnsafePointer(strings[1])
         c.model.kokoro.tokens = UnsafePointer(strings[2])

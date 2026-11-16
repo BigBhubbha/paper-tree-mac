@@ -28,7 +28,11 @@ struct WriterChoice: Identifiable, Sendable, Hashable {
 
 enum LocalModels {
     static var root: URL {
-        TreeStore.folder.appendingPathComponent("Models", isDirectory: true)
+        // Application Support/Paper Tree/Models (the same folder TreeStore uses, worked out here so
+        // it can be read from any thread).
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support")
+        return base.appendingPathComponent("Paper Tree/Models", isDirectory: true)
     }
 
     // Pinned to exact files: same bytes for everyone, checked by hash.
@@ -106,7 +110,7 @@ enum LocalModels {
 @MainActor
 final class ReaderDownload: NSObject, ObservableObject {
     static let shared = ReaderDownload()
-    static let writerKey = "localWriterModel"
+    nonisolated static let writerKey = "localWriterModel"
 
     enum Phase: Equatable {
         case notStarted

@@ -93,7 +93,7 @@ struct ReaderShelf: View {
                     withAnimation(Motion.pick(Motion.snappy)) { download.writerId = w.id }
                 } label: {
                     HStack(alignment: .top, spacing: 10) {
-                        PencilRing(on: download.writerId == w.id).frame(width: 16, height: 16).padding(.top, 2)
+                        ReaderPick(on: download.writerId == w.id).frame(width: 16, height: 16).padding(.top, 2)
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Text(w.title).font(.uiBold(12.5)).foregroundColor(Palette.ink)
@@ -164,7 +164,7 @@ struct ReaderShelf: View {
 }
 
 /// A pencil ring, filled with a small ink dot when picked.
-struct PencilRing: View {
+struct ReaderPick: View {
     var on: Bool
     var body: some View {
         ZStack {
