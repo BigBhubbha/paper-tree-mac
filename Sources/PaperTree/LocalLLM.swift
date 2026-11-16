@@ -25,6 +25,8 @@ final class LocalLLM: @unchecked Sendable {
         var topK: Int32 = 40
         var minP: Float = 0.05
         var repeatPenalty: Float = 1.05
+        /// DRY ("don't repeat yourself"): penalizes copying a run of earlier words. 0 is off.
+        var dry: Float = 0
         var seed: UInt32 = UInt32.random(in: 1...UInt32.max - 1)
     }
 
@@ -209,6 +211,16 @@ final class LocalLLM: @unchecked Sendable {
         let chain = llama_sampler_chain_init(llama_sampler_chain_default_params())!
         defer { llama_sampler_free(chain) }
         llama_sampler_chain_add(chain, llama_sampler_init_penalties(nVocab, 64, req.repeatPenalty, 0, 0))
+        if req.dry > 0 {
+            // Breakers end a match, so the JSON around each line isn't counted as repeating.
+            let breakers = ["\n", ":", "\"", "*"].compactMap { strdup($0) }
+            var ptrs: [UnsafePointer<CChar>?] = breakers.map { UnsafePointer($0) }
+            let dry = ptrs.withUnsafeMutableBufferPointer { b in
+                llama_sampler_init_dry(vocab, req.dry, 1.75, 2, -1, b.baseAddress, b.count)
+            }
+            breakers.forEach { Darwin.free($0) }
+            if let dry { llama_sampler_chain_add(chain, dry) }
+        }
         llama_sampler_chain_add(chain, llama_sampler_init_top_k(req.topK))
         llama_sampler_chain_add(chain, llama_sampler_init_top_p(req.topP, 1))
         llama_sampler_chain_add(chain, llama_sampler_init_min_p(req.minP, 1))

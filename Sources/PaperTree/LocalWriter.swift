@@ -358,6 +358,7 @@ enum LocalWriter {
         struct L: Decodable { var title: String?; var speaker: String?; var text: String?; var quote: String?; var section: String? }
         var title = ""
         var lines: [PodcastClient.ScriptLine] = []
+        var seen = Set<String>()
         var rows = raw.components(separatedBy: "\n")
         if !complete, !raw.hasSuffix("\n") { rows = Array(rows.dropLast()) }
         for row in rows {
@@ -365,6 +366,10 @@ enum LocalWriter {
             guard t.hasPrefix("{"), let l = try? JSONDecoder().decode(L.self, from: Data(t.utf8)) else { continue }
             if let tt = l.title { title = Tidy.line(tt); continue }
             guard let text = l.text.map({ Tidy.contract(Tidy.line($0)) }), !text.isEmpty else { continue }
+            // A small model can loop back and say a line again; keep the first time only.
+            let key = Tidy.squash(text)
+            if seen.contains(key) { continue }
+            seen.insert(key)
             let speaker = l.speaker == "Juniper" || l.speaker == "Rowan" ? l.speaker! : (lines.count % 2 == 0 ? "Juniper" : "Rowan")
             lines.append(.init(speaker: speaker, text: String(text.prefix(420)), quote: l.quote ?? "", section: String((l.section ?? "").prefix(30)), sig: ""))
         }
@@ -380,7 +385,8 @@ enum LocalWriter {
         let lastCount = Box(0)
         let (raw, stats) = try await LocalLLM.shared.generate(
             modelPath: path,
-            .init(prompt: prompt, grammar: try podcastGrammar(lines: count), maxTokens: count * 60 + 60, temperature: 0.7)) { soFar in
+            .init(prompt: prompt, grammar: try podcastGrammar(lines: count), maxTokens: count * 60 + 60, temperature: 0.7,
+                  repeatPenalty: 1.08, dry: 0.8)) { soFar in
             let (t, ls) = parseScript(soFar, complete: false)
             if ls.count != lastCount.value || (lastCount.value == 0 && !t.isEmpty) {
                 lastCount.value = ls.count

@@ -111,6 +111,7 @@ enum LocalAIDemo {
             "memoryGB": String(format: "%.1f", Double(memory) / 1_073_741_824),
             "os": ProcessInfo.processInfo.operatingSystemVersionString,
             "metal": MTLCreateSystemDefaultDevice()?.name ?? "none",
+            "performanceCores": LocalLLM.performanceCores.map(String.init) ?? "unknown",
             "forcedCPU": ProcessInfo.processInfo.environment["PAPER_TREE_LLM_CPU"] == "1" ? "yes" : "no",
         ]
         let writer = LocalModels.writerPath() ?? ""
@@ -144,8 +145,6 @@ enum LocalAIDemo {
             let (e2, t2) = try wait { try await LocalWriter.explain(text: hl, context: section2, mode: .plain, reader: phd) }
             log("explain 2 done in \(t2.seconds) s")
             report.steps.append(step("explain (PhD student)", t2, output: e2.text + " | " + e2.terms.map { "\($0.term): \($0.meaning)" }.joined(separator: "; ")))
-            let (e3, t3) = try wait { try await LocalWriter.explain(text: "photorespiration increases", context: abstract, mode: .detail, reader: profiled) }
-            report.steps.append(step("explain, more detail (high school junior)", t3, output: e3.text))
         } catch is CancellationError {
         } catch {
             report.notes.append("explain failed: \(error)")
