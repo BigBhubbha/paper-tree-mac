@@ -1,5 +1,7 @@
-// Talks to the Paper Tree backend. The app never holds an AI key:
-// it posts {text, context, mode} to your server, and the server talks to Gemini.
+// Explains a highlight. By default the reader on this Mac writes the answer (LocalWriter), so
+// nothing leaves the computer. With the server engine (Settings, For tinkerers) it posts
+// {text, context, mode} to the Paper Tree backend, and the server talks to Gemini; the app never
+// holds an AI key.
 import Foundation
 
 enum ExplainMode: String, CaseIterable {
@@ -38,6 +40,8 @@ struct ExplainClient {
     var configured: Bool
     /// Optional "who is reading" hints. Older servers simply ignore it.
     var profile: ProfilePayload? = nil
+    /// Local by default; the server only when chosen in Settings.
+    var engine: AIEngine = AIEngine.current
 
     static let maxTextChars = 1500
     static let maxContextChars = 1800
@@ -60,6 +64,11 @@ struct ExplainClient {
     /// Opens (or keeps alive) the connection to the explainer before a request needs it.
     /// Cheap and throttled, so it is fine to call on every highlight gesture.
     static func warmUp(endpoint: String) {
+        if AIEngine.current == .local {
+            // Nothing to call: open the reader's model ahead of the first question instead.
+            if let path = LocalModels.writerPath() { LocalLLM.shared.prewarm(modelPath: path) }
+            return
+        }
         guard let url = URL(string: endpoint.trimmingCharacters(in: .whitespacesAndNewlines)), url.scheme == "https" else { return }
         warmLock.lock()
         let due = Date().timeIntervalSince(lastWarm) > 20
@@ -82,6 +91,7 @@ struct ExplainClient {
     /// Servers that do not stream just send the whole answer, which works the same way.
     func explain(text: String, context: String, mode: ExplainMode,
                  onPartial: (@MainActor (String) -> Void)? = nil) async throws -> Explanation {
+        if engine == .local { return try await explainLocally(text: text, context: context, mode: mode, onPartial: onPartial) }
         guard configured, let url = URL(string: endpoint.trimmingCharacters(in: .whitespacesAndNewlines)) else {
             throw ExplainError(title: "That explainer address doesn't work.",
                                detail: "Open Settings, then For tinkerers, and choose Use the built-in explainer.",
@@ -129,6 +139,28 @@ struct ExplainClient {
                                detail: "Check the server address in Settings.", canOpenSettings: true)
         } catch {
             throw ExplainError(title: "I couldn't reach the explainer.", detail: error.localizedDescription, canOpenSettings: true)
+        }
+    }
+
+    /// The reader on this Mac. Partial answers are handed to the main queue in order, and flushed
+    /// before the full answer comes back, so a late partial never covers the finished card.
+    private func explainLocally(text: String, context: String, mode: ExplainMode,
+                                onPartial: (@MainActor (String) -> Void)?) async throws -> Explanation {
+        let note = ReaderNote(school: profile?.school, expertise: profile?.expertise, fields: profile?.fields, length: profile?.length)
+        let deliver: (@Sendable (String) -> Void)? = onPartial.map { cb in
+            { partial in DispatchQueue.main.async { MainActor.assumeIsolated { cb(partial) } } }
+        }
+        do {
+            let (answer, _) = try await LocalWriter.explain(text: text, context: context, mode: mode, reader: note, onPartial: deliver)
+            await withCheckedContinuation { (c: CheckedContinuation<Void, Never>) in DispatchQueue.main.async { c.resume() } }
+            try Task.checkCancellation()
+            return answer
+        } catch is LocalWriter.ReaderMissing {
+            throw ExplainError(title: "The reader isn't on this Mac yet.",
+                               detail: "Download it once in Settings. After that, highlights are explained right here, even offline.",
+                               canOpenSettings: true)
+        } catch let e as LocalLLMError {
+            throw ExplainError(title: "The reader hit a snag.", detail: e.description)
         }
     }
 

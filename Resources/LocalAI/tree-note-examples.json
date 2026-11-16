@@ -1,0 +1,14 @@
+[
+  {
+    "plant": "alien",
+    "fields": "Computer Science",
+    "titles": ["Attention Is All You Need", "Deep Residual Learning for Image Recognition", "ImageNet Classification with Deep Convolutional Neural Networks"],
+    "reply": {"commonName": "Neural Lattice Sprout", "latinName": "Arbor artificialis", "note": "Grew from papers on neural networks that read images and language."}
+  },
+  {
+    "plant": "willow",
+    "fields": "Psychology, Economics",
+    "titles": ["Judgment under Uncertainty: Heuristics and Biases", "Prospect Theory: An Analysis of Decision under Risk"],
+    "reply": {"commonName": "Second-Guess Weeping Branch", "latinName": "Salix cogitatio", "note": "Grew from papers on how people make choices, and the biases that steer them."}
+  }
+]

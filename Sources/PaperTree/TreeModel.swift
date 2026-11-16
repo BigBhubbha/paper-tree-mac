@@ -151,7 +151,7 @@ struct TreeLook: Codable, Hashable, Sendable {
     var vigor = 0.5
     var twist = 0.5
     var droop = 0.5
-    /// True once Gemini picked it (false while it is a local guess).
+    /// True once an AI named it (the server's Gemini, or the reader on this Mac); false while it's a local guess.
     var fromAI = false
     // Parametric extras. Optional so trees saved by older versions still load.
     /// lobed, lance, oval, heart, fan, shard; nil means the species' own leaf.
@@ -402,8 +402,12 @@ final class TreeStore: ObservableObject {
         guard n >= 1 else { return false }
         if n == 1 { return true }
         if look.recipe?.model == nil { return true }
+        if look.recipe?.model == localRecipeModel && AIEngine.current == .server { return true }
         return storedTopic != topic
     }
+
+    /// Marks a recipe drawn on this Mac and named by the local reader.
+    static let localRecipeModel = "local-reader"
 
     /// Ask the customizer for this tree's recipe, so the plant comes to reflect what it holds.
     private func refreshLook(_ treeId: UUID) async {
@@ -416,6 +420,23 @@ final class TreeStore: ObservableObject {
         if !tree.look.fromAI {
             let local = TreeLook.guess(fields: fields, titles: titles, seed: tree.seed)
             if local.species != tree.look.species || tree.look.recipe == nil { setLook(local, on: treeId) }
+        }
+        if AIEngine.current == .local {
+            // On this Mac: the drawn design is the local recipe, and the reader names the plant and
+            // writes its label. Nothing goes to the server.
+            guard LocalModels.writerPath() != nil else { return }
+            var look = TreeLook.guess(fields: fields, titles: titles, seed: tree.seed)
+            look.recipe?.model = Self.localRecipeModel
+            guard let (note, _) = try? await LocalWriter.treeNote(plant: look.species, titles: titles, fields: fields) else { return }
+            look.commonName = note.commonName
+            look.latinName = note.latinName
+            look.note = note.note
+            look.fromAI = true
+            guard let i = trees.firstIndex(where: { $0.id == treeId }) else { return }
+            trees[i].lookCheckedAt = n
+            trees[i].recipeTopic = topic
+            setLook(look, on: treeId)
+            return
         }
         guard var look = try? await TreeClient.current.plant(titles: titles, fields: fields,
                                                              current: tree.look.fromAI ? tree.look.species : nil) else { return }

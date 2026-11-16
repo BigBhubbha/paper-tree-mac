@@ -4,6 +4,15 @@ on:
   push:
     branches: [main, stable-signing]
   workflow_dispatch:
+    inputs:
+      local_ai_demo:
+        description: "Run the on-device reader demo (models are downloaded on the runner; never runs on main)"
+        type: boolean
+        default: false
+      full_writer:
+        description: "Also try one explanation with the full 9B writer"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -91,7 +100,9 @@ jobs:
           APP="build/Paper Tree.app"
           lipo -info "$APP/Contents/MacOS/PaperTree"
           lipo -info "$APP/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle"
-          otool -L "$APP/Contents/MacOS/PaperTree" | grep -i sparkle
+          otool -L "$APP/Contents/MacOS/PaperTree" | grep -iE "sparkle|llama|sherpa"
+          lipo -info "$APP/Contents/Frameworks/libsherpa-onnx-c-api.dylib" "$APP/Contents/Frameworks/libonnxruntime.dylib"
+          ls "$APP/Contents/Resources/LocalAI"
           otool -l "$APP/Contents/MacOS/PaperTree" | grep -A2 LC_RPATH
           plutil -lint "$APP/Contents/Info.plist"
           for k in CFBundleShortVersionString CFBundleVersion SUFeedURL SUPublicEDKey SUEnableAutomaticChecks; do
@@ -115,6 +126,76 @@ jobs:
         with:
           name: design-snapshots
           path: ${{ runner.temp }}/snapshots
+          if-no-files-found: warn
+
+      # The on-device reader: a real explanation, a real podcast written and voiced on this runner,
+      # timings, the sample episode and its screens. Branches only, by hand.
+      - name: Cache local reader models
+        if: inputs.local_ai_demo && github.ref != 'refs/heads/main'
+        uses: actions/cache@v4
+        with:
+          path: ~/paper-tree-models
+          key: local-ai-models-v1-full-${{ inputs.full_writer }}
+
+      - name: Download local reader models
+        if: inputs.local_ai_demo && github.ref != 'refs/heads/main'
+        run: |
+          M="$HOME/paper-tree-models"; mkdir -p "$M/kokoro-v1.0"
+          get() {
+            if [[ -f "$2" && "$(shasum -a 256 "$2" | cut -d' ' -f1)" == "$3" ]]; then echo "have $(basename "$2")"; return; fi
+            curl -fL --retry 3 --silent --show-error -o "$2" "$1"
+            got="$(shasum -a 256 "$2" | cut -d' ' -f1)"
+            [[ "$got" == "$3" ]] || { echo "bad checksum for $2: $got" >&2; exit 1; }
+          }
+          HF=https://huggingface.co
+          K="$HF/csukuangfj/kokoro-multi-lang-v1_0/resolve/f7b96bb6bef5c5da4d3aa4f4e0498fbbf62dc78b"
+          get "$HF/unsloth/Qwen3.5-2B-GGUF/resolve/f6d5376be1edb4d416d56da11e5397a961aca8ae/Qwen3.5-2B-Q4_K_M.gguf" "$M/Qwen3.5-2B-Q4_K_M.gguf" aaf42c8b7c3cab2bf3d69c355048d4a0ee9973d48f16c731c0520ee914699223
+          get "$K/model.onnx" "$M/kokoro-v1.0/model.onnx" b40f62b166ac8164b0627ef48a0b358eda0985e272fb03ef5252e7206305da11
+          get "$K/voices.bin" "$M/kokoro-v1.0/voices.bin" 1c5a5b983d3d50d8586d437a51f3faa2da7919ce76a013c081e65671a3447c29
+          get "$K/tokens.txt" "$M/kokoro-v1.0/tokens.txt" 6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425
+          get "$K/lexicon-us-en.txt" "$M/kokoro-v1.0/lexicon-us-en.txt" 7daaab53a181be9885b853a8582bf1838186317e5dadacbcef9c426d6fa0da14
+          if [[ "${{ inputs.full_writer }}" == "true" ]]; then
+            get "$HF/lmstudio-community/Qwen3.5-9B-GGUF/resolve/1379f25c6b505a3fc737bd7818cb09389cf807c1/Qwen3.5-9B-Q4_K_M.gguf" "$M/Qwen3.5-9B-Q4_K_M.gguf" cd76ec205963b3b33350093e6904d9de16c4e666fd104e1f632d25c7f15f2a13
+          fi
+          ls -la "$M" "$M/kokoro-v1.0"
+          sysctl -n machdep.cpu.brand_string hw.ncpu hw.memsize
+
+      - name: Local reader demo (2B sibling, CPU)
+        if: inputs.local_ai_demo && github.ref != 'refs/heads/main'
+        timeout-minutes: 30
+        env:
+          PAPER_TREE_LLM_CPU: "1"
+        run: |
+          M="$HOME/paper-tree-models"
+          PAPER_TREE_WRITER_MODEL="$M/Qwen3.5-2B-Q4_K_M.gguf" PAPER_TREE_VOICE_DIR="$M/kokoro-v1.0" \
+            /usr/bin/time -l "build/Paper Tree.app/Contents/MacOS/PaperTree" --paper-tree-local-ai-demo "$RUNNER_TEMP/local-ai" --tag 2b-cpu
+          ls -la "$RUNNER_TEMP/local-ai"
+
+      - name: Local reader, one explanation on Metal (2B)
+        if: inputs.local_ai_demo && github.ref != 'refs/heads/main'
+        continue-on-error: true
+        timeout-minutes: 10
+        run: |
+          M="$HOME/paper-tree-models"
+          PAPER_TREE_WRITER_MODEL="$M/Qwen3.5-2B-Q4_K_M.gguf" \
+            "build/Paper Tree.app/Contents/MacOS/PaperTree" --paper-tree-local-ai-demo "$RUNNER_TEMP/local-ai" --explain-only --tag 2b-metal
+
+      - name: Local reader, explanations with the full 9B writer (CPU)
+        if: inputs.local_ai_demo && inputs.full_writer && github.ref != 'refs/heads/main'
+        continue-on-error: true
+        timeout-minutes: 25
+        env:
+          PAPER_TREE_LLM_CPU: "1"
+        run: |
+          M="$HOME/paper-tree-models"
+          PAPER_TREE_WRITER_MODEL="$M/Qwen3.5-9B-Q4_K_M.gguf" \
+            /usr/bin/time -l "build/Paper Tree.app/Contents/MacOS/PaperTree" --paper-tree-local-ai-demo "$RUNNER_TEMP/local-ai" --explain-only --tag 9b-cpu
+
+      - uses: actions/upload-artifact@v4
+        if: inputs.local_ai_demo && github.ref != 'refs/heads/main' && always()
+        with:
+          name: local-ai-demo
+          path: ${{ runner.temp }}/local-ai
           if-no-files-found: warn
 
       - name: Make DMG and update archive

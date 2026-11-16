@@ -1,0 +1,4 @@
+root ::= "{\"answer\": " str ", \"terms\": [" ( term ( ", " term )? ( ", " term )? ( ", " term )? )? "]}"
+term ::= "{\"term\": " str ", \"meaning\": " str "}"
+str ::= "\"" ch ch* "\""
+ch ::= [^"\\\x00-\x1F\u2013\u2014] | "\\" ["\\/]

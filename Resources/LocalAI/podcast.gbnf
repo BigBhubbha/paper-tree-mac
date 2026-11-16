@@ -1,0 +1,6 @@
+# Shared rules for a podcast script. LocalWriter adds "root" and one rule per numbered line,
+# so the count and the turn order (Juniper odd, Rowan even) are fixed.
+title ::= "{\"title\": " str "}"
+str ::= "\"" ch ch* "\""
+opt ::= "\"" ch* "\""
+ch ::= [^"\\\x00-\x1F\u2013\u2014] | "\\" ["\\/]

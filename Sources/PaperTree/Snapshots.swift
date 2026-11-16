@@ -26,7 +26,7 @@ enum Snapshots {
         return true
     }
 
-    private static func save<V: View>(_ view: V, _ name: String, to dir: URL) {
+    static func save<V: View>(_ view: V, _ name: String, to dir: URL) {
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2
         guard let cg = renderer.cgImage else { print("snapshot failed: \(name)"); return }
@@ -339,7 +339,7 @@ enum Snapshots {
 
     /// Page 1 of a paper through the app's whole chain (known links, the server's search, OpenAlex),
     /// waiting for it (snapshots run synchronously).
-    private static func frontPage(_ paper: Paper) -> NSImage? {
+    static func frontPage(_ paper: Paper) -> NSImage? {
         let done = DispatchSemaphore(value: 0)
         final class Box: @unchecked Sendable { var hit: (Data, String)? }
         let box = Box()
@@ -401,7 +401,7 @@ struct IslandOpeningFrame: View {
 // MARK: Room to read: a busy tree up close, and the paper reader
 
 extension Snapshots {
-    private static func shootIsland(_ m: IslandModel, _ store: TreeStore, _ name: String, to dir: URL) {
+    static func shootIsland(_ m: IslandModel, _ store: TreeStore, _ name: String, to dir: URL) {
         let size = CGSize(width: m.groveSize.width + 40, height: m.groveSize.height + 32 + 30)
         save(IslandView(model: m, state: AppState.shared, store: store)
                 .frame(width: size.width, height: size.height).background(Color(hex: 0x6E7B86)), name, to: dir)

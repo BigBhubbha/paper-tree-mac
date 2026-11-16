@@ -10,3 +10,4 @@ backend/node_modules/
 backend/.netlify/
 backend/.env
 .env
+Vendor/

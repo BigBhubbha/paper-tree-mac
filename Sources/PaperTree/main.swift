@@ -5,6 +5,7 @@ import AppKit
 // Top-level code runs on the main thread; tell the compiler so it can create the @MainActor delegate.
 MainActor.assumeIsolated {
     if Snapshots.runIfRequested() { exit(0) }
+    if let code = LocalAIDemo.runIfRequested() { exit(code) }
     let app = NSApplication.shared
     let appDelegate = AppDelegate()
     app.delegate = appDelegate

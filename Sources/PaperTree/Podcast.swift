@@ -1,7 +1,9 @@
 // A podcast of the open paper: two AI hosts, Juniper (asks) and Rowan (explains), talk it through.
-// The server writes the script (/api/podcast/script) and records it a part at a time
-// (/api/podcast/voice); the app stitches the parts into one episode, saves it beside the paper,
-// and plays it in the reader with a transcript that follows the voice.
+// By default it's all made on this Mac: the local reader writes the script (LocalWriter) and Kokoro
+// voices it a part at a time (KokoroVoice). With the server engine (for tinkerers) the server writes
+// the script (/api/podcast/script) and records the parts (/api/podcast/voice). Either way the app
+// stitches the parts into one episode, saves it beside the paper, and plays it in the reader with a
+// transcript that follows the voice.
 import AVFoundation
 import AppKit
 import Combine
@@ -351,6 +353,7 @@ final class PodcastModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     private func run(text: String, source: String, take: Int) async {
+        if AIEngine.current == .local { await runLocal(text: text, source: source, take: take); return }
         let client = PodcastClient.current
         do {
             try await Task.sleep(nanoseconds: 450_000_000) // let "reading" register before the long wait
@@ -428,6 +431,66 @@ final class PodcastModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
+    /// The whole episode on this Mac: the script streams in line by line, then Kokoro reads it.
+    private func runLocal(text: String, source: String, take: Int) async {
+        do {
+            try await Task.sleep(nanoseconds: 450_000_000)
+            mark(.writing)
+            let (script, _) = try await LocalWriter.podcastScript(paper: paper, text: text, source: source) { [weak self] title, lines in
+                Task { @MainActor in
+                    guard let self, self.phase == .making, self.step == .writing else { return }
+                    if !title.isEmpty { self.draftTitle = title }
+                    withAnimation(Motion.pick(.easeOut(duration: 0.4))) {
+                        self.draft = lines.enumerated().map { i, l in
+                            PodcastLine(id: i, speaker: l.speaker, text: l.text, quote: "", section: l.section ?? "", sig: "")
+                        }
+                    }
+                }
+            }
+            try Task.checkCancellation()
+            draftTitle = script.title
+            draft = script.lines.enumerated().map { i, l in
+                PodcastLine(id: i, speaker: l.speaker, text: l.text, quote: l.quote ?? "", section: l.section ?? "", sig: l.sig)
+            }
+            mark(.recording)
+            let parts = stride(from: 0, to: script.lines.count, by: Self.partSize).map { Array(script.lines[$0..<min($0 + Self.partSize, script.lines.count)]) }
+            partsTotal = parts.count
+            var results: [PodcastClient.Part] = []
+            for (k, lines) in parts.enumerated() {
+                try Task.checkCancellation()
+                let part = try await KokoroVoice.shared.voice(lines)
+                results.append(part)
+                landPart(k, part, parts)
+            }
+            mark(.binding)
+            let (draftEpisode, samples) = assemble(parts, results, title: script.title, source: source, take: take,
+                                                   scriptModel: script.model ?? "local", voiceModel: KokoroVoice.modelName)
+            let saved = try await PodcastLibrary.save(draftEpisode, samples: samples, rate: results.first?.rate ?? 24_000)
+            try Task.checkCancellation()
+            stepDone[.binding] = Date()
+            self.episode = saved
+            self.player = nil
+            time = 0
+            currentLine = nil
+            withAnimation(Motion.pick(Motion.page)) { phase = .ready }
+            withAnimation(Motion.pick(Motion.land).delay(0.25)) { justMade = true }
+            draft = []
+        } catch is CancellationError {
+            return
+        } catch is LocalWriter.ReaderMissing {
+            phase = .failed("The reader isn't on this Mac yet. Download it once, then podcasts are made right here.")
+        } catch let f as PodcastClient.Failure {
+            if Task.isCancelled { return }
+            phase = .failed(f.message)
+        } catch let e as LocalLLMError {
+            if Task.isCancelled { return }
+            phase = .failed(e.description)
+        } catch {
+            if Task.isCancelled { return }
+            phase = .failed("Something went wrong saving the episode.")
+        }
+    }
+
     /// Records one part, waiting out a busy voice model a few times.
     nonisolated private func record(_ lines: [PodcastClient.ScriptLine], model: String?, client: PodcastClient) async throws -> PodcastClient.Part {
         var tries = 0
@@ -458,7 +521,7 @@ final class PodcastModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
-    private func assemble(_ parts: [[PodcastClient.ScriptLine]], _ results: [PodcastClient.Part], title: String, source: String,
+    func assemble(_ parts: [[PodcastClient.ScriptLine]], _ results: [PodcastClient.Part], title: String, source: String,
                           take: Int, scriptModel: String, voiceModel: String) -> (PodcastEpisode, [Int16]) {
         let rate = results.first?.rate ?? 24_000
         let breath = [Int16](repeating: 0, count: Int(rate * 0.18))

@@ -48,6 +48,8 @@ final class AppState: ObservableObject {
 
     @Published var researchMode: Bool { didSet { defaults.set(researchMode, forKey: Key.researchMode) } }
     @Published var endpoint: String { didSet { defaults.set(endpoint, forKey: Key.endpoint) } }
+    /// Where explanations, podcasts and tree labels are written: on this Mac (default) or the server.
+    @Published var aiEngine: AIEngine { didSet { defaults.set(aiEngine.rawValue, forKey: AIEngine.key) } }
     /// Optional shared token, only needed if the backend sets APP_TOKEN.
     @Published var clientToken: String { didSet { defaults.set(clientToken, forKey: Key.clientToken) } }
     /// When Accessibility gives no text, briefly press Cmd+C to read the highlight (pasteboard is restored).
@@ -124,6 +126,7 @@ final class AppState: ObservableObject {
         let saved = defaults.string(forKey: Key.endpoint) ?? AppState.defaultEndpoint
         endpoint = saved.contains("YOUR-SITE") || saved.trimmingCharacters(in: .whitespaces).isEmpty ? AppState.defaultEndpoint : saved
         clientToken = defaults.string(forKey: Key.clientToken) ?? ""
+        aiEngine = AIEngine.current
         copyFallbackEnabled = defaults.bool(forKey: Key.copyFallback)
         hasOnboarded = defaults.bool(forKey: Key.onboarded)
         setupVersionCompleted = defaults.integer(forKey: Key.setupVersion)

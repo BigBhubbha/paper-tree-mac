@@ -29,6 +29,8 @@ else
   ARCH_FLAGS=(--arch "$(uname -m)")   # arm64 on Apple Silicon, x86_64 on Intel
   echo "==> Compiling ($(uname -m), release)"
 fi
+# The local reader's voice library (sherpa-onnx, prebuilt). llama.cpp comes in through SwiftPM.
+./scripts/fetch_local_ai_libs.sh
 swift build -c release "${ARCH_FLAGS[@]}"
 BIN_DIR="$(swift build -c release "${ARCH_FLAGS[@]}" --show-bin-path)"
 
@@ -60,6 +62,24 @@ ditto "$SPARKLE_FW" "$APP/Contents/Frameworks/Sparkle.framework"
 if ! otool -l "$APP/Contents/MacOS/$EXEC" | grep -q "@executable_path/../Frameworks"; then
   install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/$EXEC"
 fi
+# The local reader: llama.cpp's framework and sherpa-onnx's dylibs, beside Sparkle.
+LLAMA_FW=""
+for candidate in \
+    "$BIN_DIR/llama.framework" \
+    "$BIN_DIR/PackageFrameworks/llama.framework" \
+    $(find .build/artifacts -type d -path "*llama.xcframework/macos-*/llama.framework" 2>/dev/null); do
+  if [[ -d "$candidate" ]]; then LLAMA_FW="$candidate"; break; fi
+done
+if [[ -z "$LLAMA_FW" ]]; then
+  echo "Could not find llama.framework after the build." >&2
+  exit 1
+fi
+echo "==> Embedding $LLAMA_FW"
+ditto "$LLAMA_FW" "$APP/Contents/Frameworks/llama.framework"
+cp Vendor/sherpa-onnx/lib/libsherpa-onnx-c-api.dylib Vendor/sherpa-onnx/lib/libonnxruntime.dylib "$APP/Contents/Frameworks/"
+# Prompts, examples and reply formats for the local reader.
+mkdir -p "$APP/Contents/Resources/LocalAI"
+cp Resources/LocalAI/* "$APP/Contents/Resources/LocalAI/"
 cp Resources/Fonts/*.ttf "$APP/Contents/Resources/Fonts/"
 cp Resources/Fonts/*.txt Resources/Fonts/*.md "$APP/Contents/Resources/Fonts/" 2>/dev/null || true
 
@@ -92,6 +112,9 @@ for item in "$SP/XPCServices/Installer.xpc" "$SP/XPCServices/Downloader.xpc" "$S
   fi
 done
 codesign --force --sign "$SIGN" ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --timestamp=none "$APP/Contents/Frameworks/Sparkle.framework"
+for item in "$APP/Contents/Frameworks/libonnxruntime.dylib" "$APP/Contents/Frameworks/libsherpa-onnx-c-api.dylib" "$APP/Contents/Frameworks/llama.framework"; do
+  codesign --force --sign "$SIGN" ${KEYCHAIN_ARGS[@]+"${KEYCHAIN_ARGS[@]}"} --timestamp=none "$item"
+done
 if [[ "$SIGN" == "-" ]]; then
   codesign --force --sign - --identifier "$BUNDLE_ID" --timestamp=none "$APP"
 else

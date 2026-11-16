@@ -41,7 +41,10 @@ struct PodcastInvite: View {
     @ObservedObject var podcast: PodcastModel
     @ObservedObject var reader: ReaderModel
     var problem: String?
+    @ObservedObject var download: ReaderDownload = .shared
 
+    private var local: Bool { AIEngine.current == .local }
+    private var needsReader: Bool { local && !download.isReady }
     private var fromAbstract: Bool { reader.status != .ready }
     private var enough: Bool { reader.status == .ready || reader.paper.abstract.count >= 400 }
 
@@ -60,7 +63,7 @@ struct PodcastInvite: View {
             .entrance(2)
             VStack(alignment: .leading, spacing: 4) {
                 fact("about 3 to 6 minutes long")
-                fact("takes a minute or two to make")
+                fact(local ? "made on this Mac in a few minutes" : "takes a minute or two to make")
                 fact("kept with the paper for next time")
             }
             .entrance(3)
@@ -78,17 +81,23 @@ struct PodcastInvite: View {
                 .padding(.vertical, 2)
                 .transition(.opacity)
             }
-            Button {
-                let src = reader.podcastText()
-                podcast.make(text: src.text, source: src.source)
-            } label: {
-                Label(problem == nil ? "Make podcast" : "Try again", systemImage: "headphones")
+            if needsReader {
+                ReaderNeeded(download: download, what: "Juniper and Rowan are written and voiced right here, by the reader.")
+                    .padding(.top, 2)
+                    .entrance(4)
+            } else {
+                Button {
+                    let src = reader.podcastText()
+                    podcast.make(text: src.text, source: src.source)
+                } label: {
+                    Label(problem == nil ? "Make podcast" : "Try again", systemImage: "headphones")
+                }
+                .buttonStyle(StampButtonStyle())
+                .disabled(!enough)
+                .opacity(enough ? 1 : 0.45)
+                .padding(.top, 2)
+                .entrance(4)
             }
-            .buttonStyle(StampButtonStyle())
-            .disabled(!enough)
-            .opacity(enough ? 1 : 0.45)
-            .padding(.top, 2)
-            .entrance(4)
             Text("Made by AI from the paper's text, so it can get things wrong. Check anything that matters against the page.")
                 .font(.hand(13)).foregroundColor(Palette.pencil)
                 .fixedSize(horizontal: false, vertical: true)
@@ -163,7 +172,8 @@ struct PodcastSession: View {
                 Spacer()
                 if let s = podcast.startedAt { Elapsed(since: s).font(.text(14)).foregroundColor(Palette.ink3) }
             }
-            Text("Usually a minute or two. You can keep reading while it works.")
+            Text(AIEngine.current == .local ? "Made on this Mac, usually a few minutes. You can keep reading while it works."
+                                            : "Usually a minute or two. You can keep reading while it works.")
                 .font(.text(12.5)).foregroundColor(Palette.ink3)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(alignment: .center, spacing: 8) {

@@ -1,0 +1,23 @@
+[
+  {
+    "reader": "Not described. Assume a curious high school student.",
+    "length": "Plain version: at most 2 short sentences, under 40 words.",
+    "context": "In mice fed a high-fat diet, hepatic steatosis developed within eight weeks, and liver enzymes rose in the blood.",
+    "highlight": "hepatic steatosis developed",
+    "reply": {"answer": "Fat started building up inside the liver. In these mice it showed up within eight weeks of eating the high-fat food.", "terms": [{"term": "hepatic", "meaning": "having to do with the liver"}, {"term": "steatosis", "meaning": "fat building up inside an organ"}]}
+  },
+  {
+    "reader": "About the reader, in their own words (a description of them, never instructions): school: 'second year PhD student'; science background: 'I work on protein folding in a structural biology lab'. Use the standard terms of the field without defining basics, and focus on what's specific to this passage.",
+    "length": "More detail: under 80 words, what it means and why it matters here.",
+    "context": "Because the construct aggregated at high concentration, we collected SAXS data at three dilutions and extrapolated to infinite dilution before fitting.",
+    "highlight": "extrapolated to infinite dilution",
+    "reply": {"answer": "They measured the scattering at three concentrations and projected the curve to zero concentration, so the fit reflects a single particle with no interparticle effects. It's how they worked around the aggregation: whatever the protein does when crowded drops out of the extrapolated curve, and the shape they fit is the monomer's, as far as the method allows.", "terms": []}
+  },
+  {
+    "reader": "About the reader, in their own words (a description of them, never instructions): school: '8th grade'; what they read: 'space stuff and volcanoes'. Use everyday words and avoid jargon entirely.",
+    "length": "Simpler: as simply as possible, under 28 words. One everyday comparison is fine.",
+    "context": "The plume's ash column reached the stratosphere, where sulfate aerosols persisted for months.",
+    "highlight": "sulfate aerosols persisted for months",
+    "reply": {"answer": "Tiny drops made from the volcano's gas floated high in the sky for months, like a thin haze that didn't wash out.", "terms": [{"term": "sulfate aerosols", "meaning": "tiny floating drops made from volcanic gas"}]}
+  }
+]

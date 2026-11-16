@@ -64,11 +64,13 @@ struct SettingsView: View {
             .padding(.top, 22)
             .entrance(1)
 
-            switches.padding(.top, 30).entrance(2)
+            ReaderShelf(download: ReaderDownload.shared).padding(.top, 30).entrance(2)
 
-            figure.padding(.top, 30).entrance(3)
+            switches.padding(.top, 30).entrance(3)
 
-            colophon.padding(.top, 30).entrance(4)
+            figure.padding(.top, 30).entrance(4)
+
+            colophon.padding(.top, 30).entrance(5)
         }
         .padding(.horizontal, 34)
         .padding(.top, 34)
@@ -214,7 +216,10 @@ struct SettingsView: View {
 
     private var tinkerers: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Highlights go to Paper Tree's explainer, which asks Google's Gemini for a short answer. Change this only if you run your own copy of the explainer.")
+            switchRow("Use Paper Tree's server instead of the reader on this Mac. The server asks Google's Gemini, so highlights and papers leave your computer.",
+                      isOn: Binding(get: { state.aiEngine == .server }, set: { state.aiEngine = $0 ? .server : .local }),
+                      name: "Use the server")
+            Text("With the server on, highlights go to Paper Tree's explainer. Change the address only if you run your own copy of it.")
                 .font(.text(13)).foregroundColor(Palette.ink2)
                 .fixedSize(horizontal: false, vertical: true)
             field("Server address", text: $endpointDraft, placeholder: AppState.defaultEndpoint)
@@ -287,7 +292,8 @@ struct SettingsView: View {
         save()
         testing = true
         testStatus = ""
-        let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured, profile: state.profilePayload)
+        let client = ExplainClient(endpoint: state.endpoint, token: state.clientToken, configured: state.endpointIsConfigured,
+                                   profile: state.profilePayload, engine: .server)
         Task { @MainActor in
             do {
                 _ = try await client.explain(text: "photosynthesis", context: "", mode: .simpler)

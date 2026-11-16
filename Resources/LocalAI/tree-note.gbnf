@@ -1,0 +1,3 @@
+root ::= "{\"commonName\": " str ", \"latinName\": " str ", \"note\": " str "}"
+str ::= "\"" ch ch* "\""
+ch ::= [^"\\\x00-\x1F\u2013\u2014] | "\\" ["\\/]
