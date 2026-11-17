@@ -1,0 +1,539 @@
+{
+ "gemini": {
+  "r00": {
+   "verdict": "restates",
+   "note": "Closest to the highlight of any Gemini answer (overlap 0.56). It rephrases the same two facts and adds almost no why, though the glossary helps."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Correct, but mostly a paraphrase of the claim rather than why skipping recurrence and convolutions matters."
+  },
+  "h02": {
+   "verdict": "explains",
+   "note": "Keeps the 203,000-year figure and states the claim clearly."
+  },
+  "h03": {
+   "verdict": "explains",
+   "note": "Correct reading of a discovery-level significance, without inventing a wrong probability."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Clear account of residual vs unreferenced functions and why the change helps training."
+  },
+  "h05": {
+   "verdict": "explains",
+   "note": "Defines ballistic transport and why room temperature matters."
+  },
+  "h06": {
+   "verdict": "explains",
+   "note": "Accurate one-sentence definition of the Hubble constant."
+  },
+  "h07": {
+   "verdict": "explains",
+   "note": "Correctly treats 95% as case prevention, and explains the credible interval."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Plain, accurate description of RNA-guided genome editing."
+  },
+  "h09": {
+   "verdict": "explains",
+   "note": "Gets the point: the model works without a known similar structure."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction and translates the confidence interval."
+  },
+  "h11": {
+   "verdict": "explains",
+   "note": "Clear contrast of 15% vs 2.4% weight loss, with a concrete analogy."
+  },
+  "h12": {
+   "verdict": "explains",
+   "note": "Keeps the 27-year window and does not turn the declines into a within-year spring-to-summer drop."
+  },
+  "h13": {
+   "verdict": "explains",
+   "note": "Correct implication: many original findings did not hold up."
+  },
+  "h14": {
+   "verdict": "explains",
+   "note": "Best of the set: vertices of a triangular grid, and why that gives an internal map."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Faithful reading of Ioannidis: claimed findings may just reflect prevailing bias."
+  }
+ },
+ "2b": {
+  "r00": {
+   "verdict": "partly",
+   "note": "No longer restates, but it invents a second pathway and is fuzzy on what the oxygen reaction actually does."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Gets the shift to attention and parallelism. The convolution glossary leans too much on images."
+  },
+  "h02": {
+   "verdict": "explains",
+   "note": "Qualitatively right, but drops the 203,000-year figure."
+  },
+  "h03": {
+   "verdict": "error",
+   "note": "'99.9% sure' badly understates 5.9 sigma (that is already past three sigma)."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Roughly right on residual shortcuts, a bit fuzzy."
+  },
+  "h05": {
+   "verdict": "partly",
+   "note": "The idea is right, but 'smaller than a hair' is far coarser than submicron, and 'keep going hot' is awkward."
+  },
+  "h06": {
+   "verdict": "partly",
+   "note": "Knows it is the expansion rate, then wanders into a vague textbook aside."
+  },
+  "h07": {
+   "verdict": "partly",
+   "note": "Has the 95% figure, then adds a confused clause about 'not every single person got sick'."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Correct idea. Jumping straight to 'human DNA' is a little ahead of this paper."
+  },
+  "h09": {
+   "verdict": "error",
+   "note": "AlphaFold is a learned model, not a system that 'uses physics rules to build the shape'."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "Correct 25% lower risk, with a fair hedge on the interval."
+  },
+  "h11": {
+   "verdict": "partly",
+   "note": "The two numbers are right, but the wording is clumsy and almost restates them."
+  },
+  "h12": {
+   "verdict": "error",
+   "note": "Says 'in the fall' instead of seasonal, and claims the drop happened 'everywhere' (the study was in protected areas)."
+  },
+  "h13": {
+   "verdict": "error",
+   "note": "Backwards conclusion: it treats the 36% result as evidence that many old findings were still useful."
+  },
+  "h14": {
+   "verdict": "partly",
+   "note": "Has the geometric map idea, but 'built from many smaller neurons' is not what a grid cell is."
+  },
+  "h15": {
+   "verdict": "partly",
+   "note": "Muddy: it talks about a real small effect hidden behind bias, which is not Ioannidis's claim."
+  },
+  "podcast": {
+   "note": "21 lines and no repeats, but thinner and less accurate. It reports 47% of replications as statistically significant (the paper's figure is 36%; 47% is the CI-overlap number), and Juniper then calls the picture 'pretty consistent'."
+  }
+ },
+ "4b-old-prompts": {
+  "r00": {
+   "verdict": "partly",
+   "note": "Overlap 0.44, just under the flag. It explains the mistake but adds little beyond the highlight."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Correct, a bit generic."
+  },
+  "h02": {
+   "verdict": "explains",
+   "note": "Keeps the 203,000-year figure."
+  },
+  "h03": {
+   "verdict": "explains",
+   "note": "Roughly the right rarity (one in a billion)."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Clear residual-learning analogy."
+  },
+  "h05": {
+   "verdict": "explains",
+   "note": "Correct on room-temperature ballistic transport."
+  },
+  "h06": {
+   "verdict": "explains",
+   "note": "Accurate definition."
+  },
+  "h07": {
+   "verdict": "explains",
+   "note": "Correct 95-in-100 reading, without the 'one in twenty people got sick' error the new 4B made."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Accurate."
+  },
+  "h09": {
+   "verdict": "explains",
+   "note": "Correct."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "Correct 25% reduction."
+  },
+  "h11": {
+   "verdict": "explains",
+   "note": "Correct percentages, no invented duration."
+  },
+  "h12": {
+   "verdict": "error",
+   "note": "Turns 76% into 'a quarter' and treats the drop as spring vs summer, not a 27-year decline."
+  },
+  "h13": {
+   "verdict": "explains",
+   "note": "Correct implication."
+  },
+  "h14": {
+   "verdict": "explains",
+   "note": "Gets the triangular grid and firing at corners."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Correct reading of bias."
+  }
+ },
+ "2b-old-prompts": {
+  "r00": {
+   "verdict": "partly",
+   "note": "Does not copy the highlight, but stays generic."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Short and basically right."
+  },
+  "h02": {
+   "verdict": "error",
+   "note": "Stretches 203,000 years into 'a million years of random data'."
+  },
+  "h03": {
+   "verdict": "explains",
+   "note": "Vague but not wrong."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Roughly the residual idea."
+  },
+  "h05": {
+   "verdict": "explains",
+   "note": "Gets the idea, with the same loose 'smaller than a hair' scale."
+  },
+  "h06": {
+   "verdict": "explains",
+   "note": "Accurate definition."
+  },
+  "h07": {
+   "verdict": "explains",
+   "note": "Correct, if thin."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Accurate."
+  },
+  "h09": {
+   "verdict": "partly",
+   "note": "Overclaims 'perfectly'."
+  },
+  "h10": {
+   "verdict": "error",
+   "note": "Misstates the confidence interval as 'between 35% and 64%' (it is 0.64 to 0.89)."
+  },
+  "h11": {
+   "verdict": "error",
+   "note": "Says the drug dropped weight '14.9 points more' than placebo; the difference is about 12.5 percentage points."
+  },
+  "h12": {
+   "verdict": "error",
+   "note": "Contradicts the paper: 'their numbers stayed the same year after year'."
+  },
+  "h13": {
+   "verdict": "partly",
+   "note": "Repeats the one-third figure without the implication."
+  },
+  "h14": {
+   "verdict": "partly",
+   "note": "Too vague: 'any spot along a perfect map' misses the triangular vertices."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Short and faithful."
+  }
+ },
+ "4b-prev": {
+  "r00": {
+   "verdict": "explains",
+   "note": "Explains the mistake and that it gets worse as CO2 drops. 'Fixing the wrong carbon' is a little loose, but this is no longer a restatement."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Good contrast of recurrence and convolutions with looking at every word at once."
+  },
+  "h02": {
+   "verdict": "error",
+   "note": "Turns 203,000 years into 'over half a million years'."
+  },
+  "h03": {
+   "verdict": "error",
+   "note": "The 'rolling a die five times in a row' analogy is the wrong scale: that is thousands-to-one, not a 5.9-sigma discovery."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Solid residual-learning explanation, including the shortcut that keeps the signal from dying out."
+  },
+  "h05": {
+   "verdict": "explains",
+   "note": "Clear, and correctly ties room-temperature ballistic transport to graphene."
+  },
+  "h06": {
+   "verdict": "explains",
+   "note": "Accurate definition of the Hubble constant."
+  },
+  "h07": {
+   "verdict": "error",
+   "note": "Classic misread of vaccine efficacy: 95% effective does not mean one in twenty vaccinated people got sick."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Accurate and concise."
+  },
+  "h09": {
+   "verdict": "explains",
+   "note": "Correct: it no longer needs a close template."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as about 75% as many events, with the interval in the same units."
+  },
+  "h11": {
+   "verdict": "error",
+   "note": "The percentages are right, but the trial was 68 weeks, not 'over six months'."
+  },
+  "h12": {
+   "verdict": "error",
+   "note": "Treats the 76% and 82% figures as a within-year spring-to-summer drop, not a 27-year decline."
+  },
+  "h13": {
+   "verdict": "explains",
+   "note": "Correct implication: most original findings did not hold up."
+  },
+  "h14": {
+   "verdict": "partly",
+   "note": "Gets the firing-at-corners idea, but calls the lattice a 'checkerboard' (it is triangular) and says each spot has a unique address (one grid cell fires at many vertices)."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Clear analogy for prevailing bias."
+  },
+  "podcast": {
+   "note": "A usable 21-line episode with no repeated lines and the important numbers right (100 studies, half-size effects, 97% vs 36%, 68% combined, 47% in the 95% CI, 39% subjective). A couple of hedges are slightly overstated, and the paper title is slightly off."
+  }
+ },
+ "9b-prev": {
+  "r00": {
+   "verdict": "explains",
+   "note": "Adds the why the 2B restatement missed: the oxygen reaction is a costly mistake that wastes energy."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Explains the old one-step-at-a-time or sliding-window methods and why all-to-all attention helps."
+  },
+  "h02": {
+   "verdict": "explains",
+   "note": "Keeps the ~200,000-year figure. The lottery analogy is loose, but the core claim is right."
+  },
+  "h03": {
+   "verdict": "explains",
+   "note": "Uses the usual five-sigma discovery threshold. It says five rather than 5.9, and 'one in a billion' is a rough 6-sigma figure, close enough here."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Clear residual-learning explanation, including why depth becomes easier."
+  },
+  "h05": {
+   "verdict": "explains",
+   "note": "Gets room-temperature ballistic transport. 'Only in tiny chips' is a bit invented, but the main point holds."
+  },
+  "h06": {
+   "verdict": "error",
+   "note": "67 km/s/Mpc is the Planck value, but 'matches other ways to measure cosmic expansion' is the wrong direction: this paper is part of the Hubble tension with local measurements."
+  },
+  "h07": {
+   "verdict": "error",
+   "note": "The trial size is fine, but 95% efficacy was for symptomatic Covid-19, not specifically 'severe illness'."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Clear and accurate: a programmable RNA guide tells Cas9 where to cut."
+  },
+  "h09": {
+   "verdict": "explains",
+   "note": "Correct contrast with template-based methods."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "Correct reading of the hazard ratio and the interval."
+  },
+  "h11": {
+   "verdict": "explains",
+   "note": "Straightforward and accurate on the two percentages."
+  },
+  "h12": {
+   "verdict": "partly",
+   "note": "Catches that the drop is large and over decades, but then mixes up seasonal vs mid-summer ('even more during other seasons' is backwards)."
+  },
+  "h13": {
+   "verdict": "explains",
+   "note": "Best local answer here: brings in the 97% vs 36% contrast from the paper."
+  },
+  "h14": {
+   "verdict": "explains",
+   "note": "Strong: triangular lattice, neighboring cells, and path integration even in the dark."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Correct reading of bias vs a genuine finding."
+  },
+  "podcast": {
+   "note": "Best of the three local scripts: 21 lines, no repeats, and the key numbers (100 studies, 97% vs 36%, half-size effects, 68% combined, 39% subjective, evidence strength over team) are right. Juniper's fifth line jumps in with 'Half the size' before Rowan has said it, and one later line treats 47% CI overlap as 'most'."
+  }
+ },
+ "4b": {
+  "r00": {
+   "verdict": "explains",
+   "note": "Oxygen picked by mistake when CO2 is low; no restating."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Contrasts the old tools with reading all words at once. \"Computer brains\" is a bit loose."
+  },
+  "h02": {
+   "verdict": "explains",
+   "note": "Copies 203,000 years exactly and says what it means."
+  },
+  "h03": {
+   "verdict": "explains",
+   "note": "Says 5.9 measures how unlikely a fluke is; no invented probability (first try said \"1 in 100 million\" and the number check caught it)."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Learns only the change from input to output; identity pass-through; why deeper works."
+  },
+  "h05": {
+   "verdict": "partly",
+   "note": "Straight-line electrons is right, but \"when the material is tiny\" blurs the submicron distance point."
+  },
+  "h06": {
+   "verdict": "explains",
+   "note": "Expansion rate now, from galaxies moving away."
+  },
+  "h07": {
+   "verdict": "partly",
+   "note": "Copies 95% and 90.3 to 97.6 exactly, but \"stopped 95 out of every 100 cases\" is a loose reading of efficacy."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "RNA-guided cutting of DNA as a programmable tool."
+  },
+  "h09": {
+   "verdict": "explains",
+   "note": "Usual method needs a solved similar shape; this one does not."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "0.75 and 0.64 to 0.89 copied exactly; no \"25% less\" conversion this time."
+  },
+  "h11": {
+   "verdict": "explains",
+   "note": "14.9% and 2.4% copied exactly (first try added \"eight\", caught by the number check)."
+  },
+  "h12": {
+   "verdict": "error",
+   "note": "Percentages copied exactly, but \"76% lighter in spring\" misreads the seasonal decline, and the 27 years is dropped."
+  },
+  "h13": {
+   "verdict": "explains",
+   "note": "36% vs the 97% of originals from the context, both exact."
+  },
+  "h14": {
+   "verdict": "explains",
+   "note": "Fires at the triangle corners of a grid covering the floor."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Results can reflect what people expect rather than real effects."
+  }
+ },
+ "9b": {
+  "r00": {
+   "verdict": "explains",
+   "note": "Oxygen grabbed instead when carbon is short, wastes energy."
+  },
+  "h01": {
+   "verdict": "explains",
+   "note": "Drops step-by-step reading parts."
+  },
+  "h02": {
+   "verdict": "partly",
+   "note": "No number errors, but it leaves out the 203 000 years and 5.1 sigma it was asked about."
+  },
+  "h03": {
+   "verdict": "error",
+   "note": "\"Heads 5.9 times in a row\" turns the 5.9 standard deviations into a wrong coin-flip count."
+  },
+  "h04": {
+   "verdict": "explains",
+   "note": "Each layer learns the small change on top of what came before."
+  },
+  "h05": {
+   "verdict": "partly",
+   "note": "\"Current flows perfectly\" overstates ballistic transport."
+  },
+  "h06": {
+   "verdict": "explains",
+   "note": "Expansion rate now; matches the simplest model, from context."
+  },
+  "h07": {
+   "verdict": "explains",
+   "note": "95% risk cut, interval read correctly without new numbers."
+  },
+  "h08": {
+   "verdict": "explains",
+   "note": "Reprogram Cas9 with RNA to cut where you want."
+  },
+  "h09": {
+   "verdict": "explains",
+   "note": "Works without a similar known structure."
+  },
+  "h10": {
+   "verdict": "explains",
+   "note": "0.75 and 0.64 to 0.89 exact; no \"a quarter less\" conversion this time."
+  },
+  "h11": {
+   "verdict": "explains",
+   "note": "14.9% and 2.4% exact."
+  },
+  "h12": {
+   "verdict": "explains",
+   "note": "76% in a typical season and 82% in mid-summer over 27 years, all exact and read correctly."
+  },
+  "h13": {
+   "verdict": "explains",
+   "note": "36% vs 97%, both exact."
+  },
+  "h14": {
+   "verdict": "explains",
+   "note": "Grid of firing points forming triangles; a bit long."
+  },
+  "h15": {
+   "verdict": "explains",
+   "note": "Results can reflect a field tilt rather than truth."
+  }
+ }
+}

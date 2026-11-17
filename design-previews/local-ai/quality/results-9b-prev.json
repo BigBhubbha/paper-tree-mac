@@ -1,0 +1,556 @@
+{
+  "engine": "local",
+  "model": "Qwen3.5-9B-Q4_K_M.gguf",
+  "label": "9b-prev",
+  "prompts": "new",
+  "runner": "GitHub ubuntu-latest, 4 vCPU, 15 GB, CPU only",
+  "items": [
+    {
+      "id": "r00",
+      "first": {
+        "answer": "When CO2 gets low, Rubisco grabs oxygen by mistake instead. That wrong reaction wastes energy because the plant has to fix the damage, so it's like a costly error in the factory.",
+        "overlap": 0.18,
+        "seconds": 87.8,
+        "promptTokens": 1752,
+        "promptSeconds": 75.8,
+        "generatedTokens": 69,
+        "tokensPerSecond": 5.66
+      },
+      "retried": false,
+      "answer": "When CO2 gets low, Rubisco grabs oxygen by mistake instead. That wrong reaction wastes energy because the plant has to fix the damage, so it's like a costly error in the factory.",
+      "terms": [
+        {
+          "term": "Rubisco",
+          "meaning": "an enzyme that helps plants make sugar from air"
+        }
+      ],
+      "overlap": 0.18,
+      "words": 32,
+      "seconds": 87.8,
+      "promptTokens": 1752,
+      "promptSeconds": 75.8,
+      "generatedTokens": 69,
+      "tokensPerSecond": 5.66
+    },
+    {
+      "id": "h01",
+      "first": {
+        "answer": "They throw away the old way of processing words one at a time or sliding a window. Instead, every word talks directly to every other word, which lets them train faster and handle longer sentences.",
+        "overlap": 0.0,
+        "seconds": 96.1,
+        "promptTokens": 1878,
+        "promptSeconds": 81.2,
+        "generatedTokens": 84,
+        "tokensPerSecond": 5.6
+      },
+      "retried": false,
+      "answer": "They throw away the old way of processing words one at a time or sliding a window. Instead, every word talks directly to every other word, which lets them train faster and handle longer sentences.",
+      "terms": [
+        {
+          "term": "recurrence",
+          "meaning": "processing information step by step"
+        },
+        {
+          "term": "convolutions",
+          "meaning": "sliding a filter over a sequence"
+        }
+      ],
+      "overlap": 0.0,
+      "words": 35,
+      "seconds": 96.1,
+      "promptTokens": 1878,
+      "promptSeconds": 81.2,
+      "generatedTokens": 84,
+      "tokensPerSecond": 5.6
+    },
+    {
+      "id": "h02",
+      "first": {
+        "answer": "That means the signal is so rare that you'd expect to see it by chance less than once every two hundred thousand years. It's like winning a lottery twice in a row with odds worse than one in a billion.",
+        "overlap": 0.11,
+        "seconds": 104.6,
+        "promptTokens": 2037,
+        "promptSeconds": 87.8,
+        "generatedTokens": 95,
+        "tokensPerSecond": 5.61
+      },
+      "retried": false,
+      "answer": "That means the signal is so rare that you'd expect to see it by chance less than once every two hundred thousand years. It's like winning a lottery twice in a row with odds worse than one in a billion.",
+      "terms": [
+        {
+          "term": "false alarm rate",
+          "meaning": "how often random noise looks like a real signal"
+        },
+        {
+          "term": "$\\sigma$",
+          "meaning": "a unit for measuring how sure we are"
+        }
+      ],
+      "overlap": 0.11,
+      "words": 40,
+      "seconds": 104.6,
+      "promptTokens": 2037,
+      "promptSeconds": 87.8,
+      "generatedTokens": 95,
+      "tokensPerSecond": 5.61
+    },
+    {
+      "id": "h03",
+      "first": {
+        "answer": "That's a very strong signal. In physics, five standard deviations means there's less than one chance in a billion that it's just random noise, so the result is considered a discovery.",
+        "overlap": 0.13,
+        "seconds": 95.0,
+        "promptTokens": 1920,
+        "promptSeconds": 82.9,
+        "generatedTokens": 70,
+        "tokensPerSecond": 5.71
+      },
+      "retried": false,
+      "answer": "That's a very strong signal. In physics, five standard deviations means there's less than one chance in a billion that it's just random noise, so the result is considered a discovery.",
+      "terms": [
+        {
+          "term": "standard deviations",
+          "meaning": "a measure of how far a result is from pure luck"
+        }
+      ],
+      "overlap": 0.13,
+      "words": 31,
+      "seconds": 95.0,
+      "promptTokens": 1920,
+      "promptSeconds": 82.9,
+      "generatedTokens": 70,
+      "tokensPerSecond": 5.71
+    },
+    {
+      "id": "h04",
+      "first": {
+        "answer": "Instead of trying to learn the whole output from scratch, each layer only learns the small change needed to get from its input to the next step. This makes it much easier for the network to train very deep, because it avoids the problem where deeper layers cancel out what earlier ones learned.",
+        "overlap": 0.12,
+        "seconds": 102.5,
+        "promptTokens": 1942,
+        "promptSeconds": 84.0,
+        "generatedTokens": 104,
+        "tokensPerSecond": 5.58
+      },
+      "retried": false,
+      "answer": "Instead of trying to learn the whole output from scratch, each layer only learns the small change needed to get from its input to the next step. This makes it much easier for the network to train very deep, because it avoids the problem where deeper layers cancel out what earlier ones learned.",
+      "terms": [
+        {
+          "term": "residual functions",
+          "meaning": "small changes added to the input"
+        },
+        {
+          "term": "unreferenced functions",
+          "meaning": "outputs that ignore the input"
+        }
+      ],
+      "overlap": 0.12,
+      "words": 53,
+      "seconds": 102.5,
+      "promptTokens": 1942,
+      "promptSeconds": 84.0,
+      "generatedTokens": 104,
+      "tokensPerSecond": 5.58
+    },
+    {
+      "id": "h05",
+      "first": {
+        "answer": "Electrons zip across without bumping into atoms. This happens only in tiny chips and usually needs near-zero heat, but they did it here in a normal room.",
+        "overlap": 0.06,
+        "seconds": 88.5,
+        "promptTokens": 1710,
+        "promptSeconds": 73.9,
+        "generatedTokens": 82,
+        "tokensPerSecond": 5.53
+      },
+      "retried": false,
+      "answer": "Electrons zip across without bumping into atoms. This happens only in tiny chips and usually needs near-zero heat, but they did it here in a normal room.",
+      "terms": [
+        {
+          "term": "ballistic transport",
+          "meaning": "electrons moving without bumping into anything"
+        },
+        {
+          "term": "submicron",
+          "meaning": "smaller than one micrometer"
+        }
+      ],
+      "overlap": 0.06,
+      "words": 27,
+      "seconds": 88.5,
+      "promptTokens": 1710,
+      "promptSeconds": 73.9,
+      "generatedTokens": 82,
+      "tokensPerSecond": 5.53
+    },
+    {
+      "id": "h06",
+      "first": {
+        "answer": "That's how fast the universe expands right now. The numbers show it's about 67 km/s per megaparsec, which matches other ways to measure cosmic expansion.",
+        "overlap": 0.0,
+        "seconds": 106.4,
+        "promptTokens": 2186,
+        "promptSeconds": 94.7,
+        "generatedTokens": 67,
+        "tokensPerSecond": 5.67
+      },
+      "retried": false,
+      "answer": "That's how fast the universe expands right now. The numbers show it's about 67 km/s per megaparsec, which matches other ways to measure cosmic expansion.",
+      "terms": [
+        {
+          "term": "Hubble constant",
+          "meaning": "the current rate at which the universe is expanding"
+        }
+      ],
+      "overlap": 0.0,
+      "words": 25,
+      "seconds": 106.4,
+      "promptTokens": 2186,
+      "promptSeconds": 94.7,
+      "generatedTokens": 67,
+      "tokensPerSecond": 5.67
+    },
+    {
+      "id": "h07",
+      "first": {
+        "answer": "Out of 43,548 people, the vaccine stopped severe illness in about 95 out of every 100 cases compared to placebo. That range means we're very sure the number is between 90 and 98, so it's a strong protection.",
+        "overlap": 0.05,
+        "seconds": 109.8,
+        "promptTokens": 2175,
+        "promptSeconds": 94.5,
+        "generatedTokens": 88,
+        "tokensPerSecond": 5.69
+      },
+      "retried": false,
+      "answer": "Out of 43,548 people, the vaccine stopped severe illness in about 95 out of every 100 cases compared to placebo. That range means we're very sure the number is between 90 and 98, so it's a strong protection.",
+      "terms": [
+        {
+          "term": "credible interval",
+          "meaning": "a range where the real number probably sits"
+        }
+      ],
+      "overlap": 0.05,
+      "words": 38,
+      "seconds": 109.8,
+      "promptTokens": 2175,
+      "promptSeconds": 94.5,
+      "generatedTokens": 88,
+      "tokensPerSecond": 5.69
+    },
+    {
+      "id": "h08",
+      "first": {
+        "answer": "You can design a custom RNA sequence that finds any specific gene and tells Cas9 to cut it out. That lets scientists rewrite DNA in cells on purpose, just by programming which RNA guide they use.",
+        "overlap": 0.05,
+        "seconds": 90.3,
+        "promptTokens": 1888,
+        "promptSeconds": 81.7,
+        "generatedTokens": 50,
+        "tokensPerSecond": 5.7
+      },
+      "retried": false,
+      "answer": "You can design a custom RNA sequence that finds any specific gene and tells Cas9 to cut it out. That lets scientists rewrite DNA in cells on purpose, just by programming which RNA guide they use.",
+      "terms": [],
+      "overlap": 0.05,
+      "words": 36,
+      "seconds": 90.3,
+      "promptTokens": 1888,
+      "promptSeconds": 81.7,
+      "generatedTokens": 50,
+      "tokensPerSecond": 5.7
+    },
+    {
+      "id": "h09",
+      "first": {
+        "answer": "Before this, computers could only guess well if a very similar protein had been solved before. This new method works even when nothing close exists, so it can finally predict the shapes of most proteins we've ever seen.",
+        "overlap": 0.06,
+        "seconds": 98.9,
+        "promptTokens": 1959,
+        "promptSeconds": 85.0,
+        "generatedTokens": 79,
+        "tokensPerSecond": 5.59
+      },
+      "retried": false,
+      "answer": "Before this, computers could only guess well if a very similar protein had been solved before. This new method works even when nothing close exists, so it can finally predict the shapes of most proteins we've ever seen.",
+      "terms": [
+        {
+          "term": "homologous structure",
+          "meaning": "a known protein shape that is closely related to the one being studied"
+        }
+      ],
+      "overlap": 0.06,
+      "words": 38,
+      "seconds": 98.9,
+      "promptTokens": 1959,
+      "promptSeconds": 85.0,
+      "generatedTokens": 79,
+      "tokensPerSecond": 5.59
+    },
+    {
+      "id": "h10",
+      "first": {
+        "answer": "A hazard ratio of 0.75 means the intensive group had about a quarter less risk each year than the standard group, and we're pretty sure the real number is between 0.64 and 0.89.",
+        "overlap": 0.35,
+        "seconds": 112.6,
+        "promptTokens": 2139,
+        "promptSeconds": 93.1,
+        "generatedTokens": 102,
+        "tokensPerSecond": 5.2
+      },
+      "retried": false,
+      "answer": "A hazard ratio of 0.75 means the intensive group had about a quarter less risk each year than the standard group, and we're pretty sure the real number is between 0.64 and 0.89.",
+      "terms": [
+        {
+          "term": "hazard ratio",
+          "meaning": "how much more or less likely an event is in one group"
+        },
+        {
+          "term": "confidence interval",
+          "meaning": "the range where the true value probably lies"
+        }
+      ],
+      "overlap": 0.35,
+      "words": 33,
+      "seconds": 112.6,
+      "promptTokens": 2139,
+      "promptSeconds": 93.1,
+      "generatedTokens": 102,
+      "tokensPerSecond": 5.2
+    },
+    {
+      "id": "h11",
+      "first": {
+        "answer": "The drug helped people lose about 15% of their starting weight, while the fake pill group lost only about 2%. That's a big difference.",
+        "overlap": 0.07,
+        "seconds": 111.2,
+        "promptTokens": 2160,
+        "promptSeconds": 94.2,
+        "generatedTokens": 88,
+        "tokensPerSecond": 5.11
+      },
+      "retried": false,
+      "answer": "The drug helped people lose about 15% of their starting weight, while the fake pill group lost only about 2%. That's a big difference.",
+      "terms": [
+        {
+          "term": "-14.9%",
+          "meaning": "lost nearly 15% of their starting weight"
+        },
+        {
+          "term": "-2.4%",
+          "meaning": "lost only about 2% of their starting weight"
+        }
+      ],
+      "overlap": 0.07,
+      "words": 24,
+      "seconds": 111.2,
+      "promptTokens": 2160,
+      "promptSeconds": 94.2,
+      "generatedTokens": 88,
+      "tokensPerSecond": 5.11
+    },
+    {
+      "id": "h12",
+      "first": {
+        "answer": "That's a massive drop. Over three decades, flying insects lost most of their weight in summer and even more during other seasons, meaning fewer food sources for birds and less help for plants.",
+        "overlap": 0.17,
+        "seconds": 95.4,
+        "promptTokens": 1908,
+        "promptSeconds": 82.7,
+        "generatedTokens": 69,
+        "tokensPerSecond": 5.35
+      },
+      "retried": false,
+      "answer": "That's a massive drop. Over three decades, flying insects lost most of their weight in summer and even more during other seasons, meaning fewer food sources for birds and less help for plants.",
+      "terms": [
+        {
+          "term": "biomass",
+          "meaning": "the total weight of living creatures in an area"
+        }
+      ],
+      "overlap": 0.17,
+      "words": 33,
+      "seconds": 95.4,
+      "promptTokens": 1908,
+      "promptSeconds": 82.7,
+      "generatedTokens": 69,
+      "tokensPerSecond": 5.35
+    },
+    {
+      "id": "h13",
+      "first": {
+        "answer": "That's a big drop from the 97% of original studies that looked significant. It means most experiments didn't find the same strong effect again, so the original findings were often too optimistic or hard to repeat.",
+        "overlap": 0.06,
+        "seconds": 92.8,
+        "promptTokens": 1838,
+        "promptSeconds": 79.8,
+        "generatedTokens": 75,
+        "tokensPerSecond": 5.7
+      },
+      "retried": false,
+      "answer": "That's a big drop from the 97% of original studies that looked significant. It means most experiments didn't find the same strong effect again, so the original findings were often too optimistic or hard to repeat.",
+      "terms": [
+        {
+          "term": "statistically significant",
+          "meaning": "a result unlikely to be due to random chance"
+        }
+      ],
+      "overlap": 0.06,
+      "words": 36,
+      "seconds": 92.8,
+      "promptTokens": 1838,
+      "promptSeconds": 79.8,
+      "generatedTokens": 75,
+      "tokensPerSecond": 5.7
+    },
+    {
+      "id": "h14",
+      "first": {
+        "answer": "Imagine the animal moving on a floor drawn with a big pattern of evenly spaced triangles. Every time the animal lands on a corner of any triangle, that cell fires. Neighboring cells share the same grid lines but start firing at different corners, so together they tile the whole space. This map lets the brain track position without landmarks by adding up steps, which is how animals navigate even in the dark.",
+        "overlap": 0.05,
+        "seconds": 100.0,
+        "promptTokens": 1844,
+        "promptSeconds": 79.5,
+        "generatedTokens": 117,
+        "tokensPerSecond": 5.66
+      },
+      "retried": false,
+      "answer": "Imagine the animal moving on a floor drawn with a big pattern of evenly spaced triangles. Every time the animal lands on a corner of any triangle, that cell fires. Neighboring cells share the same grid lines but start firing at different corners, so together they tile the whole space. This map lets the brain track position without landmarks by adding up steps, which is how animals navigate even in the dark.",
+      "terms": [
+        {
+          "term": "grid cell",
+          "meaning": "a neuron that fires when an animal lands on a corner of a triangular grid"
+        }
+      ],
+      "overlap": 0.05,
+      "words": 72,
+      "seconds": 100.0,
+      "promptTokens": 1844,
+      "promptSeconds": 79.5,
+      "generatedTokens": 117,
+      "tokensPerSecond": 5.66
+    },
+    {
+      "id": "h15",
+      "first": {
+        "answer": "Sometimes a result isn't new science but just reflects how researchers were biased toward finding something. It's like always looking for a pattern where none exists, and the data just shows that habit.",
+        "overlap": 0.06,
+        "seconds": 92.6,
+        "promptTokens": 1870,
+        "promptSeconds": 81.1,
+        "generatedTokens": 65,
+        "tokensPerSecond": 5.58
+      },
+      "retried": false,
+      "answer": "Sometimes a result isn't new science but just reflects how researchers were biased toward finding something. It's like always looking for a pattern where none exists, and the data just shows that habit.",
+      "terms": [
+        {
+          "term": "bias",
+          "meaning": "a tendency to see what you expect"
+        }
+      ],
+      "overlap": 0.06,
+      "words": 33,
+      "seconds": 92.6,
+      "promptTokens": 1870,
+      "promptSeconds": 81.1,
+      "generatedTokens": 65,
+      "tokensPerSecond": 5.58
+    }
+  ],
+  "podcast": {
+    "title": "Can Psychology Studies Be Trusted",
+    "lines": [
+      {
+        "speaker": "Juniper",
+        "text": "Okay, so why do we keep hearing about how hard it is to repeat psychological experiments?"
+      },
+      {
+        "speaker": "Rowan",
+        "text": "That's exactly what this paper from 2015 asks. The Open Science Collaboration wanted to check if results hold up when you try them again with better tools."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "So they didn't just repeat the same old tests? That sounds important for understanding real science."
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Right. They picked one hundred studies from three major psychology journals and used strong designs plus original materials whenever they could find them to make a fair comparison."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "Half the size of the first results? That seems like a big drop for people who trust these findings."
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Exactly. The original papers showed clear patterns in ninety-seven percent of cases, but only thirty-six percent of the new replications managed to show a statistically significant result."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "Wait, if most of the first ones were significant, does that mean scientists missed something important or just got lucky?"
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Good guess. When they combined both sets of numbers without assuming any bias in the original work, sixty-eight percent ended up being statistically significant."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "So putting them together helped a bit, but not enough to make me feel totally confident in all those old claims."
+      },
+      {
+        "speaker": "Rowan",
+        "text": "That's fair. They also found that nearly half the original effect sizes fell inside the ninety-five percent confidence interval of the replication numbers."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "Okay, so most of the effects were close enough to count as a match in their own way."
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Mostly. But only thirty-nine percent were rated by experts as having truly replicated the original result in their subjective judgment."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "I guess even with good numbers, people still disagree on what counts as a real success or failure."
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Yes. The team looked at whether the strength of the original evidence predicted if the replication would work better than team traits."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "So it wasn't about who did the study or where they worked, but how strong the first proof was?"
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Precisely. Stronger original evidence made replication success more likely than characteristics of either the original team or the new replication team."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "That makes sense to me. If the first study had shaky proof, repeating it probably won't fix that on its own."
+      },
+      {
+        "speaker": "Rowan",
+        "text": "Exactly. We only have this short summary of the paper, but it shows replication success depends heavily on how solid the original data was to begin with."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "So maybe future studies need stronger starting points before we expect others to repeat them successfully?"
+      },
+      {
+        "speaker": "Rowan",
+        "text": "That is the main takeaway. Better evidence upfront leads to better replication outcomes than just changing who runs the experiment."
+      },
+      {
+        "speaker": "Juniper",
+        "text": "Got it. Strong foundations are needed for science to stand up when others try to check them."
+      }
+    ],
+    "duplicateLines": 0,
+    "words": 440,
+    "seconds": 270.1,
+    "promptTokens": 1352,
+    "promptSeconds": 58.6,
+    "generatedTokens": 1169,
+    "tokensPerSecond": 5.53
+  }
+}

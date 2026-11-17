@@ -8,462 +8,539 @@
   {
    "id": "r00",
    "first": {
-    "answer": "Rubisco mistakes oxygen for carbon dioxide. When CO2 gets low, this mistake happens more often, wasting energy fixing the wrong carbon.",
-    "overlap": 0.31,
-    "seconds": 47.0,
-    "promptTokens": 1752,
-    "promptSeconds": 40.2,
-    "generatedTokens": 69,
-    "tokensPerSecond": 10.03
+    "answer": "Rubisco is a bit like a confused worker who sometimes picks up the wrong task. When there is less CO2, it mistakes oxygen for its target instead of fixing carbon.",
+    "overlap": 0.19,
+    "unsupported": [],
+    "seconds": 67.0,
+    "promptTokens": 1534,
+    "promptSeconds": 59.4,
+    "cachedTokens": 0,
+    "generatedTokens": 64,
+    "tokensPerSecond": 8.32
    },
    "retried": false,
-   "answer": "Rubisco mistakes oxygen for carbon dioxide. When CO2 gets low, this mistake happens more often, wasting energy fixing the wrong carbon.",
+   "answer": "Rubisco is a bit like a confused worker who sometimes picks up the wrong task. When there is less CO2, it mistakes oxygen for its target instead of fixing carbon.",
    "terms": [
     {
      "term": "Rubisco",
-     "meaning": "an enzyme that captures carbon"
-    },
-    {
-     "term": "side reaction",
-     "meaning": "an unwanted chemical response"
+     "meaning": "the main enzyme that helps plants make sugar"
     }
    ],
-   "overlap": 0.31,
-   "words": 21,
-   "seconds": 47.0,
-   "promptTokens": 1752,
-   "promptSeconds": 40.2,
-   "generatedTokens": 69,
-   "tokensPerSecond": 10.03
+   "overlap": 0.19,
+   "unsupported": [],
+   "words": 30,
+   "seconds": 67.0,
+   "promptTokens": 1534,
+   "promptSeconds": 59.4,
+   "cachedTokens": 0,
+   "generatedTokens": 64,
+   "tokensPerSecond": 8.32
   },
   {
    "id": "h01",
    "first": {
-    "answer": "Older models used slow step-by-step memory or scanning filters, but this new design skips both. It just looks at every word at once to decide which parts matter most.",
-    "overlap": 0.0,
-    "seconds": 51.2,
-    "promptTokens": 1878,
-    "promptSeconds": 42.9,
-    "generatedTokens": 84,
-    "tokensPerSecond": 10.02
+    "answer": "Old computer brains used two heavy tools called recurrence and convolutions, but this new design skips them completely. It works by looking at all words at once instead of one by one.",
+    "overlap": 0.12,
+    "unsupported": [],
+    "seconds": 36.0,
+    "promptTokens": 642,
+    "promptSeconds": 26.0,
+    "cachedTokens": 1018,
+    "generatedTokens": 85,
+    "tokensPerSecond": 8.47
    },
    "retried": false,
-   "answer": "Older models used slow step-by-step memory or scanning filters, but this new design skips both. It just looks at every word at once to decide which parts matter most.",
+   "answer": "Old computer brains used two heavy tools called recurrence and convolutions, but this new design skips them completely. It works by looking at all words at once instead of one by one.",
    "terms": [
     {
      "term": "recurrence",
-     "meaning": "using past steps to update the current state"
+     "meaning": "processing information step by step in a chain"
     },
     {
      "term": "convolutions",
-     "meaning": "scanning a pattern across a whole input"
+     "meaning": "scanning parts of data with sliding windows"
     }
    ],
-   "overlap": 0.0,
-   "words": 29,
-   "seconds": 51.2,
-   "promptTokens": 1878,
-   "promptSeconds": 42.9,
-   "generatedTokens": 84,
-   "tokensPerSecond": 10.02
+   "overlap": 0.12,
+   "unsupported": [],
+   "words": 32,
+   "seconds": 36.0,
+   "promptTokens": 642,
+   "promptSeconds": 26.0,
+   "cachedTokens": 1018,
+   "generatedTokens": 85,
+   "tokensPerSecond": 8.47
   },
   {
    "id": "h02",
    "first": {
-    "answer": "This signal was so strong it would have taken over half a million years to happen by pure chance. It's a discovery-level finding, not a fluke or a glitch.",
-    "overlap": 0.07,
-    "seconds": 55.4,
-    "promptTokens": 2037,
-    "promptSeconds": 46.5,
-    "generatedTokens": 90,
-    "tokensPerSecond": 10.02
+    "answer": "The signal was so real it would happen by pure chance less than once every 203,000 years. This means the odds of a fake result are tiny and the finding is very strong.",
+    "overlap": 0.24,
+    "unsupported": [],
+    "seconds": 39.4,
+    "promptTokens": 675,
+    "promptSeconds": 26.9,
+    "cachedTokens": 1144,
+    "generatedTokens": 97,
+    "tokensPerSecond": 7.66
    },
    "retried": false,
-   "answer": "This signal was so strong it would have taken over half a million years to happen by pure chance. It's a discovery-level finding, not a fluke or a glitch.",
+   "answer": "The signal was so real it would happen by pure chance less than once every 203,000 years. This means the odds of a fake result are tiny and the finding is very strong.",
    "terms": [
     {
      "term": "false alarm rate",
-     "meaning": "the chance a random noise looks like a real event"
+     "meaning": "how often a random noise looks like a real signal"
     },
     {
      "term": "significance",
-     "meaning": "a measure of how unlikely a result is due to luck"
+     "meaning": "how far a result is from being a random chance event"
     }
    ],
-   "overlap": 0.07,
-   "words": 29,
-   "seconds": 55.4,
-   "promptTokens": 2037,
-   "promptSeconds": 46.5,
-   "generatedTokens": 90,
-   "tokensPerSecond": 10.02
+   "overlap": 0.24,
+   "unsupported": [],
+   "words": 33,
+   "seconds": 39.4,
+   "promptTokens": 675,
+   "promptSeconds": 26.9,
+   "cachedTokens": 1144,
+   "generatedTokens": 97,
+   "tokensPerSecond": 7.66
   },
   {
    "id": "h03",
    "first": {
-    "answer": "It's like rolling a die and finding that result five times in a row by pure chance. That probability is so tiny, it proves the signal isn't just random noise.",
+    "answer": "That number means the result is extremely unlikely to be a random mistake. It's like flipping a coin 100 million times and seeing a pattern that has never happened before.",
     "overlap": 0.0,
-    "seconds": 50.5,
-    "promptTokens": 1920,
-    "promptSeconds": 44.1,
-    "generatedTokens": 65,
-    "tokensPerSecond": 9.99
+    "unsupported": [
+     "100",
+     "million"
+    ],
+    "seconds": 24.1,
+    "promptTokens": 399,
+    "promptSeconds": 16.3,
+    "cachedTokens": 1303,
+    "generatedTokens": 67,
+    "tokensPerSecond": 8.46
    },
-   "retried": false,
-   "answer": "It's like rolling a die and finding that result five times in a row by pure chance. That probability is so tiny, it proves the signal isn't just random noise.",
+   "retried": true,
+   "answer": "This number measures how unlikely it is that the result was just a random mistake. A value of 5.9 means the chance of a background fluctuation this strong is extremely small, making the finding very convincing.",
    "terms": [
     {
      "term": "standard deviations",
      "meaning": "a measure of how far something is from average"
     }
    ],
-   "overlap": 0.0,
-   "words": 30,
-   "seconds": 50.5,
-   "promptTokens": 1920,
-   "promptSeconds": 44.1,
-   "generatedTokens": 65,
-   "tokensPerSecond": 9.99
+   "overlap": 0.06,
+   "unsupported": [],
+   "words": 36,
+   "seconds": 53.0,
+   "promptTokens": 472,
+   "promptSeconds": 35.2,
+   "cachedTokens": 1303,
+   "generatedTokens": 73,
+   "tokensPerSecond": 7.19
   },
   {
    "id": "h04",
    "first": {
-    "answer": "Normal layers try to learn a brand new function from scratch, which gets harder as you add more. These layers instead teach how to adjust what came in, subtracting that input and learning just the difference. This shortcut keeps the signal flowing through hundreds of layers without dying out.",
-    "overlap": 0.2,
-    "seconds": 56.1,
-    "promptTokens": 1942,
-    "promptSeconds": 44.8,
-    "generatedTokens": 109,
-    "tokensPerSecond": 9.53
+    "answer": "Normally, a deep network tries to learn what changes from one step to the next. This method tells it to learn only the extra change needed to get from the input to the output. If the network doesn't need to change much, it just passes the input through. This makes the math easier and lets the network be much deeper without getting stuck.",
+    "overlap": 0.04,
+    "unsupported": [],
+    "seconds": 31.8,
+    "promptTokens": 421,
+    "promptSeconds": 17.0,
+    "cachedTokens": 1303,
+    "generatedTokens": 125,
+    "tokensPerSecond": 8.36
    },
    "retried": false,
-   "answer": "Normal layers try to learn a brand new function from scratch, which gets harder as you add more. These layers instead teach how to adjust what came in, subtracting that input and learning just the difference. This shortcut keeps the signal flowing through hundreds of layers without dying out.",
+   "answer": "Normally, a deep network tries to learn what changes from one step to the next. This method tells it to learn only the extra change needed to get from the input to the output. If the network doesn't need to change much, it just passes the input through. This makes the math easier and lets the network be much deeper without getting stuck.",
    "terms": [
     {
      "term": "residual functions",
-     "meaning": "learning only the change needed from one step"
+     "meaning": "the extra change a layer adds to the input"
     },
     {
      "term": "unreferenced functions",
-     "meaning": "learning a completely new function with no reference to input"
+     "meaning": "learning from scratch without seeing the starting point"
     }
    ],
-   "overlap": 0.2,
-   "words": 49,
-   "seconds": 56.1,
-   "promptTokens": 1942,
-   "promptSeconds": 44.8,
-   "generatedTokens": 109,
-   "tokensPerSecond": 9.53
+   "overlap": 0.04,
+   "unsupported": [],
+   "words": 63,
+   "seconds": 31.8,
+   "promptTokens": 421,
+   "promptSeconds": 17.0,
+   "cachedTokens": 1303,
+   "generatedTokens": 125,
+   "tokensPerSecond": 8.36
   },
   {
    "id": "h05",
    "first": {
-    "answer": "Electrons move without bumping into anything, like a laser beam in a straight line. This happens only when the path is tiny and the material is perfect, which graphene does even when it's warm.",
-    "overlap": 0.0,
-    "seconds": 47.7,
-    "promptTokens": 1710,
-    "promptSeconds": 39.1,
-    "generatedTokens": 89,
-    "tokensPerSecond": 10.21
+    "answer": "Electrons move in straight lines like a bullet without bumping into anything. This happens when the material is tiny, even at normal room heat.",
+    "overlap": 0.07,
+    "unsupported": [],
+    "seconds": 17.1,
+    "promptTokens": 189,
+    "promptSeconds": 7.8,
+    "cachedTokens": 1303,
+    "generatedTokens": 80,
+    "tokensPerSecond": 8.48
    },
    "retried": false,
-   "answer": "Electrons move without bumping into anything, like a laser beam in a straight line. This happens only when the path is tiny and the material is perfect, which graphene does even when it's warm.",
+   "answer": "Electrons move in straight lines like a bullet without bumping into anything. This happens when the material is tiny, even at normal room heat.",
    "terms": [
     {
      "term": "ballistic transport",
-     "meaning": "movement without scattering or bouncing"
+     "meaning": "moving in a straight line without scattering"
     },
     {
-     "term": "submicron distances",
-     "meaning": "distances smaller than one micrometer"
+     "term": "submicron",
+     "meaning": "smaller than one millionth of a meter"
     }
    ],
-   "overlap": 0.0,
-   "words": 34,
-   "seconds": 47.7,
-   "promptTokens": 1710,
-   "promptSeconds": 39.1,
-   "generatedTokens": 89,
-   "tokensPerSecond": 10.21
+   "overlap": 0.07,
+   "unsupported": [],
+   "words": 24,
+   "seconds": 17.1,
+   "promptTokens": 189,
+   "promptSeconds": 7.8,
+   "cachedTokens": 1303,
+   "generatedTokens": 80,
+   "tokensPerSecond": 8.48
   },
   {
    "id": "h06",
    "first": {
-    "answer": "It's how fast the universe is expanding right now. This number tells you the speed of space itself, not how fast galaxies move through it.",
+    "answer": "It's a measure of how fast the universe is expanding right now, based on how fast distant galaxies are moving away from us.",
     "overlap": 0.0,
-    "seconds": 56.2,
-    "promptTokens": 2186,
-    "promptSeconds": 50.3,
-    "generatedTokens": 59,
-    "tokensPerSecond": 9.87
+    "unsupported": [],
+    "seconds": 34.2,
+    "promptTokens": 665,
+    "promptSeconds": 27.5,
+    "cachedTokens": 1303,
+    "generatedTokens": 56,
+    "tokensPerSecond": 8.3
    },
    "retried": false,
-   "answer": "It's how fast the universe is expanding right now. This number tells you the speed of space itself, not how fast galaxies move through it.",
+   "answer": "It's a measure of how fast the universe is expanding right now, based on how fast distant galaxies are moving away from us.",
    "terms": [
     {
      "term": "Hubble constant",
-     "meaning": "the speed at which the universe expands today"
+     "meaning": "the current rate at which the universe expands"
     }
    ],
    "overlap": 0.0,
-   "words": 25,
-   "seconds": 56.2,
-   "promptTokens": 2186,
-   "promptSeconds": 50.3,
-   "generatedTokens": 59,
-   "tokensPerSecond": 9.87
+   "unsupported": [],
+   "words": 23,
+   "seconds": 34.2,
+   "promptTokens": 665,
+   "promptSeconds": 27.5,
+   "cachedTokens": 1303,
+   "generatedTokens": 56,
+   "tokensPerSecond": 8.3
   },
   {
    "id": "h07",
    "first": {
-    "answer": "Out of the people who got the shot, only one in twenty got sick with Covid-19, while a lot more in the placebo group did. The range from 90.3 to 97.6 shows how sure we are that this number is close to the true protection level.",
-    "overlap": 0.21,
-    "seconds": 58.8,
-    "promptTokens": 2175,
-    "promptSeconds": 49.9,
-    "generatedTokens": 90,
-    "tokensPerSecond": 10.03
+    "answer": "The vaccine stopped 95 out of every 100 cases from happening. The 95% credible interval means the true effectiveness is very likely between 90.3% and 97.6%, so we are very sure it works well.",
+    "overlap": 0.28,
+    "unsupported": [],
+    "seconds": 37.1,
+    "promptTokens": 654,
+    "promptSeconds": 26.2,
+    "cachedTokens": 1303,
+    "generatedTokens": 83,
+    "tokensPerSecond": 7.54
    },
    "retried": false,
-   "answer": "Out of the people who got the shot, only one in twenty got sick with Covid-19, while a lot more in the placebo group did. The range from 90.3 to 97.6 shows how sure we are that this number is close to the true protection level.",
+   "answer": "The vaccine stopped 95 out of every 100 cases from happening. The 95% credible interval means the true effectiveness is very likely between 90.3% and 97.6%, so we are very sure it works well.",
    "terms": [
     {
      "term": "credible interval",
-     "meaning": "a range where the true value likely lies"
+     "meaning": "a range that likely contains the true value"
     }
    ],
-   "overlap": 0.21,
-   "words": 46,
-   "seconds": 58.8,
-   "promptTokens": 2175,
-   "promptSeconds": 49.9,
-   "generatedTokens": 90,
-   "tokensPerSecond": 10.03
+   "overlap": 0.28,
+   "unsupported": [],
+   "words": 34,
+   "seconds": 37.1,
+   "promptTokens": 654,
+   "promptSeconds": 26.2,
+   "cachedTokens": 1303,
+   "generatedTokens": 83,
+   "tokensPerSecond": 7.54
   },
   {
    "id": "h08",
    "first": {
-    "answer": "This system lets scientists program RNA to cut DNA at any spot, which could be used to fix genes or make new traits in living things.",
-    "overlap": 0.13,
-    "seconds": 51.0,
-    "promptTokens": 1888,
-    "promptSeconds": 43.2,
-    "generatedTokens": 77,
-    "tokensPerSecond": 9.83
+    "answer": "This means scientists can use a natural bacterial defense system to cut specific parts of DNA with RNA instructions. It's like a programmable tool that allows researchers to change the genetic code of living things.",
+    "overlap": 0.14,
+    "unsupported": [],
+    "seconds": 24.6,
+    "promptTokens": 367,
+    "promptSeconds": 14.9,
+    "cachedTokens": 1303,
+    "generatedTokens": 84,
+    "tokensPerSecond": 8.61
    },
    "retried": false,
-   "answer": "This system lets scientists program RNA to cut DNA at any spot, which could be used to fix genes or make new traits in living things.",
+   "answer": "This means scientists can use a natural bacterial defense system to cut specific parts of DNA with RNA instructions. It's like a programmable tool that allows researchers to change the genetic code of living things.",
    "terms": [
     {
-     "term": "RNA-programmable",
-     "meaning": "controlled by a specific strand of RNA"
+     "term": "genome editing",
+     "meaning": "changing an organism's genetic material"
     },
     {
-     "term": "genome editing",
-     "meaning": "changing the genetic code of an organism"
+     "term": "RNA-programmable",
+     "meaning": "controlled by RNA molecules"
     }
    ],
-   "overlap": 0.13,
-   "words": 26,
-   "seconds": 51.0,
-   "promptTokens": 1888,
-   "promptSeconds": 43.2,
-   "generatedTokens": 77,
-   "tokensPerSecond": 9.83
+   "overlap": 0.14,
+   "unsupported": [],
+   "words": 35,
+   "seconds": 24.6,
+   "promptTokens": 367,
+   "promptSeconds": 14.9,
+   "cachedTokens": 1303,
+   "generatedTokens": 84,
+   "tokensPerSecond": 8.61
   },
   {
    "id": "h09",
    "first": {
-    "answer": "Before this method, computers could only guess a shape if they had a close match to copy from. Now it can stand alone and get the right details without needing that template.",
-    "overlap": 0.0,
-    "seconds": 51.1,
-    "promptTokens": 1959,
-    "promptSeconds": 44.9,
-    "generatedTokens": 62,
-    "tokensPerSecond": 9.98
+    "answer": "Scientists usually guess a protein's shape by comparing it to one already solved. This new method works even when there is no similar shape to compare it against.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "seconds": 26.1,
+    "promptTokens": 438,
+    "promptSeconds": 17.5,
+    "cachedTokens": 1303,
+    "generatedTokens": 76,
+    "tokensPerSecond": 8.71
    },
    "retried": false,
-   "answer": "Before this method, computers could only guess a shape if they had a close match to copy from. Now it can stand alone and get the right details without needing that template.",
+   "answer": "Scientists usually guess a protein's shape by comparing it to one already solved. This new method works even when there is no similar shape to compare it against.",
    "terms": [
     {
      "term": "homologous",
-     "meaning": "a similar structure or sequence"
+     "meaning": "similar enough to compare"
+    },
+    {
+     "term": "structural bioinformatics",
+     "meaning": "using computers to study protein shapes"
     }
    ],
-   "overlap": 0.0,
-   "words": 32,
-   "seconds": 51.1,
-   "promptTokens": 1959,
-   "promptSeconds": 44.9,
-   "generatedTokens": 62,
-   "tokensPerSecond": 9.98
+   "overlap": 0.08,
+   "unsupported": [],
+   "words": 28,
+   "seconds": 26.1,
+   "promptTokens": 438,
+   "promptSeconds": 17.5,
+   "cachedTokens": 1303,
+   "generatedTokens": 76,
+   "tokensPerSecond": 8.71
   },
   {
    "id": "h10",
    "first": {
-    "answer": "For every person in the low-blood-pressure group, there were about 75% as many heart attacks or strokes as in the normal group. The range from 64% to 89% means we are very sure this difference is real and not a fluke.",
-    "overlap": 0.0,
-    "seconds": 60.1,
-    "promptTokens": 2139,
-    "promptSeconds": 49.2,
-    "generatedTokens": 108,
-    "tokensPerSecond": 9.79
+    "answer": "The hazard ratio of 0.75 means people in the strict blood pressure group were less likely to have heart problems than those in the standard group. The 95% confidence interval of 0.64 to 0.89 shows how sure we are that this difference is real.",
+    "overlap": 0.35,
+    "unsupported": [],
+    "seconds": 38.2,
+    "promptTokens": 618,
+    "promptSeconds": 25.3,
+    "cachedTokens": 1303,
+    "generatedTokens": 112,
+    "tokensPerSecond": 8.59
    },
    "retried": false,
-   "answer": "For every person in the low-blood-pressure group, there were about 75% as many heart attacks or strokes as in the normal group. The range from 64% to 89% means we are very sure this difference is real and not a fluke.",
+   "answer": "The hazard ratio of 0.75 means people in the strict blood pressure group were less likely to have heart problems than those in the standard group. The 95% confidence interval of 0.64 to 0.89 shows how sure we are that this difference is real.",
    "terms": [
     {
      "term": "hazard ratio",
-     "meaning": "a measure of how much more likely an event is"
+     "meaning": "a number comparing the chance of an event happening"
     },
     {
      "term": "confidence interval",
-     "meaning": "the range where the true value probably lies"
+     "meaning": "the range where the true answer likely sits"
     }
    ],
-   "overlap": 0.0,
-   "words": 41,
-   "seconds": 60.1,
-   "promptTokens": 2139,
-   "promptSeconds": 49.2,
-   "generatedTokens": 108,
-   "tokensPerSecond": 9.79
+   "overlap": 0.35,
+   "unsupported": [],
+   "words": 44,
+   "seconds": 38.2,
+   "promptTokens": 618,
+   "promptSeconds": 25.3,
+   "cachedTokens": 1303,
+   "generatedTokens": 112,
+   "tokensPerSecond": 8.59
   },
   {
    "id": "h11",
    "first": {
-    "answer": "People on the new drug lost about 15% of their weight over six months, while those on the sugar pill only lost 2%. That's a big difference.",
-    "overlap": 0.0,
-    "seconds": 55.7,
-    "promptTokens": 2160,
-    "promptSeconds": 49.5,
-    "generatedTokens": 62,
-    "tokensPerSecond": 9.97
+    "answer": "People on the new drug lost 14.9 percent of their starting weight, while those on the fake pill only lost 2.4 percent over eight months.",
+    "overlap": 0.15,
+    "unsupported": [
+     "eight"
+    ],
+    "seconds": 31.0,
+    "promptTokens": 639,
+    "promptSeconds": 26.0,
+    "cachedTokens": 1303,
+    "generatedTokens": 44,
+    "tokensPerSecond": 8.57
    },
-   "retried": false,
-   "answer": "People on the new drug lost about 15% of their weight over six months, while those on the sugar pill only lost 2%. That's a big difference.",
+   "retried": true,
+   "answer": "People taking semaglutide lost 14.9% of their body weight on average, while those taking a fake pill only lost 2.4%. This shows the drug helps people lose more weight than a placebo.",
    "terms": [
     {
+     "term": "semaglutide",
+     "meaning": "a medicine that makes you feel full"
+    },
+    {
      "term": "placebo",
-     "meaning": "a fake treatment with no medicine"
+     "meaning": "an inactive substance used as a control"
     }
    ],
-   "overlap": 0.0,
-   "words": 27,
-   "seconds": 55.7,
-   "promptTokens": 2160,
+   "overlap": 0.25,
+   "unsupported": [],
+   "words": 32,
+   "seconds": 65.6,
+   "promptTokens": 584,
    "promptSeconds": 49.5,
-   "generatedTokens": 62,
-   "tokensPerSecond": 9.97
+   "cachedTokens": 1426,
+   "generatedTokens": 95,
+   "tokensPerSecond": 8.52
   },
   {
    "id": "h12",
    "first": {
-    "answer": "Flying insects dropped by three-quarters from spring to summer, and by more than four-fifths by mid-summer. That's a massive drop that shows how much life is disappearing.",
-    "overlap": 0.27,
-    "seconds": 50.2,
-    "promptTokens": 1908,
-    "promptSeconds": 43.8,
-    "generatedTokens": 66,
-    "tokensPerSecond": 10.12
+    "answer": "Flying insects got 76% lighter in spring and 82% lighter in summer. This is a big drop in total weight, not just how many there are.",
+    "overlap": 0.45,
+    "unsupported": [],
+    "seconds": 23.8,
+    "promptTokens": 387,
+    "promptSeconds": 15.5,
+    "cachedTokens": 1303,
+    "generatedTokens": 63,
+    "tokensPerSecond": 7.47
    },
    "retried": false,
-   "answer": "Flying insects dropped by three-quarters from spring to summer, and by more than four-fifths by mid-summer. That's a massive drop that shows how much life is disappearing.",
+   "answer": "Flying insects got 76% lighter in spring and 82% lighter in summer. This is a big drop in total weight, not just how many there are.",
    "terms": [
     {
-     "term": "insect biomass",
-     "meaning": "the total weight of all living insects"
+     "term": "biomass",
+     "meaning": "the total weight of living things"
     }
    ],
-   "overlap": 0.27,
-   "words": 27,
-   "seconds": 50.2,
-   "promptTokens": 1908,
-   "promptSeconds": 43.8,
-   "generatedTokens": 66,
-   "tokensPerSecond": 10.12
+   "overlap": 0.45,
+   "unsupported": [],
+   "words": 26,
+   "seconds": 23.8,
+   "promptTokens": 387,
+   "promptSeconds": 15.5,
+   "cachedTokens": 1303,
+   "generatedTokens": 63,
+   "tokensPerSecond": 7.47
   },
   {
    "id": "h13",
    "first": {
-    "answer": "Only a little over one-third of the new studies showed real effects. That means most of the original findings didn't hold up when checked again.",
-    "overlap": 0.0,
-    "seconds": 48.4,
-    "promptTokens": 1838,
-    "promptSeconds": 42.3,
-    "generatedTokens": 59,
-    "tokensPerSecond": 9.6
+    "answer": "Only 36% of the new tests showed a real result, while 97% of the original studies did. This means most of the findings that seemed important at first were not strong enough to be trusted.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "seconds": 21.1,
+    "promptTokens": 317,
+    "promptSeconds": 12.8,
+    "cachedTokens": 1303,
+    "generatedTokens": 74,
+    "tokensPerSecond": 8.75
    },
    "retried": false,
-   "answer": "Only a little over one-third of the new studies showed real effects. That means most of the original findings didn't hold up when checked again.",
+   "answer": "Only 36% of the new tests showed a real result, while 97% of the original studies did. This means most of the findings that seemed important at first were not strong enough to be trusted.",
    "terms": [
     {
      "term": "statistically significant",
-     "meaning": "a result unlikely to be due to chance"
+     "meaning": "a result unlikely to happen just by chance"
     }
    ],
-   "overlap": 0.0,
-   "words": 25,
-   "seconds": 48.4,
-   "promptTokens": 1838,
-   "promptSeconds": 42.3,
-   "generatedTokens": 59,
-   "tokensPerSecond": 9.6
+   "overlap": 0.06,
+   "unsupported": [],
+   "words": 35,
+   "seconds": 21.1,
+   "promptTokens": 317,
+   "promptSeconds": 12.8,
+   "cachedTokens": 1303,
+   "generatedTokens": 74,
+   "tokensPerSecond": 8.75
   },
   {
    "id": "h14",
    "first": {
-    "answer": "Think of a giant invisible checkerboard on the floor of the animal's world. A 'grid cell' lights up only when the animal stands exactly on one of those tiny corners. This creates a map where every spot has its own unique address, letting the brain figure out where it is without needing to see anything.",
-    "overlap": 0.04,
-    "seconds": 51.1,
-    "promptTokens": 1844,
-    "promptSeconds": 42.2,
-    "generatedTokens": 90,
-    "tokensPerSecond": 10.05
+    "answer": "Imagine a floor covered with identical equilateral triangles. This brain map covers that same area and lights up only when the animal is standing at one of those triangle corners. It works like a giant ruler where every corner marks a specific spot.",
+    "overlap": 0.1,
+    "unsupported": [],
+    "seconds": 23.0,
+    "promptTokens": 323,
+    "promptSeconds": 13.1,
+    "cachedTokens": 1303,
+    "generatedTokens": 88,
+    "tokensPerSecond": 8.73
    },
    "retried": false,
-   "answer": "Think of a giant invisible checkerboard on the floor of the animal's world. A 'grid cell' lights up only when the animal stands exactly on one of those tiny corners. This creates a map where every spot has its own unique address, letting the brain figure out where it is without needing to see anything.",
+   "answer": "Imagine a floor covered with identical equilateral triangles. This brain map covers that same area and lights up only when the animal is standing at one of those triangle corners. It works like a giant ruler where every corner marks a specific spot.",
    "terms": [
     {
      "term": "vertex",
-     "meaning": "a corner or point where lines meet"
+     "meaning": "a corner point"
+    },
+    {
+     "term": "equilateral",
+     "meaning": "all sides are the same length"
     }
    ],
-   "overlap": 0.04,
-   "words": 55,
-   "seconds": 51.1,
-   "promptTokens": 1844,
-   "promptSeconds": 42.2,
-   "generatedTokens": 90,
-   "tokensPerSecond": 10.05
+   "overlap": 0.1,
+   "unsupported": [],
+   "words": 43,
+   "seconds": 23.0,
+   "promptTokens": 323,
+   "promptSeconds": 13.1,
+   "cachedTokens": 1303,
+   "generatedTokens": 88,
+   "tokensPerSecond": 8.73
   },
   {
    "id": "h15",
    "first": {
-    "answer": "That means what scientists say is true might just match how they already want things to be. It's like a mirror showing only what we expect, not what actually exists.",
+    "answer": "The study says some results just show what people want to see instead of real facts. It's like a mirror that only shows the strongest colors, so the picture looks more extreme than it really is.",
     "overlap": 0.0,
-    "seconds": 48.7,
-    "promptTokens": 1870,
-    "promptSeconds": 42.9,
-    "generatedTokens": 60,
-    "tokensPerSecond": 10.05
+    "unsupported": [],
+    "seconds": 22.6,
+    "promptTokens": 349,
+    "promptSeconds": 14.5,
+    "cachedTokens": 1303,
+    "generatedTokens": 70,
+    "tokensPerSecond": 8.61
    },
    "retried": false,
-   "answer": "That means what scientists say is true might just match how they already want things to be. It's like a mirror showing only what we expect, not what actually exists.",
+   "answer": "The study says some results just show what people want to see instead of real facts. It's like a mirror that only shows the strongest colors, so the picture looks more extreme than it really is.",
    "terms": [
     {
      "term": "bias",
-     "meaning": "a preference that skews results"
+     "meaning": "a one-sided view or unfair tendency in a result"
     }
    ],
    "overlap": 0.0,
-   "words": 30,
-   "seconds": 48.7,
-   "promptTokens": 1870,
-   "promptSeconds": 42.9,
-   "generatedTokens": 60,
-   "tokensPerSecond": 10.05
+   "unsupported": [],
+   "words": 36,
+   "seconds": 22.6,
+   "promptTokens": 349,
+   "promptSeconds": 14.5,
+   "cachedTokens": 1303,
+   "generatedTokens": 70,
+   "tokensPerSecond": 8.61
   }
  ],
  "podcast": {
@@ -471,95 +548,96 @@
   "lines": [
    {
     "speaker": "Juniper",
-    "text": "So does psychology actually prove what it says about human minds?"
+    "text": "So does psychology actually prove what it says it proves?"
    },
    {
     "speaker": "Rowan",
-    "text": "That is the main worry in Estimating the reproducibility of psychological study. The authors wanted to see if new experiments match old ones."
+    "text": "That's the big worry in Estimating the reproducibility of psychological Science. The authors worried that many findings might not hold up when tested again."
    },
    {
     "speaker": "Juniper",
-    "text": "And they didn't just guess, they actually copied studies right?"
+    "text": "Half the magnitude? What does that even mean?"
    },
    {
     "speaker": "Rowan",
-    "text": "Exactly. They took one hundred existing studies from three psychology journals and ran their own versions."
+    "text": "Think of it like measuring a force. If the original study said the push was five units, and the new one says only two and a half, the effect is much weaker than advertised."
    },
    {
     "speaker": "Juniper",
-    "text": "Did they use the same people or different ones to test if it holds up?"
+    "text": "And how many studies did they actually check to know this?"
    },
    {
     "speaker": "Rowan",
-    "text": "They used original materials where available but with high powered designs to get clearer answers."
+    "text": "They looked at one hundred experimental and correlational studies from three top psychology journals. They made sure to use fresh materials whenever possible."
    },
    {
     "speaker": "Juniper",
-    "text": "So if the results changed a lot, that means science is shaky?"
+    "text": "Did they just copy the old test exactly or make new versions?"
    },
    {
     "speaker": "Rowan",
-    "text": "Not shaky necessarily but the numbers are very different. Replication effects were exactly half the magnitude of the originals."
+    "text": "They used high-powered designs meaning large sample sizes, and they grabbed original materials when those were available to keep things as true as possible."
    },
    {
     "speaker": "Juniper",
-    "text": "Half? Like if they found something big before now it's tiny?"
+    "text": "So ninety-seven percent of the originals worked. What about their new ones?"
    },
    {
     "speaker": "Rowan",
-    "text": "Yes, and ninety seven percent of the original studies had significant results but only thirty six percent did in the new ones."
+    "text": "Only thirty-six percent of those replications showed statistically significant results. That is a huge drop compared to the original findings."
    },
    {
     "speaker": "Juniper",
-    "text": "So most of what was thought true turned out to be wrong?"
+    "text": "Why did so many original studies get such good results in the first place?"
    },
    {
     "speaker": "Rowan",
-    "text": "Mostly yes. If you combine both sets of results without bias only sixty eight percent still show significant effects."
+    "text": "Ninety-seven percent of those original studies had statistically significant results, which suggests some papers might have been lucky or had hidden bias."
    },
    {
     "speaker": "Juniper",
-    "text": "Is there any reason why the new teams failed to get these same numbers?"
+    "text": "What about the numbers on the charts in the new study?"
    },
    {
     "speaker": "Rowan",
-    "text": "Statistical tests suggest success depended more on how strong the original evidence was than who ran the study."
+    "text": "Forty-seven percent of the original effect sizes fell inside the ninety-five percent confidence interval of the replication result. That means most effects were weaker than claimed."
    },
    {
     "speaker": "Juniper",
-    "text": "So weak studies are just harder to repeat no matter how hard they try?"
+    "text": "And what did people who looked at these results say?"
    },
    {
     "speaker": "Rowan",
-    "text": "That seems likely. The paper notes forty seven percent of original effect sizes fell in the ninety five confidence interval."
+    "text": "Thirty-nine percent of effects were subjectively rated by experts to have successfully replicated the original finding. That rating was lower than the raw numbers suggest."
    },
    {
     "speaker": "Juniper",
-    "text": "Which means half the results could have been just luck originally?"
+    "text": "So if we mix both sets of data together, does it help?"
    },
    {
     "speaker": "Rowan",
-    "text": "Yes, and thirty nine percent were subjectively rated as having replicated but most did not match well."
+    "text": "If we assume no bias in the original results and combine them, only sixty-eight percent would still have statistically significant effects overall."
    },
    {
     "speaker": "Juniper",
-    "text": "So what should scientists do to fix this mess?"
+    "text": "So the team quality didn't matter much? What did actually predict success?"
    },
    {
     "speaker": "Rowan",
-    "text": "Use stronger evidence from the start and be more careful about which studies they choose to repeat."
+    "text": "Correlational tests showed replication success was better predicted by how strong the original evidence was than by who ran the study."
    },
    {
     "speaker": "Juniper",
-    "text": "Okay so we need to trust less and check harder before believing what we read?"
+    "text": "So until more data comes in, we probably can't trust most psychology findings right now."
    }
   ],
   "duplicateLines": 0,
-  "words": 320,
-  "seconds": 142.9,
+  "words": 368,
+  "seconds": 182.7,
   "promptTokens": 1352,
-  "promptSeconds": 30.8,
-  "generatedTokens": 1108,
-  "tokensPerSecond": 9.88
+  "promptSeconds": 52.3,
+  "cachedTokens": 0,
+  "generatedTokens": 1087,
+  "tokensPerSecond": 8.33
  }
 }

@@ -264,13 +264,14 @@ def run_report(a):
     ts = json.load(open(TESTSET, encoding="utf-8"))
     notes = json.load(open(a.notes, encoding="utf-8")) if a.notes and os.path.exists(a.notes) else {}
     runs = [json.load(open(f, encoding="utf-8")) for f in a.results]
-    order = {"gemini": 0, "4b": 1, "9b": 2, "2b": 3, "4b-old-prompts": 4, "2b-old-prompts": 5}
+    order = {"gemini": 0, "4b": 1, "9b": 2, "4b-prev": 3, "9b-prev": 4, "2b": 5, "4b-old-prompts": 6, "2b-old-prompts": 7}
     for r in runs:
         r["label"] = r.get("label") or ("gemini" if r["engine"] == "gemini" else r["model"])
     runs.sort(key=lambda r: order.get(r["label"], 9))
     name = {"gemini": "Gemini (" + next((r["model"] for r in runs if r["engine"] == "gemini"), "") + ", via the Worker)",
             "4b": "Qwen 3.5 4B, new prompts", "9b": "Qwen 3.5 9B, new prompts", "2b": "Qwen 3.5 2B (CI sibling), new prompts",
-            "4b-old-prompts": "Qwen 3.5 4B, old prompts", "2b-old-prompts": "Qwen 3.5 2B, old prompts"}
+            "4b-old-prompts": "Qwen 3.5 4B, old prompts", "2b-old-prompts": "Qwen 3.5 2B, old prompts",
+            "4b-prev": "Qwen 3.5 4B, previous pass (run 44067176475)", "9b-prev": "Qwen 3.5 9B, previous pass (run 44067176475)"}
     real = [h for h in ts["highlights"] if not h.get("regression")]
     byid = {h["id"]: h for h in ts["highlights"]}
 
