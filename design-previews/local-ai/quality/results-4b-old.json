@@ -1,0 +1,482 @@
+{
+ "engine": "local",
+ "model": "Qwen3.5-4B-Q4_K_M.gguf",
+ "label": "4b-old-prompts",
+ "prompts": "old",
+ "runner": "GitHub ubuntu-latest, 4 vCPU, CPU only",
+ "items": [
+  {
+   "id": "r00",
+   "first": {
+    "answer": "Rubisco is a tool that grabs carbon, but it can also grab oxygen by mistake. When there isn't enough carbon in the leaf, it makes more mistakes.",
+    "overlap": 0.44,
+    "seconds": 35.0,
+    "promptTokens": 1212,
+    "promptSeconds": 27.7,
+    "generatedTokens": 75,
+    "tokensPerSecond": 10.17
+   },
+   "retried": false,
+   "answer": "Rubisco is a tool that grabs carbon, but it can also grab oxygen by mistake. When there isn't enough carbon in the leaf, it makes more mistakes.",
+   "terms": [
+    {
+     "term": "reacts",
+     "meaning": "combines with something else"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unwanted extra step"
+    }
+   ],
+   "overlap": 0.44,
+   "words": 27,
+   "seconds": 35.0,
+   "promptTokens": 1212,
+   "promptSeconds": 27.7,
+   "generatedTokens": 75,
+   "tokensPerSecond": 10.17
+  },
+  {
+   "id": "h01",
+   "first": {
+    "answer": "They left out two old types of brain patterns used in previous networks. This made their new design simpler, faster to train, and better at learning the translation rules.",
+    "overlap": 0.0,
+    "seconds": 38.8,
+    "promptTokens": 1338,
+    "promptSeconds": 30.6,
+    "generatedTokens": 83,
+    "tokensPerSecond": 10.08
+   },
+   "retried": false,
+   "answer": "They left out two old types of brain patterns used in previous networks. This made their new design simpler, faster to train, and better at learning the translation rules.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "using past steps to help predict the next one"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "sliding patterns that look for local features"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 29,
+   "seconds": 38.8,
+   "promptTokens": 1338,
+   "promptSeconds": 30.6,
+   "generatedTokens": 83,
+   "tokensPerSecond": 10.08
+  },
+  {
+   "id": "h02",
+   "first": {
+    "answer": "This signal was so strong that it would have happened by pure chance less than once in 203,000 years. It's like finding a needle in a haystack and being sure you didn't just imagine the needle.",
+    "overlap": 0.29,
+    "seconds": 44.0,
+    "promptTokens": 1497,
+    "promptSeconds": 34.3,
+    "generatedTokens": 97,
+    "tokensPerSecond": 9.95
+   },
+   "retried": false,
+   "answer": "This signal was so strong that it would have happened by pure chance less than once in 203,000 years. It's like finding a needle in a haystack and being sure you didn't just imagine the needle.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "chance of seeing this signal by luck"
+    },
+    {
+     "term": "significance",
+     "meaning": "how unlikely a result is to be random"
+    }
+   ],
+   "overlap": 0.29,
+   "words": 36,
+   "seconds": 44.0,
+   "promptTokens": 1497,
+   "promptSeconds": 34.3,
+   "generatedTokens": 97,
+   "tokensPerSecond": 9.95
+  },
+  {
+   "id": "h03",
+   "first": {
+    "answer": "It means the chance of this result happening by luck is less than one in a billion, so scientists are very sure they found something real.",
+    "overlap": 0.0,
+    "seconds": 37.3,
+    "promptTokens": 1380,
+    "promptSeconds": 31.3,
+    "generatedTokens": 61,
+    "tokensPerSecond": 10.05
+   },
+   "retried": false,
+   "answer": "It means the chance of this result happening by luck is less than one in a billion, so scientists are very sure they found something real.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a way to measure how likely a result is just random chance"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 26,
+   "seconds": 37.3,
+   "promptTokens": 1380,
+   "promptSeconds": 31.3,
+   "generatedTokens": 61,
+   "tokensPerSecond": 10.05
+  },
+  {
+   "id": "h04",
+   "first": {
+    "answer": "Normally, a neural network layer tries to learn what to do from start to finish. Here, they teach the layer to learn only the difference between its input and output. It's like learning how much to adjust a photo instead of trying to make it perfect from scratch. This trick lets them stack many more layers without getting stuck.",
+    "overlap": 0.15,
+    "seconds": 43.5,
+    "promptTokens": 1402,
+    "promptSeconds": 31.9,
+    "generatedTokens": 119,
+    "tokensPerSecond": 10.18
+   },
+   "retried": false,
+   "answer": "Normally, a neural network layer tries to learn what to do from start to finish. Here, they teach the layer to learn only the difference between its input and output. It's like learning how much to adjust a photo instead of trying to make it perfect from scratch. This trick lets them stack many more layers without getting stuck.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "the small changes a layer makes to the input"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "learning the full transformation without using the input"
+    }
+   ],
+   "overlap": 0.15,
+   "words": 59,
+   "seconds": 43.5,
+   "promptTokens": 1402,
+   "promptSeconds": 31.9,
+   "generatedTokens": 119,
+   "tokensPerSecond": 10.18
+  },
+  {
+   "id": "h05",
+   "first": {
+    "answer": "The electrons moved through the material like a smooth slide, without bumping into anything. They kept going fast and straight even in a warm room.",
+    "overlap": 0.07,
+    "seconds": 33.9,
+    "promptTokens": 1170,
+    "promptSeconds": 26.8,
+    "generatedTokens": 72,
+    "tokensPerSecond": 10.04
+   },
+   "retried": false,
+   "answer": "The electrons moved through the material like a smooth slide, without bumping into anything. They kept going fast and straight even in a warm room.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "moving smoothly without bouncing"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "very tiny distances"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 25,
+   "seconds": 33.9,
+   "promptTokens": 1170,
+   "promptSeconds": 26.8,
+   "generatedTokens": 72,
+   "tokensPerSecond": 10.04
+  },
+  {
+   "id": "h06",
+   "first": {
+    "answer": "The Hubble constant is a number that tells us how fast the universe is stretching right now. Think of it as the speed limit for space itself.",
+    "overlap": 0.15,
+    "seconds": 43.4,
+    "promptTokens": 1646,
+    "promptSeconds": 37.7,
+    "generatedTokens": 59,
+    "tokensPerSecond": 10.06
+   },
+   "retried": false,
+   "answer": "The Hubble constant is a number that tells us how fast the universe is stretching right now. Think of it as the speed limit for space itself.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "number showing how fast the universe expands"
+    }
+   ],
+   "overlap": 0.15,
+   "words": 27,
+   "seconds": 43.4,
+   "promptTokens": 1646,
+   "promptSeconds": 37.7,
+   "generatedTokens": 59,
+   "tokensPerSecond": 10.06
+  },
+  {
+   "id": "h07",
+   "first": {
+    "answer": "The vaccine worked really well at stopping the virus from making you sick. We are very sure it stops about 95 out of every 100 cases.",
+    "overlap": 0.08,
+    "seconds": 43.9,
+    "promptTokens": 1635,
+    "promptSeconds": 37.5,
+    "generatedTokens": 65,
+    "tokensPerSecond": 9.95
+   },
+   "retried": false,
+   "answer": "The vaccine worked really well at stopping the virus from making you sick. We are very sure it stops about 95 out of every 100 cases.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range where the real answer is very likely to be"
+    }
+   ],
+   "overlap": 0.08,
+   "words": 26,
+   "seconds": 43.9,
+   "promptTokens": 1635,
+   "promptSeconds": 37.5,
+   "generatedTokens": 65,
+   "tokensPerSecond": 9.95
+  },
+  {
+   "id": "h08",
+   "first": {
+    "answer": "This discovery lets scientists use tiny bits of RNA to tell a special protein exactly where to cut DNA. That gives us a powerful new tool to fix or change genes with high precision.",
+    "overlap": 0.04,
+    "seconds": 39.1,
+    "promptTokens": 1348,
+    "promptSeconds": 30.7,
+    "generatedTokens": 85,
+    "tokensPerSecond": 10.07
+   },
+   "retried": false,
+   "answer": "This discovery lets scientists use tiny bits of RNA to tell a special protein exactly where to cut DNA. That gives us a powerful new tool to fix or change genes with high precision.",
+   "terms": [
+    {
+     "term": "exploit the system",
+     "meaning": "use the system for something"
+    },
+    {
+     "term": "RNA-programmable genome editing",
+     "meaning": "using RNA to edit genes"
+    }
+   ],
+   "overlap": 0.04,
+   "words": 34,
+   "seconds": 39.1,
+   "promptTokens": 1348,
+   "promptSeconds": 30.7,
+   "generatedTokens": 85,
+   "tokensPerSecond": 10.07
+  },
+  {
+   "id": "h09",
+   "first": {
+    "answer": "It means predicting a protein's shape without needing to find a matching one first. This is hard because scientists usually compare new proteins to old ones to guess their shape.",
+    "overlap": 0.0,
+    "seconds": 38.4,
+    "promptTokens": 1419,
+    "promptSeconds": 32.4,
+    "generatedTokens": 61,
+    "tokensPerSecond": 9.98
+   },
+   "retried": false,
+   "answer": "It means predicting a protein's shape without needing to find a matching one first. This is hard because scientists usually compare new proteins to old ones to guess their shape.",
+   "terms": [
+    {
+     "term": "similar structure",
+     "meaning": "a known shape of a related protein"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 30,
+   "seconds": 38.4,
+   "promptTokens": 1419,
+   "promptSeconds": 32.4,
+   "generatedTokens": 61,
+   "tokensPerSecond": 9.98
+  },
+  {
+   "id": "h10",
+   "first": {
+    "answer": "This number means the risky events were 25% less likely in the group with lower blood pressure targets. The range shows we are very sure this difference is real.",
+    "overlap": 0.0,
+    "seconds": 45.6,
+    "promptTokens": 1599,
+    "promptSeconds": 36.8,
+    "generatedTokens": 88,
+    "tokensPerSecond": 9.95
+   },
+   "retried": false,
+   "answer": "This number means the risky events were 25% less likely in the group with lower blood pressure targets. The range shows we are very sure this difference is real.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of how much more or less likely an event is"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "the range where the true value likely falls"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 29,
+   "seconds": 45.6,
+   "promptTokens": 1599,
+   "promptSeconds": 36.8,
+   "generatedTokens": 88,
+   "tokensPerSecond": 9.95
+  },
+  {
+   "id": "h11",
+   "first": {
+    "answer": "The drug group lost about 15 percent of their weight, while the placebo group only lost 2.4 percent. That's like losing a whole shirt size versus just a tiny bit.",
+    "overlap": 0.2,
+    "seconds": 45.9,
+    "promptTokens": 1620,
+    "promptSeconds": 37.1,
+    "generatedTokens": 88,
+    "tokensPerSecond": 9.94
+   },
+   "retried": false,
+   "answer": "The drug group lost about 15 percent of their weight, while the placebo group only lost 2.4 percent. That's like losing a whole shirt size versus just a tiny bit.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medicine that helps people lose weight"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment with no active drug"
+    }
+   ],
+   "overlap": 0.2,
+   "words": 30,
+   "seconds": 45.9,
+   "promptTokens": 1620,
+   "promptSeconds": 37.1,
+   "generatedTokens": 88,
+   "tokensPerSecond": 9.94
+  },
+  {
+   "id": "h12",
+   "first": {
+    "answer": "Flying insects got lighter by a quarter of their usual weight in spring and by more than four-fifths in summer. That drop happened everywhere they looked.",
+    "overlap": 0.21,
+    "seconds": 37.2,
+    "promptTokens": 1368,
+    "promptSeconds": 31.3,
+    "generatedTokens": 59,
+    "tokensPerSecond": 9.86
+   },
+   "retried": false,
+   "answer": "Flying insects got lighter by a quarter of their usual weight in spring and by more than four-fifths in summer. That drop happened everywhere they looked.",
+   "terms": [
+    {
+     "term": "insect biomass",
+     "meaning": "total weight of all living insects"
+    }
+   ],
+   "overlap": 0.21,
+   "words": 26,
+   "seconds": 37.2,
+   "promptTokens": 1368,
+   "promptSeconds": 31.3,
+   "generatedTokens": 59,
+   "tokensPerSecond": 9.86
+  },
+  {
+   "id": "h13",
+   "first": {
+    "answer": "Only about one-third of the new studies showed a clear result, while most of the original ones did. This big drop shows that many findings in psychology aren't as sure as we thought.",
+    "overlap": 0.07,
+    "seconds": 36.4,
+    "promptTokens": 1298,
+    "promptSeconds": 29.7,
+    "generatedTokens": 67,
+    "tokensPerSecond": 9.87
+   },
+   "retried": false,
+   "answer": "Only about one-third of the new studies showed a clear result, while most of the original ones did. This big drop shows that many findings in psychology aren't as sure as we thought.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to happen by chance"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 33,
+   "seconds": 36.4,
+   "promptTokens": 1298,
+   "promptSeconds": 29.7,
+   "generatedTokens": 67,
+   "tokensPerSecond": 9.87
+  },
+  {
+   "id": "h14",
+   "first": {
+    "answer": "The animal's brain uses a mental grid where each point on that grid is a special spot that lights up when the animal is there. It's like a map made of matching triangles covering the whole area, and every time the creature steps onto one of those triangle corners, the specific cell fires to tell it exactly where it is.",
+    "overlap": 0.07,
+    "seconds": 40.8,
+    "promptTokens": 1304,
+    "promptSeconds": 29.8,
+    "generatedTokens": 111,
+    "tokensPerSecond": 10.04
+   },
+   "retried": false,
+   "answer": "The animal's brain uses a mental grid where each point on that grid is a special spot that lights up when the animal is there. It's like a map made of matching triangles covering the whole area, and every time the creature steps onto one of those triangle corners, the specific cell fires to tell it exactly where it is.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point of a shape"
+    },
+    {
+     "term": "grid",
+     "meaning": "a pattern of intersecting lines or points"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 60,
+   "seconds": 40.8,
+   "promptTokens": 1304,
+   "promptSeconds": 29.8,
+   "generatedTokens": 111,
+   "tokensPerSecond": 10.04
+  },
+  {
+   "id": "h15",
+   "first": {
+    "answer": "Sometimes what scientists think they proved is just a reflection of their own mistakes or unfair focus, not real truth. It's like saying the answer you got is actually just showing how much you were biased.",
+    "overlap": 0.0,
+    "seconds": 39.0,
+    "promptTokens": 1330,
+    "promptSeconds": 30.2,
+    "generatedTokens": 91,
+    "tokensPerSecond": 10.29
+   },
+   "retried": false,
+   "answer": "Sometimes what scientists think they proved is just a reflection of their own mistakes or unfair focus, not real truth. It's like saying the answer you got is actually just showing how much you were biased.",
+   "terms": [
+    {
+     "term": "claimed research findings",
+     "meaning": "conclusions that scientists present as true"
+    },
+    {
+     "term": "prevailing bias",
+     "meaning": "the common unfairness or mistake in a field"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 36,
+   "seconds": 39.0,
+   "promptTokens": 1330,
+   "promptSeconds": 30.2,
+   "generatedTokens": 91,
+   "tokensPerSecond": 10.29
+  }
+ ],
+ "podcast": null
+}

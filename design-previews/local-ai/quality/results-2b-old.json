@@ -1,0 +1,473 @@
+{
+ "engine": "local",
+ "model": "Qwen3.5-2B-Q4_K_M.gguf",
+ "label": "2b-old-prompts",
+ "prompts": "old",
+ "runner": "GitHub ubuntu-latest, 4 vCPU, CPU only",
+ "items": [
+  {
+   "id": "r00",
+   "first": {
+    "answer": "This enzyme fixes carbon, but if the air has too much oxygen instead of carbon dioxide, it breaks down the work instead. It's a chemical error that wastes energy.",
+    "overlap": 0.23,
+    "seconds": 11.2,
+    "promptTokens": 1212,
+    "promptSeconds": 5.9,
+    "generatedTokens": 74,
+    "tokensPerSecond": 13.71
+   },
+   "retried": false,
+   "answer": "This enzyme fixes carbon, but if the air has too much oxygen instead of carbon dioxide, it breaks down the work instead. It's a chemical error that wastes energy.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "the enzyme that fixes carbon"
+    },
+    {
+     "term": "oxygen",
+     "meaning": "air gas"
+    }
+   ],
+   "overlap": 0.23,
+   "words": 29,
+   "seconds": 11.2,
+   "promptTokens": 1212,
+   "promptSeconds": 5.9,
+   "generatedTokens": 74,
+   "tokensPerSecond": 13.71
+  },
+  {
+   "id": "h01",
+   "first": {
+    "answer": "They built a new machine translator that skips the old repeating loops and complex connections, making it faster and simpler.",
+    "overlap": 0.0,
+    "seconds": 11.1,
+    "promptTokens": 1338,
+    "promptSeconds": 6.4,
+    "generatedTokens": 65,
+    "tokensPerSecond": 13.7
+   },
+   "retried": false,
+   "answer": "They built a new machine translator that skips the old repeating loops and complex connections, making it faster and simpler.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "repeating patterns in data"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "complex layers that mix data"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 20,
+   "seconds": 11.1,
+   "promptTokens": 1338,
+   "promptSeconds": 6.4,
+   "generatedTokens": 65,
+   "tokensPerSecond": 13.7
+  },
+  {
+   "id": "h02",
+   "first": {
+    "answer": "It's a way scientists check if the signal is real by comparing it to random noise. They found it was so strong that it would be incredibly rare to see such a clean result in a million years of random data.",
+    "overlap": 0.06,
+    "seconds": 12.5,
+    "promptTokens": 1497,
+    "promptSeconds": 7.2,
+    "generatedTokens": 72,
+    "tokensPerSecond": 13.42
+   },
+   "retried": false,
+   "answer": "It's a way scientists check if the signal is real by comparing it to random noise. They found it was so strong that it would be incredibly rare to see such a clean result in a million years of random data.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "a chance occurrence in random noise"
+    }
+   ],
+   "overlap": 0.06,
+   "words": 41,
+   "seconds": 12.5,
+   "promptTokens": 1497,
+   "promptSeconds": 7.2,
+   "generatedTokens": 72,
+   "tokensPerSecond": 13.42
+  },
+  {
+   "id": "h03",
+   "first": {
+    "answer": "It means the evidence for the Higgs is so strong that it's very unlikely to be a random mistake.",
+    "overlap": 0.0,
+    "seconds": 10.4,
+    "promptTokens": 1380,
+    "promptSeconds": 6.6,
+    "generatedTokens": 53,
+    "tokensPerSecond": 13.66
+   },
+   "retried": false,
+   "answer": "It means the evidence for the Higgs is so strong that it's very unlikely to be a random mistake.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how confident we are in our result"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 19,
+   "seconds": 10.4,
+   "promptTokens": 1380,
+   "promptSeconds": 6.6,
+   "generatedTokens": 53,
+   "tokensPerSecond": 13.66
+  },
+  {
+   "id": "h04",
+   "first": {
+    "answer": "Instead of letting the network guess what each part of the input should do, they tell it exactly how to take the old answer and add a new piece on top. This way, every extra layer builds on the previous one's work rather than starting from scratch.",
+    "overlap": 0.12,
+    "seconds": 14.5,
+    "promptTokens": 1402,
+    "promptSeconds": 6.7,
+    "generatedTokens": 109,
+    "tokensPerSecond": 13.73
+   },
+   "retried": false,
+   "answer": "Instead of letting the network guess what each part of the input should do, they tell it exactly how to take the old answer and add a new piece on top. This way, every extra layer builds on the previous one's work rather than starting from scratch.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "functions that take an old answer and add something new on top"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "functions that have no connection to the previous input"
+    }
+   ],
+   "overlap": 0.12,
+   "words": 47,
+   "seconds": 14.5,
+   "promptTokens": 1402,
+   "promptSeconds": 6.7,
+   "generatedTokens": 109,
+   "tokensPerSecond": 13.73
+  },
+  {
+   "id": "h05",
+   "first": {
+    "answer": "It lets electricity zoom through tiny gaps without getting stuck or losing speed, even when the gap is smaller than a hair and it's warm.",
+    "overlap": 0.0,
+    "seconds": 11.0,
+    "promptTokens": 1170,
+    "promptSeconds": 5.6,
+    "generatedTokens": 76,
+    "tokensPerSecond": 13.91
+   },
+   "retried": false,
+   "answer": "It lets electricity zoom through tiny gaps without getting stuck or losing speed, even when the gap is smaller than a hair and it's warm.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electricity moving without losing energy"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "gaps smaller than a hair"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 25,
+   "seconds": 11.0,
+   "promptTokens": 1170,
+   "promptSeconds": 5.6,
+   "generatedTokens": 76,
+   "tokensPerSecond": 13.91
+  },
+  {
+   "id": "h06",
+   "first": {
+    "answer": "It's a number that tells how fast the universe is expanding right now. It's one of the most important measurements we've made to understand cosmic history.",
+    "overlap": 0.0,
+    "seconds": 12.3,
+    "promptTokens": 1646,
+    "promptSeconds": 8.0,
+    "generatedTokens": 59,
+    "tokensPerSecond": 13.65
+   },
+   "retried": false,
+   "answer": "It's a number that tells how fast the universe is expanding right now. It's one of the most important measurements we've made to understand cosmic history.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "how fast the universe is expanding"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 26,
+   "seconds": 12.3,
+   "promptTokens": 1646,
+   "promptSeconds": 8.0,
+   "generatedTokens": 59,
+   "tokensPerSecond": 13.65
+  },
+  {
+   "id": "h07",
+   "first": {
+    "answer": "The study found that the vaccine stopped 95% of Covid-19 cases, with a very small range of uncertainty.",
+    "overlap": 0.27,
+    "seconds": 12.2,
+    "promptTokens": 1635,
+    "promptSeconds": 8.0,
+    "generatedTokens": 59,
+    "tokensPerSecond": 13.62
+   },
+   "retried": false,
+   "answer": "The study found that the vaccine stopped 95% of Covid-19 cases, with a very small range of uncertainty.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a way to show how sure the study is about its findings"
+    }
+   ],
+   "overlap": 0.27,
+   "words": 18,
+   "seconds": 12.2,
+   "promptTokens": 1635,
+   "promptSeconds": 8.0,
+   "generatedTokens": 59,
+   "tokensPerSecond": 13.62
+  },
+  {
+   "id": "h08",
+   "first": {
+    "answer": "It's possible to use this bacteria system to cut DNA at a specific spot by telling it which RNA sequence to look for.",
+    "overlap": 0.17,
+    "seconds": 9.0,
+    "promptTokens": 1348,
+    "promptSeconds": 6.5,
+    "generatedTokens": 35,
+    "tokensPerSecond": 13.45
+   },
+   "retried": false,
+   "answer": "It's possible to use this bacteria system to cut DNA at a specific spot by telling it which RNA sequence to look for.",
+   "terms": [],
+   "overlap": 0.17,
+   "words": 23,
+   "seconds": 9.0,
+   "promptTokens": 1348,
+   "promptSeconds": 6.5,
+   "generatedTokens": 35,
+   "tokensPerSecond": 13.45
+  },
+  {
+   "id": "h09",
+   "first": {
+    "answer": "Even when scientists don't have a matching blueprint for a new protein, AlphaFold can still guess its shape perfectly.",
+    "overlap": 0.0,
+    "seconds": 10.3,
+    "promptTokens": 1419,
+    "promptSeconds": 6.9,
+    "generatedTokens": 47,
+    "tokensPerSecond": 13.66
+   },
+   "retried": false,
+   "answer": "Even when scientists don't have a matching blueprint for a new protein, AlphaFold can still guess its shape perfectly.",
+   "terms": [
+    {
+     "term": "similar structure",
+     "meaning": "a matching blueprint"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 19,
+   "seconds": 10.3,
+   "promptTokens": 1419,
+   "promptSeconds": 6.9,
+   "generatedTokens": 47,
+   "tokensPerSecond": 13.66
+  },
+  {
+   "id": "h10",
+   "first": {
+    "answer": "This number shows that the chance of a bad heart event was 25% lower in the low-pressure group than in the standard group, and the range of possible values is between 35% and 64%. The confidence interval tells you how sure we are about this result.",
+    "overlap": 0.09,
+    "seconds": 16.0,
+    "promptTokens": 1599,
+    "promptSeconds": 8.0,
+    "generatedTokens": 106,
+    "tokensPerSecond": 13.21
+   },
+   "retried": false,
+   "answer": "This number shows that the chance of a bad heart event was 25% lower in the low-pressure group than in the standard group, and the range of possible values is between 35% and 64%. The confidence interval tells you how sure we are about this result.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure comparing two risks"
+    },
+    {
+     "term": "95% confidence interval",
+     "meaning": "a range showing the likely truth"
+    }
+   ],
+   "overlap": 0.09,
+   "words": 46,
+   "seconds": 16.0,
+   "promptTokens": 1599,
+   "promptSeconds": 8.0,
+   "generatedTokens": 106,
+   "tokensPerSecond": 13.21
+  },
+  {
+   "id": "h11",
+   "first": {
+    "answer": "The drug made the weight drop 14.9 points more than it made the other group drop, which is a big difference.",
+    "overlap": 0.22,
+    "seconds": 13.4,
+    "promptTokens": 1620,
+    "promptSeconds": 8.1,
+    "generatedTokens": 72,
+    "tokensPerSecond": 13.35
+   },
+   "retried": false,
+   "answer": "The drug made the weight drop 14.9 points more than it made the other group drop, which is a big difference.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "the medicine being studied"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a pill with no active ingredient"
+    }
+   ],
+   "overlap": 0.22,
+   "words": 21,
+   "seconds": 13.4,
+   "promptTokens": 1620,
+   "promptSeconds": 8.1,
+   "generatedTokens": 72,
+   "tokensPerSecond": 13.35
+  },
+  {
+   "id": "h12",
+   "first": {
+    "answer": "They found that insects were dropping by 76% each season, and 82% during the hottest part of summer, even though their numbers stayed the same year after year.",
+    "overlap": 0.38,
+    "seconds": 13.2,
+    "promptTokens": 1368,
+    "promptSeconds": 6.7,
+    "generatedTokens": 87,
+    "tokensPerSecond": 13.39
+   },
+   "retried": false,
+   "answer": "They found that insects were dropping by 76% each season, and 82% during the hottest part of summer, even though their numbers stayed the same year after year.",
+   "terms": [
+    {
+     "term": "seasonal decline",
+     "meaning": "a drop every single season"
+    },
+    {
+     "term": "mid-summer decline",
+     "meaning": "the biggest drop happening in the middle of summer"
+    }
+   ],
+   "overlap": 0.38,
+   "words": 28,
+   "seconds": 13.2,
+   "promptTokens": 1368,
+   "promptSeconds": 6.7,
+   "generatedTokens": 87,
+   "tokensPerSecond": 13.39
+  },
+  {
+   "id": "h13",
+   "first": {
+    "answer": "About one-third of the new studies found a clear link between the two groups, while most of the old ones showed that link too.",
+    "overlap": 0.0,
+    "seconds": 12.1,
+    "promptTokens": 1298,
+    "promptSeconds": 6.4,
+    "generatedTokens": 76,
+    "tokensPerSecond": 13.31
+   },
+   "retried": false,
+   "answer": "About one-third of the new studies found a clear link between the two groups, while most of the old ones showed that link too.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "new studies trying to copy old experiments"
+    },
+    {
+     "term": "statistically significant results",
+     "meaning": "a clear connection between the two groups"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 24,
+   "seconds": 12.1,
+   "promptTokens": 1298,
+   "promptSeconds": 6.4,
+   "generatedTokens": 76,
+   "tokensPerSecond": 13.31
+  },
+  {
+   "id": "h14",
+   "first": {
+    "answer": "A tiny cell fires when the animal reaches any spot along a perfect map drawn on the ground.",
+    "overlap": 0.0,
+    "seconds": 10.0,
+    "promptTokens": 1304,
+    "promptSeconds": 6.5,
+    "generatedTokens": 47,
+    "tokensPerSecond": 13.19
+   },
+   "retried": false,
+   "answer": "A tiny cell fires when the animal reaches any spot along a perfect map drawn on the ground.",
+   "terms": [
+    {
+     "term": "grid cells",
+     "meaning": "tiny neurons that fire at regular intervals"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 18,
+   "seconds": 10.0,
+   "promptTokens": 1304,
+   "promptSeconds": 6.5,
+   "generatedTokens": 47,
+   "tokensPerSecond": 13.19
+  },
+  {
+   "id": "h15",
+   "first": {
+    "answer": "A study's results might just be showing what researchers already believe or expect to find when they look at a problem.",
+    "overlap": 0.0,
+    "seconds": 12.0,
+    "promptTokens": 1330,
+    "promptSeconds": 6.6,
+    "generatedTokens": 72,
+    "tokensPerSecond": 13.1
+   },
+   "retried": false,
+   "answer": "A study's results might just be showing what researchers already believe or expect to find when they look at a problem.",
+   "terms": [
+    {
+     "term": "research findings",
+     "meaning": "results from a scientific study"
+    },
+    {
+     "term": "bias",
+     "meaning": "prejudice or tendency to see things in a certain way"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 21,
+   "seconds": 12.0,
+   "promptTokens": 1330,
+   "promptSeconds": 6.6,
+   "generatedTokens": 72,
+   "tokensPerSecond": 13.1
+  }
+ ],
+ "podcast": null
+}

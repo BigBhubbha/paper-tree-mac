@@ -1,0 +1,565 @@
+{
+ "engine": "local",
+ "model": "Qwen3.5-4B-Q4_K_M.gguf",
+ "label": "4b",
+ "prompts": "new",
+ "runner": "GitHub ubuntu-latest, 4 vCPU, 15 GB, CPU only",
+ "items": [
+  {
+   "id": "r00",
+   "first": {
+    "answer": "Rubisco mistakes oxygen for carbon dioxide. When CO2 gets low, this mistake happens more often, wasting energy fixing the wrong carbon.",
+    "overlap": 0.31,
+    "seconds": 47.0,
+    "promptTokens": 1752,
+    "promptSeconds": 40.2,
+    "generatedTokens": 69,
+    "tokensPerSecond": 10.03
+   },
+   "retried": false,
+   "answer": "Rubisco mistakes oxygen for carbon dioxide. When CO2 gets low, this mistake happens more often, wasting energy fixing the wrong carbon.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that captures carbon"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unwanted chemical response"
+    }
+   ],
+   "overlap": 0.31,
+   "words": 21,
+   "seconds": 47.0,
+   "promptTokens": 1752,
+   "promptSeconds": 40.2,
+   "generatedTokens": 69,
+   "tokensPerSecond": 10.03
+  },
+  {
+   "id": "h01",
+   "first": {
+    "answer": "Older models used slow step-by-step memory or scanning filters, but this new design skips both. It just looks at every word at once to decide which parts matter most.",
+    "overlap": 0.0,
+    "seconds": 51.2,
+    "promptTokens": 1878,
+    "promptSeconds": 42.9,
+    "generatedTokens": 84,
+    "tokensPerSecond": 10.02
+   },
+   "retried": false,
+   "answer": "Older models used slow step-by-step memory or scanning filters, but this new design skips both. It just looks at every word at once to decide which parts matter most.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "using past steps to update the current state"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "scanning a pattern across a whole input"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 29,
+   "seconds": 51.2,
+   "promptTokens": 1878,
+   "promptSeconds": 42.9,
+   "generatedTokens": 84,
+   "tokensPerSecond": 10.02
+  },
+  {
+   "id": "h02",
+   "first": {
+    "answer": "This signal was so strong it would have taken over half a million years to happen by pure chance. It's a discovery-level finding, not a fluke or a glitch.",
+    "overlap": 0.07,
+    "seconds": 55.4,
+    "promptTokens": 2037,
+    "promptSeconds": 46.5,
+    "generatedTokens": 90,
+    "tokensPerSecond": 10.02
+   },
+   "retried": false,
+   "answer": "This signal was so strong it would have taken over half a million years to happen by pure chance. It's a discovery-level finding, not a fluke or a glitch.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "the chance a random noise looks like a real event"
+    },
+    {
+     "term": "significance",
+     "meaning": "a measure of how unlikely a result is due to luck"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 29,
+   "seconds": 55.4,
+   "promptTokens": 2037,
+   "promptSeconds": 46.5,
+   "generatedTokens": 90,
+   "tokensPerSecond": 10.02
+  },
+  {
+   "id": "h03",
+   "first": {
+    "answer": "It's like rolling a die and finding that result five times in a row by pure chance. That probability is so tiny, it proves the signal isn't just random noise.",
+    "overlap": 0.0,
+    "seconds": 50.5,
+    "promptTokens": 1920,
+    "promptSeconds": 44.1,
+    "generatedTokens": 65,
+    "tokensPerSecond": 9.99
+   },
+   "retried": false,
+   "answer": "It's like rolling a die and finding that result five times in a row by pure chance. That probability is so tiny, it proves the signal isn't just random noise.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how far something is from average"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 30,
+   "seconds": 50.5,
+   "promptTokens": 1920,
+   "promptSeconds": 44.1,
+   "generatedTokens": 65,
+   "tokensPerSecond": 9.99
+  },
+  {
+   "id": "h04",
+   "first": {
+    "answer": "Normal layers try to learn a brand new function from scratch, which gets harder as you add more. These layers instead teach how to adjust what came in, subtracting that input and learning just the difference. This shortcut keeps the signal flowing through hundreds of layers without dying out.",
+    "overlap": 0.2,
+    "seconds": 56.1,
+    "promptTokens": 1942,
+    "promptSeconds": 44.8,
+    "generatedTokens": 109,
+    "tokensPerSecond": 9.53
+   },
+   "retried": false,
+   "answer": "Normal layers try to learn a brand new function from scratch, which gets harder as you add more. These layers instead teach how to adjust what came in, subtracting that input and learning just the difference. This shortcut keeps the signal flowing through hundreds of layers without dying out.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "learning only the change needed from one step"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "learning a completely new function with no reference to input"
+    }
+   ],
+   "overlap": 0.2,
+   "words": 49,
+   "seconds": 56.1,
+   "promptTokens": 1942,
+   "promptSeconds": 44.8,
+   "generatedTokens": 109,
+   "tokensPerSecond": 9.53
+  },
+  {
+   "id": "h05",
+   "first": {
+    "answer": "Electrons move without bumping into anything, like a laser beam in a straight line. This happens only when the path is tiny and the material is perfect, which graphene does even when it's warm.",
+    "overlap": 0.0,
+    "seconds": 47.7,
+    "promptTokens": 1710,
+    "promptSeconds": 39.1,
+    "generatedTokens": 89,
+    "tokensPerSecond": 10.21
+   },
+   "retried": false,
+   "answer": "Electrons move without bumping into anything, like a laser beam in a straight line. This happens only when the path is tiny and the material is perfect, which graphene does even when it's warm.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement without scattering or bouncing"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "distances smaller than one micrometer"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 34,
+   "seconds": 47.7,
+   "promptTokens": 1710,
+   "promptSeconds": 39.1,
+   "generatedTokens": 89,
+   "tokensPerSecond": 10.21
+  },
+  {
+   "id": "h06",
+   "first": {
+    "answer": "It's how fast the universe is expanding right now. This number tells you the speed of space itself, not how fast galaxies move through it.",
+    "overlap": 0.0,
+    "seconds": 56.2,
+    "promptTokens": 2186,
+    "promptSeconds": 50.3,
+    "generatedTokens": 59,
+    "tokensPerSecond": 9.87
+   },
+   "retried": false,
+   "answer": "It's how fast the universe is expanding right now. This number tells you the speed of space itself, not how fast galaxies move through it.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the speed at which the universe expands today"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 25,
+   "seconds": 56.2,
+   "promptTokens": 2186,
+   "promptSeconds": 50.3,
+   "generatedTokens": 59,
+   "tokensPerSecond": 9.87
+  },
+  {
+   "id": "h07",
+   "first": {
+    "answer": "Out of the people who got the shot, only one in twenty got sick with Covid-19, while a lot more in the placebo group did. The range from 90.3 to 97.6 shows how sure we are that this number is close to the true protection level.",
+    "overlap": 0.21,
+    "seconds": 58.8,
+    "promptTokens": 2175,
+    "promptSeconds": 49.9,
+    "generatedTokens": 90,
+    "tokensPerSecond": 10.03
+   },
+   "retried": false,
+   "answer": "Out of the people who got the shot, only one in twenty got sick with Covid-19, while a lot more in the placebo group did. The range from 90.3 to 97.6 shows how sure we are that this number is close to the true protection level.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range where the true value likely lies"
+    }
+   ],
+   "overlap": 0.21,
+   "words": 46,
+   "seconds": 58.8,
+   "promptTokens": 2175,
+   "promptSeconds": 49.9,
+   "generatedTokens": 90,
+   "tokensPerSecond": 10.03
+  },
+  {
+   "id": "h08",
+   "first": {
+    "answer": "This system lets scientists program RNA to cut DNA at any spot, which could be used to fix genes or make new traits in living things.",
+    "overlap": 0.13,
+    "seconds": 51.0,
+    "promptTokens": 1888,
+    "promptSeconds": 43.2,
+    "generatedTokens": 77,
+    "tokensPerSecond": 9.83
+   },
+   "retried": false,
+   "answer": "This system lets scientists program RNA to cut DNA at any spot, which could be used to fix genes or make new traits in living things.",
+   "terms": [
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by a specific strand of RNA"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing the genetic code of an organism"
+    }
+   ],
+   "overlap": 0.13,
+   "words": 26,
+   "seconds": 51.0,
+   "promptTokens": 1888,
+   "promptSeconds": 43.2,
+   "generatedTokens": 77,
+   "tokensPerSecond": 9.83
+  },
+  {
+   "id": "h09",
+   "first": {
+    "answer": "Before this method, computers could only guess a shape if they had a close match to copy from. Now it can stand alone and get the right details without needing that template.",
+    "overlap": 0.0,
+    "seconds": 51.1,
+    "promptTokens": 1959,
+    "promptSeconds": 44.9,
+    "generatedTokens": 62,
+    "tokensPerSecond": 9.98
+   },
+   "retried": false,
+   "answer": "Before this method, computers could only guess a shape if they had a close match to copy from. Now it can stand alone and get the right details without needing that template.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "a similar structure or sequence"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 32,
+   "seconds": 51.1,
+   "promptTokens": 1959,
+   "promptSeconds": 44.9,
+   "generatedTokens": 62,
+   "tokensPerSecond": 9.98
+  },
+  {
+   "id": "h10",
+   "first": {
+    "answer": "For every person in the low-blood-pressure group, there were about 75% as many heart attacks or strokes as in the normal group. The range from 64% to 89% means we are very sure this difference is real and not a fluke.",
+    "overlap": 0.0,
+    "seconds": 60.1,
+    "promptTokens": 2139,
+    "promptSeconds": 49.2,
+    "generatedTokens": 108,
+    "tokensPerSecond": 9.79
+   },
+   "retried": false,
+   "answer": "For every person in the low-blood-pressure group, there were about 75% as many heart attacks or strokes as in the normal group. The range from 64% to 89% means we are very sure this difference is real and not a fluke.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of how much more likely an event is"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "the range where the true value probably lies"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 41,
+   "seconds": 60.1,
+   "promptTokens": 2139,
+   "promptSeconds": 49.2,
+   "generatedTokens": 108,
+   "tokensPerSecond": 9.79
+  },
+  {
+   "id": "h11",
+   "first": {
+    "answer": "People on the new drug lost about 15% of their weight over six months, while those on the sugar pill only lost 2%. That's a big difference.",
+    "overlap": 0.0,
+    "seconds": 55.7,
+    "promptTokens": 2160,
+    "promptSeconds": 49.5,
+    "generatedTokens": 62,
+    "tokensPerSecond": 9.97
+   },
+   "retried": false,
+   "answer": "People on the new drug lost about 15% of their weight over six months, while those on the sugar pill only lost 2%. That's a big difference.",
+   "terms": [
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment with no medicine"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 27,
+   "seconds": 55.7,
+   "promptTokens": 2160,
+   "promptSeconds": 49.5,
+   "generatedTokens": 62,
+   "tokensPerSecond": 9.97
+  },
+  {
+   "id": "h12",
+   "first": {
+    "answer": "Flying insects dropped by three-quarters from spring to summer, and by more than four-fifths by mid-summer. That's a massive drop that shows how much life is disappearing.",
+    "overlap": 0.27,
+    "seconds": 50.2,
+    "promptTokens": 1908,
+    "promptSeconds": 43.8,
+    "generatedTokens": 66,
+    "tokensPerSecond": 10.12
+   },
+   "retried": false,
+   "answer": "Flying insects dropped by three-quarters from spring to summer, and by more than four-fifths by mid-summer. That's a massive drop that shows how much life is disappearing.",
+   "terms": [
+    {
+     "term": "insect biomass",
+     "meaning": "the total weight of all living insects"
+    }
+   ],
+   "overlap": 0.27,
+   "words": 27,
+   "seconds": 50.2,
+   "promptTokens": 1908,
+   "promptSeconds": 43.8,
+   "generatedTokens": 66,
+   "tokensPerSecond": 10.12
+  },
+  {
+   "id": "h13",
+   "first": {
+    "answer": "Only a little over one-third of the new studies showed real effects. That means most of the original findings didn't hold up when checked again.",
+    "overlap": 0.0,
+    "seconds": 48.4,
+    "promptTokens": 1838,
+    "promptSeconds": 42.3,
+    "generatedTokens": 59,
+    "tokensPerSecond": 9.6
+   },
+   "retried": false,
+   "answer": "Only a little over one-third of the new studies showed real effects. That means most of the original findings didn't hold up when checked again.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to be due to chance"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 25,
+   "seconds": 48.4,
+   "promptTokens": 1838,
+   "promptSeconds": 42.3,
+   "generatedTokens": 59,
+   "tokensPerSecond": 9.6
+  },
+  {
+   "id": "h14",
+   "first": {
+    "answer": "Think of a giant invisible checkerboard on the floor of the animal's world. A 'grid cell' lights up only when the animal stands exactly on one of those tiny corners. This creates a map where every spot has its own unique address, letting the brain figure out where it is without needing to see anything.",
+    "overlap": 0.04,
+    "seconds": 51.1,
+    "promptTokens": 1844,
+    "promptSeconds": 42.2,
+    "generatedTokens": 90,
+    "tokensPerSecond": 10.05
+   },
+   "retried": false,
+   "answer": "Think of a giant invisible checkerboard on the floor of the animal's world. A 'grid cell' lights up only when the animal stands exactly on one of those tiny corners. This creates a map where every spot has its own unique address, letting the brain figure out where it is without needing to see anything.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner or point where lines meet"
+    }
+   ],
+   "overlap": 0.04,
+   "words": 55,
+   "seconds": 51.1,
+   "promptTokens": 1844,
+   "promptSeconds": 42.2,
+   "generatedTokens": 90,
+   "tokensPerSecond": 10.05
+  },
+  {
+   "id": "h15",
+   "first": {
+    "answer": "That means what scientists say is true might just match how they already want things to be. It's like a mirror showing only what we expect, not what actually exists.",
+    "overlap": 0.0,
+    "seconds": 48.7,
+    "promptTokens": 1870,
+    "promptSeconds": 42.9,
+    "generatedTokens": 60,
+    "tokensPerSecond": 10.05
+   },
+   "retried": false,
+   "answer": "That means what scientists say is true might just match how they already want things to be. It's like a mirror showing only what we expect, not what actually exists.",
+   "terms": [
+    {
+     "term": "bias",
+     "meaning": "a preference that skews results"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 30,
+   "seconds": 48.7,
+   "promptTokens": 1870,
+   "promptSeconds": 42.9,
+   "generatedTokens": 60,
+   "tokensPerSecond": 10.05
+  }
+ ],
+ "podcast": {
+  "title": "Why Psychology Replications Fail",
+  "lines": [
+   {
+    "speaker": "Juniper",
+    "text": "So does psychology actually prove what it says about human minds?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "That is the main worry in Estimating the reproducibility of psychological study. The authors wanted to see if new experiments match old ones."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "And they didn't just guess, they actually copied studies right?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Exactly. They took one hundred existing studies from three psychology journals and ran their own versions."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Did they use the same people or different ones to test if it holds up?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "They used original materials where available but with high powered designs to get clearer answers."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So if the results changed a lot, that means science is shaky?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Not shaky necessarily but the numbers are very different. Replication effects were exactly half the magnitude of the originals."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Half? Like if they found something big before now it's tiny?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Yes, and ninety seven percent of the original studies had significant results but only thirty six percent did in the new ones."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So most of what was thought true turned out to be wrong?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Mostly yes. If you combine both sets of results without bias only sixty eight percent still show significant effects."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Is there any reason why the new teams failed to get these same numbers?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Statistical tests suggest success depended more on how strong the original evidence was than who ran the study."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So weak studies are just harder to repeat no matter how hard they try?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "That seems likely. The paper notes forty seven percent of original effect sizes fell in the ninety five confidence interval."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Which means half the results could have been just luck originally?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Yes, and thirty nine percent were subjectively rated as having replicated but most did not match well."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So what should scientists do to fix this mess?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Use stronger evidence from the start and be more careful about which studies they choose to repeat."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Okay so we need to trust less and check harder before believing what we read?"
+   }
+  ],
+  "duplicateLines": 0,
+  "words": 320,
+  "seconds": 142.9,
+  "promptTokens": 1352,
+  "promptSeconds": 30.8,
+  "generatedTokens": 1108,
+  "tokensPerSecond": 9.88
+ }
+}

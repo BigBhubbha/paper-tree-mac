@@ -1,0 +1,283 @@
+{
+ "engine": "gemini",
+ "model": "gemini-3.1-flash-lite",
+ "runner": "Paper Tree Worker (read-only)",
+ "items": [
+  {
+   "id": "r00",
+   "answer": "Rubisco sometimes accidentally reacts with oxygen instead of carbon dioxide. This wasteful side reaction increases when carbon dioxide levels inside the leaf go down.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that fixes carbon in plants"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unintended secondary chemical process"
+    }
+   ],
+   "overlap": 0.56,
+   "words": 24,
+   "seconds": 1.7,
+   "retried": false
+  },
+  {
+   "id": "h01",
+   "answer": "The authors are creating a new model that completely removes the need for traditional recurrent or convolutional neural network structures.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or doing without"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "repeating a process in a sequence"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a specific type of mathematical data processing"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 20,
+   "seconds": 2.1,
+   "retried": false
+  },
+  {
+   "id": "h02",
+   "answer": "This means scientists are extremely certain the signal was real and not random noise. A chance accident like this would only happen once every 203,000 years.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "probability of a chance accident"
+    },
+    {
+     "term": "significance",
+     "meaning": "statistical certainty of a result"
+    }
+   ],
+   "overlap": 0.2,
+   "words": 26,
+   "seconds": 3.1,
+   "retried": false
+  },
+  {
+   "id": "h03",
+   "answer": "This is a statistical measurement showing that the discovery is extremely unlikely to be a random error. It confirms that the particle detected is almost certainly real and not just a fluke.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of statistical significance"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 32,
+   "seconds": 2.0,
+   "retried": false
+  },
+  {
+   "id": "h04",
+   "answer": "The authors are changing how neural network layers process information. Instead of asking each layer to learn a completely new output from scratch, they design the layers to learn the difference, or residual, between the input and the desired output. This approach makes it much easier for the network to train because the layers only need to focus on small adjustments rather than mapping everything from the beginning.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "mathematical differences between inputs and outputs"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "mappings learned without considering the original input"
+    }
+   ],
+   "overlap": 0.13,
+   "words": 68,
+   "seconds": 1.3,
+   "retried": false
+  },
+  {
+   "id": "h05",
+   "answer": "This describes how electrons move through a material without hitting obstacles or losing energy. It happens over very short distances even when the material is not cooled down.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement of particles without scattering"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.08,
+   "words": 28,
+   "seconds": 2.4,
+   "retried": false
+  },
+  {
+   "id": "h06",
+   "answer": "The Hubble constant is a number that describes how fast the universe is expanding. It measures the rate at which galaxies move away from each other over time.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "rate of universe expansion"
+    }
+   ],
+   "overlap": 0.15,
+   "words": 28,
+   "seconds": 1.3,
+   "retried": false
+  },
+  {
+   "id": "h07",
+   "answer": "The vaccine prevented 95 percent of Covid-19 cases in the study. The credible interval shows the range of statistical certainty for how well the vaccine works.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range of values indicating statistical certainty"
+    }
+   ],
+   "overlap": 0.31,
+   "words": 26,
+   "seconds": 2.3,
+   "retried": false
+  },
+  {
+   "id": "h08",
+   "answer": "This refers to using the CRISPR system as a tool to change DNA sequences by using specific RNA molecules to guide where those changes happen.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "make full use of and derive benefit from"
+    },
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled or directed by RNA sequences"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing an organism's DNA"
+    }
+   ],
+   "overlap": 0.15,
+   "words": 25,
+   "seconds": 1.3,
+   "retried": false
+  },
+  {
+   "id": "h09",
+   "answer": "This means the computer model can accurately predict a protein shape even when it cannot compare that protein to any other previously studied ones.",
+   "terms": [
+    {
+     "term": "similar structure",
+     "meaning": "a previously mapped protein shape"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 24,
+   "seconds": 1.6,
+   "retried": false
+  },
+  {
+   "id": "h10",
+   "answer": "The hazard ratio shows that intensive treatment reduced the risk of heart events by 25 percent. The confidence interval means researchers are 95 percent sure the true risk reduction is between 11 and 36 percent.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "measure of how often events occur in groups"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "range where the true value likely falls"
+    }
+   ],
+   "overlap": 0.33,
+   "words": 35,
+   "seconds": 1.7,
+   "retried": false
+  },
+  {
+   "id": "h11",
+   "answer": "People taking the medicine lost about fifteen percent of their body weight, like losing fifteen pounds out of one hundred, while the control group lost very little.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a weight loss medication used in the study"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment given for comparison"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 27,
+   "seconds": 2.4,
+   "retried": false
+  },
+  {
+   "id": "h12",
+   "answer": "Over twenty seven years, the total weight of flying insects dropped by over three quarters during the season and by over eighty percent during the middle of summer.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total mass of living organisms"
+    },
+    {
+     "term": "seasonal decline",
+     "meaning": "a drop over the course of a year"
+    }
+   ],
+   "overlap": 0.27,
+   "words": 28,
+   "seconds": 1.3,
+   "retried": false
+  },
+  {
+   "id": "h13",
+   "answer": "Only about one third of the repeated studies produced the same meaningful evidence as the originals. This shows that many initial findings were likely not as strong as first reported.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating a study to verify results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results unlikely to have happened by chance"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 30,
+   "seconds": 1.2,
+   "retried": false
+  },
+  {
+   "id": "h14",
+   "answer": "This phrase describes the specific locations where a grid cell fires or becomes active. Imagine a map covered in a perfectly repeating pattern of triangles. When an animal stands exactly on one of the points where these triangle corners meet, the brain cell fires. This matters because it shows how the brain creates a precise internal coordinate system, like a GPS grid, to help the animal track its exact location as it moves through space.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    }
+   ],
+   "overlap": 0.06,
+   "words": 75,
+   "seconds": 1.5,
+   "retried": false
+  },
+  {
+   "id": "h15",
+   "answer": "Scientific results might not reflect reality at all. Instead, they often just show the common prejudices or expectations that researchers already held before they started their study.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "widely held unfair or slanted opinions"
+    }
+   ],
+   "overlap": 0.06,
+   "words": 27,
+   "seconds": 1.4,
+   "retried": false
+  }
+ ]
+}

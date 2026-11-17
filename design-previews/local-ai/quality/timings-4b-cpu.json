@@ -1,0 +1,33 @@
+{
+  "hardware" : {
+    "cores" : "3",
+    "cpu" : "Apple M1 (Virtual)",
+    "forcedCPU" : "yes",
+    "memoryGB" : "7.0",
+    "metal" : "Apple Paravirtual device",
+    "model" : "VirtualMac2,1",
+    "os" : "Version 26.7.2 (Build 25G332)",
+    "performanceCores" : "3"
+  },
+  "notes" : [
+
+  ],
+  "steps" : [
+    {
+      "generateSeconds" : 75.91850697994232,
+      "generatedTokens" : 79,
+      "loadSeconds" : 16.804967999458313,
+      "name" : "explain (high school junior, short)",
+      "output" : "Rubisco is like a busy gatekeeper that sometimes opens the wrong door when there's not enough carbon dioxide. The plant wastes energy fixing the mistake, which is why grasses in hot, dry places use a special trick to keep the right stuff around. | Rubisco: the main enzyme plants use to make food",
+      "peakRSSMB" : 4053.671875,
+      "promptSeconds" : 1216.6337230205536,
+      "promptTokens" : 1877,
+      "retried" : false,
+      "seconds" : 1330.1792229413986,
+      "tokensPerSecond" : 1.0405894839432472,
+      "usedGPU" : false
+    }
+  ],
+  "writerBytes" : 2740937888,
+  "writerModel" : "Qwen3.5-4B-Q4_K_M.gguf"
+}

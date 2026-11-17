@@ -1,0 +1,557 @@
+{
+ "engine": "local",
+ "model": "Qwen3.5-2B-Q4_K_M.gguf",
+ "label": "2b",
+ "prompts": "new",
+ "runner": "GitHub ubuntu-latest, 4 vCPU, 15 GB, CPU only",
+ "items": [
+  {
+   "id": "r00",
+   "first": {
+    "answer": "This enzyme steals energy to make sugar. But if it meets oxygen instead, it makes acid instead of sugar, wasting the plant's effort. Oxygen wins when there's little CO2, so plants with a different pathway avoid this problem.",
+    "overlap": 0.05,
+    "seconds": 15.2,
+    "promptTokens": 1752,
+    "promptSeconds": 8.5,
+    "generatedTokens": 90,
+    "tokensPerSecond": 13.36
+   },
+   "retried": false,
+   "answer": "This enzyme steals energy to make sugar. But if it meets oxygen instead, it makes acid instead of sugar, wasting the plant's effort. Oxygen wins when there's little CO2, so plants with a different pathway avoid this problem.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that fixes carbon"
+    },
+    {
+     "term": "oxygen",
+     "meaning": "a gas from the air"
+    }
+   ],
+   "overlap": 0.05,
+   "words": 38,
+   "seconds": 15.2,
+   "promptTokens": 1752,
+   "promptSeconds": 8.5,
+   "generatedTokens": 90,
+   "tokensPerSecond": 13.36
+  },
+  {
+   "id": "h01",
+   "first": {
+    "answer": "They use only attention, skipping back-and-forth loops and special math tricks that used to be needed. That means they can work in parallel, so the whole team trains faster.",
+    "overlap": 0.0,
+    "seconds": 15.2,
+    "promptTokens": 1878,
+    "promptSeconds": 9.1,
+    "generatedTokens": 83,
+    "tokensPerSecond": 13.5
+   },
+   "retried": false,
+   "answer": "They use only attention, skipping back-and-forth loops and special math tricks that used to be needed. That means they can work in parallel, so the whole team trains faster.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "a loop that repeats a process"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "math operations that mix parts of an image"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 29,
+   "seconds": 15.2,
+   "promptTokens": 1878,
+   "promptSeconds": 9.1,
+   "generatedTokens": 83,
+   "tokensPerSecond": 13.5
+  },
+  {
+   "id": "h02",
+   "first": {
+    "answer": "It means the signal was so strong it's almost impossible to be a mistake. If you had to wait that long to find one fake signal, it's so rare it's effectively proof.",
+    "overlap": 0.0,
+    "seconds": 16.3,
+    "promptTokens": 2037,
+    "promptSeconds": 10.2,
+    "generatedTokens": 83,
+    "tokensPerSecond": 13.37
+   },
+   "retried": false,
+   "answer": "It means the signal was so strong it's almost impossible to be a mistake. If you had to wait that long to find one fake signal, it's so rare it's effectively proof.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "a chance of a random glitch"
+    },
+    {
+     "term": "significance",
+     "meaning": "how strong the signal is"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 32,
+   "seconds": 16.3,
+   "promptTokens": 2037,
+   "promptSeconds": 10.2,
+   "generatedTokens": 83,
+   "tokensPerSecond": 13.37
+  },
+  {
+   "id": "h03",
+   "first": {
+    "answer": "It's a very strong signal. In statistics, it means the result is so unlikely to be random noise that you can be 99.9% sure it's real.",
+    "overlap": 0.0,
+    "seconds": 14.3,
+    "promptTokens": 1920,
+    "promptSeconds": 9.3,
+    "generatedTokens": 69,
+    "tokensPerSecond": 13.49
+   },
+   "retried": false,
+   "answer": "It's a very strong signal. In statistics, it means the result is so unlikely to be random noise that you can be 99.9% sure it's real.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a unit of measurement for how far something is from the average"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 26,
+   "seconds": 14.3,
+   "promptTokens": 1920,
+   "promptSeconds": 9.3,
+   "generatedTokens": 69,
+   "tokensPerSecond": 13.49
+  },
+  {
+   "id": "h04",
+   "first": {
+    "answer": "Instead of trying to learn a new pattern from scratch every time, these networks use an old shortcut and add only the difference between the old shortcut and the new one. This way, the network can get much deeper without breaking down, which is why it's so strong at spotting objects.",
+    "overlap": 0.05,
+    "seconds": 15.5,
+    "promptTokens": 1942,
+    "promptSeconds": 9.4,
+    "generatedTokens": 84,
+    "tokensPerSecond": 13.73
+   },
+   "retried": false,
+   "answer": "Instead of trying to learn a new pattern from scratch every time, these networks use an old shortcut and add only the difference between the old shortcut and the new one. This way, the network can get much deeper without breaking down, which is why it's so strong at spotting objects.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "the difference between two layers"
+    }
+   ],
+   "overlap": 0.05,
+   "words": 51,
+   "seconds": 15.5,
+   "promptTokens": 1942,
+   "promptSeconds": 9.4,
+   "generatedTokens": 84,
+   "tokensPerSecond": 13.73
+  },
+  {
+   "id": "h05",
+   "first": {
+    "answer": "It's like a super-fast highway where electrons zip around without bouncing off walls. They stay fast even if the road is just a tiny bit smaller than a hair, and they keep going hot.",
+    "overlap": 0.0,
+    "seconds": 14.7,
+    "promptTokens": 1710,
+    "promptSeconds": 8.3,
+    "generatedTokens": 88,
+    "tokensPerSecond": 13.58
+   },
+   "retried": false,
+   "answer": "It's like a super-fast highway where electrons zip around without bouncing off walls. They stay fast even if the road is just a tiny bit smaller than a hair, and they keep going hot.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "moving so fast it doesn't bounce"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "tiny distances smaller than a hair"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 34,
+   "seconds": 14.7,
+   "promptTokens": 1710,
+   "promptSeconds": 8.3,
+   "generatedTokens": 88,
+   "tokensPerSecond": 13.58
+  },
+  {
+   "id": "h06",
+   "first": {
+    "answer": "That's how fast the universe expanded right now. It tells us how old the universe is and how much stuff there is, but it's a bit tricky because it's not the same number you'd see in a simple textbook calculation.",
+    "overlap": 0.0,
+    "seconds": 16.1,
+    "promptTokens": 2186,
+    "promptSeconds": 10.7,
+    "generatedTokens": 74,
+    "tokensPerSecond": 13.41
+   },
+   "retried": false,
+   "answer": "That's how fast the universe expanded right now. It tells us how old the universe is and how much stuff there is, but it's a bit tricky because it's not the same number you'd see in a simple textbook calculation.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the speed of cosmic expansion"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 40,
+   "seconds": 16.1,
+   "promptTokens": 2186,
+   "promptSeconds": 10.7,
+   "generatedTokens": 74,
+   "tokensPerSecond": 13.41
+  },
+  {
+   "id": "h07",
+   "first": {
+    "answer": "It stopped the virus in 95 out of 100 cases, but not every single person got sick. The real range is between 90 and 98 percent, so it's solidly effective.",
+    "overlap": 0.12,
+    "seconds": 16.2,
+    "promptTokens": 2175,
+    "promptSeconds": 10.7,
+    "generatedTokens": 75,
+    "tokensPerSecond": 13.36
+   },
+   "retried": false,
+   "answer": "It stopped the virus in 95 out of 100 cases, but not every single person got sick. The real range is between 90 and 98 percent, so it's solidly effective.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range showing where the true value likely lies"
+    }
+   ],
+   "overlap": 0.12,
+   "words": 30,
+   "seconds": 16.2,
+   "promptTokens": 2175,
+   "promptSeconds": 10.7,
+   "generatedTokens": 75,
+   "tokensPerSecond": 13.36
+  },
+  {
+   "id": "h08",
+   "first": {
+    "answer": "You can program which genes to cut by changing the RNA instructions, so scientists can use this bacteria tool to make precise edits in human DNA.",
+    "overlap": 0.07,
+    "seconds": 14.5,
+    "promptTokens": 1888,
+    "promptSeconds": 9.3,
+    "generatedTokens": 70,
+    "tokensPerSecond": 13.17
+   },
+   "retried": false,
+   "answer": "You can program which genes to cut by changing the RNA instructions, so scientists can use this bacteria tool to make precise edits in human DNA.",
+   "terms": [
+    {
+     "term": "CRISPR",
+     "meaning": "a bacterial immune system"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing your genetic code"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 26,
+   "seconds": 14.5,
+   "promptTokens": 1888,
+   "promptSeconds": 9.3,
+   "generatedTokens": 70,
+   "tokensPerSecond": 13.17
+  },
+  {
+   "id": "h09",
+   "first": {
+    "answer": "It's not just about guessing; it works even if you don't have a blueprint for the protein. The new AI uses physics rules to build the shape, so it doesn't need a similar protein to compare against.",
+    "overlap": 0.07,
+    "seconds": 15.0,
+    "promptTokens": 1959,
+    "promptSeconds": 9.6,
+    "generatedTokens": 75,
+    "tokensPerSecond": 13.65
+   },
+   "retried": false,
+   "answer": "It's not just about guessing; it works even if you don't have a blueprint for the protein. The new AI uses physics rules to build the shape, so it doesn't need a similar protein to compare against.",
+   "terms": [
+    {
+     "term": "homologous structure",
+     "meaning": "a similar protein that has already been mapped"
+    }
+   ],
+   "overlap": 0.07,
+   "words": 37,
+   "seconds": 15.0,
+   "promptTokens": 1959,
+   "promptSeconds": 9.6,
+   "generatedTokens": 75,
+   "tokensPerSecond": 13.65
+  },
+  {
+   "id": "h10",
+   "first": {
+    "answer": "That number means the intensive treatment group had a 25% lower chance of getting a bad heart event than the standard group. The confidence interval shows we're pretty sure this is true, but it's not perfect.",
+    "overlap": 0.2,
+    "seconds": 15.9,
+    "promptTokens": 2139,
+    "promptSeconds": 10.5,
+    "generatedTokens": 73,
+    "tokensPerSecond": 13.17
+   },
+   "retried": false,
+   "answer": "That number means the intensive treatment group had a 25% lower chance of getting a bad heart event than the standard group. The confidence interval shows we're pretty sure this is true, but it's not perfect.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure comparing risks between two groups"
+    }
+   ],
+   "overlap": 0.2,
+   "words": 36,
+   "seconds": 15.9,
+   "promptTokens": 2139,
+   "promptSeconds": 10.5,
+   "generatedTokens": 73,
+   "tokensPerSecond": 13.17
+  },
+  {
+   "id": "h11",
+   "first": {
+    "answer": "Semaglutide made people lose 14.9% of their weight while losing only 2.4% on the other side, which is a huge difference.",
+    "overlap": 0.27,
+    "seconds": 15.3,
+    "promptTokens": 2160,
+    "promptSeconds": 10.5,
+    "generatedTokens": 65,
+    "tokensPerSecond": 13.45
+   },
+   "retried": false,
+   "answer": "Semaglutide made people lose 14.9% of their weight while losing only 2.4% on the other side, which is a huge difference.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medicine that helps you lose weight"
+    }
+   ],
+   "overlap": 0.27,
+   "words": 21,
+   "seconds": 15.3,
+   "promptTokens": 2160,
+   "promptSeconds": 10.5,
+   "generatedTokens": 65,
+   "tokensPerSecond": 13.45
+  },
+  {
+   "id": "h12",
+   "first": {
+    "answer": "They found that insects are dropping year after year. Specifically, flying insects lost 76% in the fall and 82% in the middle of summer. This drop happened everywhere, not just in some special places.",
+    "overlap": 0.35,
+    "seconds": 14.7,
+    "promptTokens": 1908,
+    "promptSeconds": 9.3,
+    "generatedTokens": 74,
+    "tokensPerSecond": 13.44
+   },
+   "retried": false,
+   "answer": "They found that insects are dropping year after year. Specifically, flying insects lost 76% in the fall and 82% in the middle of summer. This drop happened everywhere, not just in some special places.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of all living things"
+    }
+   ],
+   "overlap": 0.35,
+   "words": 34,
+   "seconds": 14.7,
+   "promptTokens": 1908,
+   "promptSeconds": 9.3,
+   "generatedTokens": 74,
+   "tokensPerSecond": 13.44
+  },
+  {
+   "id": "h13",
+   "first": {
+    "answer": "About a third of the new studies found something important, while most of the old ones did too. That means many of the old findings were still useful for others to learn from.",
+    "overlap": 0.0,
+    "seconds": 14.3,
+    "promptTokens": 1838,
+    "promptSeconds": 9.1,
+    "generatedTokens": 70,
+    "tokensPerSecond": 13.22
+   },
+   "retried": false,
+   "answer": "About a third of the new studies found something important, while most of the old ones did too. That means many of the old findings were still useful for others to learn from.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result that is likely real and not just a random guess"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 33,
+   "seconds": 14.3,
+   "promptTokens": 1838,
+   "promptSeconds": 9.1,
+   "generatedTokens": 70,
+   "tokensPerSecond": 13.22
+  },
+  {
+   "id": "h14",
+   "first": {
+    "answer": "A neuron's firing pattern repeats at precise points in a geometric layout, like the corners of a giant, invisible puzzle. This pattern is built from many smaller neurons working together, creating a map of space that helps the animal know where it is without looking around.",
+    "overlap": 0.0,
+    "seconds": 14.8,
+    "promptTokens": 1844,
+    "promptSeconds": 9.0,
+    "generatedTokens": 80,
+    "tokensPerSecond": 13.63
+   },
+   "retried": false,
+   "answer": "A neuron's firing pattern repeats at precise points in a geometric layout, like the corners of a giant, invisible puzzle. This pattern is built from many smaller neurons working together, creating a map of space that helps the animal know where it is without looking around.",
+   "terms": [
+    {
+     "term": "grid cell",
+     "meaning": "a specialized brain neuron that maps location"
+    }
+   ],
+   "overlap": 0.0,
+   "words": 46,
+   "seconds": 14.8,
+   "promptTokens": 1844,
+   "promptSeconds": 9.0,
+   "generatedTokens": 80,
+   "tokensPerSecond": 13.63
+  },
+  {
+   "id": "h15",
+   "first": {
+    "answer": "A study might just show a real effect, but if everyone is trying to find significance, that result is just a trick. The real effect is small and hidden behind the noise of bias.",
+    "overlap": 0.06,
+    "seconds": 14.1,
+    "promptTokens": 1870,
+    "promptSeconds": 9.1,
+    "generatedTokens": 67,
+    "tokensPerSecond": 13.37
+   },
+   "retried": false,
+   "answer": "A study might just show a real effect, but if everyone is trying to find significance, that result is just a trick. The real effect is small and hidden behind the noise of bias.",
+   "terms": [
+    {
+     "term": "significance",
+     "meaning": "a statistical threshold to prove an effect happened"
+    }
+   ],
+   "overlap": 0.06,
+   "words": 34,
+   "seconds": 14.1,
+   "promptTokens": 1870,
+   "promptSeconds": 9.1,
+   "generatedTokens": 67,
+   "tokensPerSecond": 13.37
+  }
+ ],
+ "podcast": {
+  "title": "Estimating Reproducibility in Psychology",
+  "lines": [
+   {
+    "speaker": "Juniper",
+    "text": "Okay, so how much science is actually repeatable?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "The authors wanted to know if psychological research results hold up under new tests."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So they did a bunch of experiments with published studies."
+   },
+   {
+    "speaker": "Rowan",
+    "text": "They took 100 studies and ran them again using fresh data where possible."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "And what did they find?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "The results showed that the new studies had about half the effect size of the old ones."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Okay, so a big drop in strength. That's what they found."
+   },
+   {
+    "speaker": "Rowan",
+    "text": "They also noted that most original studies showed significant results."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So what about the new tests?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "Forty-seven percent of the replications were statistically significant."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "That's about right. So what else happened?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "The effect sizes from the original studies mostly fell within the new study ranges."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So it's pretty consistent. But is it reliable?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "They also looked at confidence intervals and found a similar pattern."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Okay, so what's the takeaway?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "It seems that psychological science can sometimes be reproduced, but not always."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So what does that mean for us?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "It means we need to be careful when relying on old studies."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "So what's next?"
+   },
+   {
+    "speaker": "Rowan",
+    "text": "We need more ways to measure if science stays the same over time."
+   },
+   {
+    "speaker": "Juniper",
+    "text": "Okay, so that's what they learned. Thanks for listening."
+   }
+  ],
+  "duplicateLines": 0,
+  "words": 203,
+  "seconds": 75.8,
+  "promptTokens": 1352,
+  "promptSeconds": 6.5,
+  "generatedTokens": 929,
+  "tokensPerSecond": 13.39
+ }
+}
