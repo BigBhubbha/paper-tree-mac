@@ -145,7 +145,7 @@ def complete(server, prompt, grammar, n_predict, temperature, seed, repeat_penal
             "top_k": 40, "top_p": 0.9, "min_p": 0.05, "repeat_penalty": repeat_penalty, "repeat_last_n": 64,
             "seed": seed, "cache_prompt": False, "samplers": ["penalties", "dry", "top_k", "top_p", "min_p", "temperature"]}
     if dry > 0:
-        body.update({"dry_multiplier": dry, "dry_base": 1.75, "dry_allowed_length": 2, "dry_penalty_last_n": -1,
+        body.update({"dry_multiplier": dry, "dry_base": 1.75, "dry_allowed_length": 2, "dry_penalty_last_n": 8192,
                      "dry_sequence_breakers": ["\n", ":", "\"", "*"]})
     t0 = time.time()
     r = post(server.rstrip("/") + "/completion", body)
@@ -226,6 +226,116 @@ def run_gemini(a):
     json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
 
 
+# ---- Report ----
+def run_report(a):
+    ts = json.load(open(TESTSET, encoding="utf-8"))
+    notes = json.load(open(a.notes, encoding="utf-8")) if a.notes and os.path.exists(a.notes) else {}
+    runs = [json.load(open(f, encoding="utf-8")) for f in a.results]
+    order = {"gemini": 0, "4b": 1, "9b": 2, "2b": 3, "4b-old-prompts": 4, "2b-old-prompts": 5}
+    for r in runs:
+        r["label"] = r.get("label") or ("gemini" if r["engine"] == "gemini" else r["model"])
+    runs.sort(key=lambda r: order.get(r["label"], 9))
+    name = {"gemini": "Gemini (" + next((r["model"] for r in runs if r["engine"] == "gemini"), "") + ", via the Worker)",
+            "4b": "Qwen 3.5 4B, new prompts", "9b": "Qwen 3.5 9B, new prompts", "2b": "Qwen 3.5 2B (CI sibling), new prompts",
+            "4b-old-prompts": "Qwen 3.5 4B, old prompts", "2b-old-prompts": "Qwen 3.5 2B, old prompts"}
+    real = [h for h in ts["highlights"] if not h.get("regression")]
+    byid = {h["id"]: h for h in ts["highlights"]}
+
+    def item(r, hid):
+        return next((x for x in r["items"] if x["id"] == hid), None)
+
+    def verdict(label, hid):
+        return notes.get(label, {}).get(hid, {})
+
+    summary = []
+    for r in runs:
+        xs = [item(r, h["id"]) for h in real]
+        xs = [x for x in xs if x]
+        if not xs:
+            continue
+        n = len(xs)
+        flagged = sum(1 for x in xs if x["overlap"] >= RESTATING)
+        vs = [verdict(r["label"], x["id"]).get("verdict", "") for x in xs]
+        summary.append({"label": r["label"], "name": name.get(r["label"], r["label"]), "runner": r.get("runner", ""), "n": n,
+                        "flagged": flagged, "avgOverlap": sum(x["overlap"] for x in xs) / n,
+                        "avgWords": sum(x["words"] for x in xs) / n, "avgSeconds": sum(x["seconds"] for x in xs) / n,
+                        "retried": sum(1 for x in xs if x.get("retried")),
+                        "explains": vs.count("explains"), "partly": vs.count("partly"), "restates": vs.count("restates"),
+                        "wrong": sum(1 for v in vs if v.startswith("error"))})
+    os.makedirs(a.out, exist_ok=True)
+    head = a.header.strip() + "\n\n" if a.header else ""
+    md = ["# Paper Tree local reader: quality test", "", head.strip(), ""]
+    md += ["## Summary (the 15 real highlights)", "",
+           "| Model | Restating (overlap 0.5 or more) | Avg overlap | Avg words | Avg time per explanation | Guard retries | My read: explains / partly / restates / has an error |",
+           "|---|---|---|---|---|---|---|"]
+    for s_ in summary:
+        md.append(f"| {s_['name']} | {s_['flagged']} of {s_['n']} ({100*s_['flagged']/s_['n']:.0f}%) | {s_['avgOverlap']:.2f} | {s_['avgWords']:.0f} | "
+                  f"{s_['avgSeconds']:.1f} s ({s_['runner']}) | {s_['retried']} | {s_['explains']} / {s_['partly']} / {s_['restates']} / {s_['wrong']} |")
+    md += ["", "Overlap is the share of an answer's content words that already appear in the highlight (stop words left out). "
+           "It catches word-for-word restating, not a paraphrase in new words, so each answer also has my own short note.", ""]
+    for h in ts["highlights"]:
+        md += [f"## {h['id']}. {h['paper']}" + (" (regression check, not scored)" if h.get("regression") else ""), "",
+               f"Source: {h['source']}  ", f"Mode: {h['mode']}  ", f"Highlight: \"{h['highlight']}\"", ""]
+        for r in runs:
+            x = item(r, h["id"])
+            if not x:
+                continue
+            v = verdict(r["label"], h["id"])
+            meta = f"overlap {x['overlap']:.2f}, {x['words']} words, {x['seconds']:.1f} s" + (", guard retried" if x.get("retried") else "")
+            md.append(f"- **{name.get(r['label'], r['label'])}** ({meta}): {x['answer']}")
+            if v:
+                md.append(f"  - Note: {v.get('verdict', '')}. {v.get('note', '')}".rstrip())
+        md.append("")
+    pods = [r for r in runs if r.get("podcast")]
+    if pods:
+        md += ["## Podcast (21 lines, abstract only)", "", f"Paper: {ts['podcast']['paper']} ({ts['podcast']['source']})", ""]
+        for r in pods:
+            pc = r["podcast"]
+            md += [f"### {name.get(r['label'], r['label'])}", "",
+                   f"Title: {pc['title']}  ", f"{len(pc['lines'])} lines, {pc['words']} words, {pc['duplicateLines']} repeated lines, "
+                   f"{pc['seconds']:.0f} s to write ({pc.get('promptTokens')} prompt tokens, {pc.get('tokensPerSecond')} tokens/s)", ""]
+            md += [f"{i+1}. {l['speaker']}: {l['text']}" for i, l in enumerate(pc["lines"])]
+            v = notes.get(r["label"], {}).get("podcast")
+            if v:
+                md += ["", f"Note: {v.get('note', '')}"]
+            md.append("")
+    open(os.path.join(a.out, "comparison.md"), "w", encoding="utf-8").write("\n".join(md).replace("\n\n\n", "\n\n"))
+
+    # HTML side-by-side: the three engines that matter for shipping.
+    main = [r for r in runs if r["label"] in ("gemini", "4b", "9b")]
+    e = html.escape
+    rows = []
+    for h in ts["highlights"]:
+        cells = []
+        for r in main:
+            x = item(r, h["id"])
+            if not x:
+                cells.append("<td class=na>not run</td>")
+                continue
+            v = verdict(r["label"], h["id"])
+            vd = v.get("verdict", "")
+            cls = "bad" if vd.startswith("error") or vd == "restates" or x["overlap"] >= RESTATING else ("mid" if vd == "partly" else "ok")
+            cells.append(f"<td class={cls}><div>{e(x['answer'])}</div><div class=meta>overlap {x['overlap']:.2f} · {x['words']} words · {x['seconds']:.1f} s"
+                         + (" · retried" if x.get("retried") else "") + "</div>"
+                         + (f"<div class=note><b>{e(vd)}</b>. {e(v.get('note', ''))}</div>" if v else "") + "</td>")
+        reg = " <span class=reg>regression check</span>" if h.get("regression") else ""
+        rows.append(f"<tr><th><div class=pid>{h['id']} · {e(h['paper'])}{reg}</div><div class=hl>“{e(h['highlight'])}”</div><div class=meta>{h['mode']}</div></th>{''.join(cells)}</tr>")
+    srows = "".join(f"<tr><td>{e(s_['name'])}</td><td>{s_['flagged']} of {s_['n']}</td><td>{s_['avgOverlap']:.2f}</td><td>{s_['avgWords']:.0f}</td>"
+                    f"<td>{s_['avgSeconds']:.1f} s</td><td>{s_['explains']} / {s_['partly']} / {s_['restates']} / {s_['wrong']}</td></tr>" for s_ in summary)
+    page = f"""<!doctype html><meta charset=utf-8><title>Paper Tree local reader quality</title>
+<style>body{{font:13px -apple-system,Helvetica,Arial,sans-serif;margin:24px;color:#1d2a1f;background:#f6f2e9}}
+table{{border-collapse:collapse;width:100%;margin-bottom:24px}}td,th{{border:1px solid #d6cfbf;padding:8px;vertical-align:top;text-align:left;background:#fffdf8}}
+th{{width:22%}}.hl{{font-style:italic;margin:4px 0}}.meta{{color:#6b6b60;font-size:11px;margin-top:6px}}.note{{font-size:11.5px;margin-top:6px}}
+td.bad{{background:#fbe9e5}}td.mid{{background:#fdf6df}}td.ok{{background:#eef6ea}}.pid{{font-weight:600}}.reg{{color:#9a5b00;font-weight:400}}
+thead th{{background:#2f4a33;color:#fff}}</style>
+<h1>Paper Tree local reader: quality test</h1><p>{e(a.header or '')}</p>
+<table><thead><tr><th>Model</th><th>Restating</th><th>Avg overlap</th><th>Avg words</th><th>Avg time</th><th>Explains / partly / restates / error</th></tr></thead>{srows}</table>
+<table><thead><tr><th>Highlight</th>{''.join(f'<th>{e(name.get(r["label"], r["label"]))}</th>' for r in main)}</tr></thead>{''.join(rows)}</table>"""
+    open(os.path.join(a.out, "comparison.html"), "w", encoding="utf-8").write(page)
+    json.dump(summary, open(os.path.join(a.out, "summary.json"), "w"), indent=1)
+    print(json.dumps(summary, indent=1))
+
+
 def main():
     p = argparse.ArgumentParser()
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -240,8 +350,13 @@ def main():
     l.add_argument("--label", default="")
     g = sub.add_parser("gemini")
     g.add_argument("--out", required=True)
+    rp = sub.add_parser("report")
+    rp.add_argument("results", nargs="+")
+    rp.add_argument("--notes", default=os.path.join(ROOT, "scripts", "local-ai-quality", "notes.json"))
+    rp.add_argument("--header", default="")
+    rp.add_argument("--out", required=True)
     a = p.parse_args()
-    {"local": run_local, "gemini": run_gemini}[a.cmd](a)
+    {"local": run_local, "gemini": run_gemini, "report": run_report}[a.cmd](a)
 
 
 if __name__ == "__main__":
