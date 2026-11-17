@@ -1,0 +1,36 @@
+[
+ {
+  "label": "gemini",
+  "name": "Gemini (gemini-3.1-flash-lite, via the Worker)",
+  "runner": "Paper Tree Worker (read-only)",
+  "n": 135,
+  "flagged": 0,
+  "avgOverlap": 0.08696296296296296,
+  "avgWords": 39.18518518518518,
+  "avgSeconds": 4.3570370370370375,
+  "retried": 0,
+  "numberFlags": 33,
+  "spanFlags": 14,
+  "explains": 105,
+  "partly": 30,
+  "restates": 0,
+  "wrong": 0
+ },
+ {
+  "label": "4b",
+  "name": "Qwen 3.5 4B, new prompts",
+  "runner": "box, 6 threads, 15 GB, CPU only",
+  "n": 135,
+  "flagged": 1,
+  "avgOverlap": 0.15674074074074074,
+  "avgWords": 32.06666666666667,
+  "avgSeconds": 12.617037037037036,
+  "retried": 19,
+  "numberFlags": 2,
+  "spanFlags": 1,
+  "explains": 130,
+  "partly": 3,
+  "restates": 0,
+  "wrong": 2
+ }
+]

@@ -253,7 +253,7 @@ enum LocalWriter {
         let who = reader.note.isEmpty ? "a curious high school student" : "this reader"
         switch mode {
         case .plain: return "Plain version: explain it in plain words \(who) would understand, in at most 2 short sentences and under \(words) words."
-        case .simpler: return "Simpler: as simply as possible, \(reader.note.isEmpty ? "like to a curious 12 year old" : "in the simplest everyday words"), under \(words) words. Use simpler words, never different facts. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions."
+        case .simpler: return "Simpler: as simply as possible, \(reader.note.isEmpty ? "like to a curious 12 year old" : "in the simplest everyday words"), under \(words) words. Use simpler words, never different facts. Explain what a statistic shows and why it matters, without any probability, ratio or unit the paper doesn't give. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions."
         case .detail: return "More detail: a fuller explanation under \(words) words, covering what it means and why it matters here, readable for \(who)."
         }
     }
@@ -437,12 +437,74 @@ enum LocalWriter {
             return out
         }
 
+        static let unitFam: [String: String] = [
+            "megaparsec": "mpc", "megaparsecs": "mpc", "mpc": "mpc", "parsec": "pc", "parsecs": "pc", "kpc": "kpc",
+            "kilometer": "km", "kilometers": "km", "kilometre": "km", "kilometres": "km", "km": "km",
+            "meter": "m", "meters": "m", "metre": "m", "metres": "m", "mile": "mi", "miles": "mi",
+            "millimeter": "mm", "millimeters": "mm", "millimetre": "mm", "millimetres": "mm", "mm": "mm",
+            "centimeter": "cm", "centimeters": "cm", "cm": "cm",
+            "year": "year", "years": "year", "yr": "year", "decade": "decade", "decades": "decade",
+            "day": "day", "days": "day", "hour": "hour", "hours": "hour",
+            "minute": "minute", "minutes": "minute", "second": "second", "seconds": "second"]
+        static let unitDim: [String: String] = [
+            "mpc": "distance", "pc": "distance", "kpc": "distance", "km": "distance", "m": "distance",
+            "mi": "distance", "mm": "distance", "cm": "distance",
+            "year": "time", "decade": "time", "day": "time", "hour": "time", "minute": "time", "second": "time"]
+
+        /// Scientific notation in s as (canonical form like "1.7e-9", raw phrase).
+        static func sciForms(_ s: String) -> [(String, String)] {
+            let t = s.replacingOccurrences(of: "\u{2212}", with: "-")
+            var out: [(String, String)] = []
+            let pat = #"(?<![a-z\d])(\d+(?:\.\d+)?)\s*[x×*]\s*10\s*(?:\^|\*\*)?\s*([\-−–]?)\s*(\d+)|(?<![a-z\d])(\d+(?:\.\d+)?)[eE]([+\-−]?)(\d+)|(?<![a-z\d])10\s*(?:\^|\*\*)\s*([\-−–]?)\s*(\d+)"#
+            for m in matches(pat, t) {
+                let coeff: String, signRaw: String, exp: String, phrase: String
+                if let c = m[1], let e = m[3] { coeff = c; signRaw = m[2] ?? ""; exp = e; phrase = m[0] ?? c }
+                else if let c = m[4], let e = m[6] { coeff = c; signRaw = m[5] ?? ""; exp = e; phrase = m[0] ?? c }
+                else if let e = m[8] { coeff = "1"; signRaw = m[7] ?? ""; exp = e; phrase = m[0] ?? e }
+                else { continue }
+                let sign = (signRaw == "-" || signRaw == "\u{2212}" || signRaw == "\u{2013}") ? "-" : ""
+                let expTrim = exp.drop { $0 == "0" }; let expN = expTrim.isEmpty ? "0" : String(expTrim)
+                out.append(("\(coeff)e\(sign)\(expN)", phrase.trimmingCharacters(in: .whitespaces)))
+            }
+            return out
+        }
+
+        /// Rate-denominator unit families ("per megaparsec", "every kilometer").
+        static func rateDenoms(_ s: String) -> [(String, String)] {
+            var t = s
+            t = t.replacingOccurrences(of: #"\bMpc\b"#, with: " megaparsec ", options: .regularExpression)
+            t = t.replacingOccurrences(of: #"\bkpc\b"#, with: " kpc ", options: [.regularExpression, .caseInsensitive])
+            t = t.replacingOccurrences(of: #"\bkm\b"#, with: " kilometer ", options: [.regularExpression, .caseInsensitive])
+            var out: [(String, String)] = [], seen = Set<String>()
+            for m in matches(#"(?:per|/|every|each)\s*([A-Za-z]+)|\b([A-Za-z]+)\s+of distance"#, t) {
+                let raw = ((m[1] ?? m[2]) ?? "").lowercased()
+                guard let fam = unitFam[raw], !seen.contains(fam) else { continue }
+                seen.insert(fam)
+                out.append((fam, (m[0] ?? raw).trimmingCharacters(in: .whitespaces)))
+            }
+            return out
+        }
+
         static func unsupported(answer: String, source: String) -> [String] {
             let srcNumbers = numbers(source).union(spelled(source))
             var srcWords = words(source)
             if source.contains("%") { srcWords.insert("percent") }
-            let bad = numbers(answer).filter { !srcNumbers.contains($0) && $0 != "0" && $0 != "1" }.sorted()
-            return bad + words(answer).filter { flagged.contains($0) && !srcWords.contains($0) }.sorted()
+            var bad = numbers(answer).filter { !srcNumbers.contains($0) && $0 != "0" && $0 != "1" }.sorted()
+            bad += words(answer).filter { flagged.contains($0) && !srcWords.contains($0) }.sorted()
+            let srcSci = Set(sciForms(source).map { $0.0 })
+            for (form, phrase) in sciForms(answer) where !srcSci.contains(form) && !bad.contains(phrase) { bad.append(phrase) }
+            let srcDen = Dictionary(uniqueKeysWithValues: rateDenoms(source))
+            let srcDims = Set(srcDen.keys.compactMap { unitDim[$0] })
+            for (fam, phrase) in rateDenoms(answer) {
+                if srcDen[fam] == nil, let dim = unitDim[fam], srcDims.contains(dim), !bad.contains(phrase) { bad.append(phrase) }
+            }
+            let hasSigma = source.range(of: #"standard deviation|\bsigma\b|\bσ\b"#, options: [.regularExpression, .caseInsensitive]) != nil
+            if hasSigma, !source.lowercased().contains("times") {
+                for m in matches(#"(?<![a-z\d])(\d+(?:\.\d+)?)\s*times\s+(?:further|stronger|more|as)\b"#, answer) {
+                    if let phrase = m[0], !bad.contains(phrase) { bad.append(phrase) }
+                }
+            }
+            return bad
         }
     }
 

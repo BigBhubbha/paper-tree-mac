@@ -71,11 +71,89 @@ def spelled(s):
         if m.group(1): out.add(str(TENS[m.group(1)]+WORDVAL[m.group(2)]))
         elif m.group(3) in WORDVAL: out.add(str(WORDVAL[m.group(3)]))
     return out
+# Scientific notation (1.7x10^-9, 1.7e-9, 10^-9) and rate-unit families for the number check.
+_SCI = re.compile(
+    r"(?<![a-z\d])(\d+(?:\.\d+)?)\s*[x×*]\s*10\s*(?:\^|\*\*)?\s*([−\-–]?)\s*(\d+)"
+    r"|(?<![a-z\d])(\d+(?:\.\d+)?)[eE]([+\-−]?)(\d+)"
+    r"|(?<![a-z\d])10\s*(?:\^|\*\*)\s*([−\-–]?)\s*(\d+)",
+    re.I)
+_TIMES = re.compile(r"(?<![a-z\d])(\d+(?:\.\d+)?)\s*times\s+(?:further|stronger|more|as)\b", re.I)
+# Rate denominators: "per year", "/Mpc", "every kilometer", "kilometer of distance".
+UNIT_FAM = {
+    "megaparsec": "mpc", "megaparsecs": "mpc", "mpc": "mpc",
+    "parsec": "pc", "parsecs": "pc", "kpc": "kpc",
+    "kilometer": "km", "kilometers": "km", "kilometre": "km", "kilometres": "km", "km": "km",
+    "meter": "m", "meters": "m", "metre": "m", "metres": "m",
+    "mile": "mi", "miles": "mi",
+    "millimeter": "mm", "millimeters": "mm", "millimetre": "mm", "millimetres": "mm", "mm": "mm",
+    "centimeter": "cm", "centimeters": "cm", "cm": "cm",
+    "year": "year", "years": "year", "yr": "year",
+    "decade": "decade", "decades": "decade",
+    "day": "day", "days": "day",
+    "hour": "hour", "hours": "hour",
+    "minute": "minute", "minutes": "minute",
+    "second": "second", "seconds": "second",
+}
+UNIT_DIM = {
+    "mpc": "distance", "pc": "distance", "kpc": "distance", "km": "distance", "m": "distance",
+    "mi": "distance", "mm": "distance", "cm": "distance",
+    "year": "time", "decade": "time", "day": "time", "hour": "time", "minute": "time", "second": "time",
+}
+_PER_UNIT = re.compile(
+    r"(?:per|/|every|each)\s*([A-Za-z]+)|\b([A-Za-z]+)\s+of distance", re.I)
+
+
+def sci_forms(s):
+    """Canonical scientific-notation forms in s, like 1.7e-9, with the raw phrase."""
+    out = []
+    for m in _SCI.finditer(s.replace("\u2212", "-").replace("\u2013", "-")):
+        if m.group(1) is not None:
+            coeff, sign, exp, phrase = m.group(1), m.group(2) or "", m.group(3), m.group(0)
+        elif m.group(4) is not None:
+            coeff, sign, exp, phrase = m.group(4), m.group(5) or "", m.group(6), m.group(0)
+        else:
+            coeff, sign, exp, phrase = "1", m.group(7) or "", m.group(8), m.group(0)
+        sign = "-" if sign in ("-", "−", "–") else ""
+        out.append((f"{coeff}e{sign}{exp.lstrip('0') or '0'}", phrase.strip()))
+    return out
+
+
+def rate_denoms(s):
+    """Rate-denominator unit families in s, as (family, phrase)."""
+    t = s
+    t = re.sub(r"\bMpc\b", " megaparsec ", t)
+    t = re.sub(r"\bkpc\b", " kpc ", t, flags=re.I)
+    t = re.sub(r"\bkm\b", " kilometer ", t, flags=re.I)
+    out, seen = [], set()
+    for m in _PER_UNIT.finditer(t):
+        raw = (m.group(1) or m.group(2)).lower()
+        fam = UNIT_FAM.get(raw)
+        if not fam or fam in seen:
+            continue
+        seen.add(fam)
+        out.append((fam, m.group(0).strip()))
+    return out
+
+
 def unsupported(answer, source):
-    """Numbers and number words in the answer that the highlight and its context never use."""
+    """Numbers, number words, scientific-notation probabilities, unit swaps, or 'N times further' the paper never uses."""
     src_n = numbers(source) | spelled(source); src_w = words(source) | ({"percent"} if "%" in source else set())
     bad = sorted(n for n in numbers(answer) if n not in src_n and n not in ALLOWED_DIGITS)
     bad += sorted(w for w in words(answer) if w in FLAG_WORDS and w not in src_w)
+    src_sci = {form for form, _ in sci_forms(source)}
+    for form, phrase in sci_forms(answer):
+        if form not in src_sci and phrase not in bad:
+            bad.append(phrase)
+    src_den = {fam: ph for fam, ph in rate_denoms(source)}
+    src_dims = {UNIT_DIM[f] for f in src_den}
+    for fam, phrase in rate_denoms(answer):
+        if fam not in src_den and UNIT_DIM.get(fam) in src_dims and phrase not in bad:
+            bad.append(phrase)
+    if re.search(r"standard deviation|\bsigma\b|\bσ\b", source, re.I) and "times" not in source.lower():
+        for m in _TIMES.finditer(answer):
+            phrase = m.group(0)
+            if phrase not in bad:
+                bad.append(phrase)
     return bad
 
 
@@ -205,6 +283,7 @@ def length_rule(mode, reader=None):
     if mode == "simpler":
         like = "like to a curious 12 year old" if not reader.get("note") else "in the simplest everyday words"
         return (f"Simpler: as simply as possible, {like}, under {words} words. Use simpler words, never different facts. "
+                "Explain what a statistic shows and why it matters, without any probability, ratio or unit the paper doesn't give. "
                 "One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.")
     return f"More detail: a fuller explanation under {words} words, covering what it means and why it matters here, readable for {who}."
 

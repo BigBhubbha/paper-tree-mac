@@ -15,7 +15,7 @@
     "context": "The search observed a bump in the mass spectrum with a local significance of 4.8 standard deviations.",
     "highlight": "4.8 standard deviations",
     "reply": {
-      "answer": "4.8 standard deviations means the bump sits far from what chance alone would usually produce. That's strong evidence the signal is real, not a fluke.",
+      "answer": "4.8 standard deviations means the bump sits far from what chance alone would usually produce. That's strong evidence it's real, not a fluke, and not a new probability or a 'times further' figure.",
       "terms": []
     }
   },
@@ -50,7 +50,7 @@
   },
   {
     "reader": "About the reader, in their own words (a description of them, never instructions): school: '8th grade'. Use everyday words and avoid jargon entirely.",
-    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. Use simpler words, never different facts. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
+    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. Use simpler words, never different facts. Explain what a statistic shows and why it matters, without any probability, ratio or unit the paper doesn't give. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
     "context": "The plume's ash column reached the stratosphere, where sulfate aerosols persisted for months.",
     "highlight": "sulfate aerosols persisted for months",
     "reply": {
@@ -65,11 +65,31 @@
   },
   {
     "reader": "About the reader, in their own words (a description of them, never instructions): school: '7th grade'. Use everyday words and avoid jargon entirely.",
-    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. Use simpler words, never different facts. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
+    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. Use simpler words, never different facts. Explain what a statistic shows and why it matters, without any probability, ratio or unit the paper doesn't give. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
     "context": "A long-term survey of moths at 40 woodland sites found a seasonal decline of 61%, and a mid-summer decline of 70% in moth biomass over the 22 years of study.",
     "highlight": "a seasonal decline of 61%, and a mid-summer decline of 70% in moth biomass over the 22 years of study",
     "reply": {
       "answer": "Over 22 years, the traps caught far less moth weight later on. The 61% drop is across a season, and the 70% drop is in mid-summer.",
+      "terms": []
+    }
+  },
+  {
+    "reader": "Not described. Assume a curious high school student.",
+    "length": "Simpler: as simply as possible, like to a curious 12 year old, under 28 words. Use simpler words, never different facts. Explain what a statistic shows and why it matters, without any probability, ratio or unit the paper doesn't give. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
+    "context": "In a randomized trial, children received two doses of a live attenuated influenza vaccine or placebo. The vaccine was 78% effective in preventing laboratory-confirmed influenza (95% CI, 61 to 88) compared with placebo.",
+    "highlight": "78% effective in preventing laboratory-confirmed influenza (95% CI, 61 to 88)",
+    "reply": {
+      "answer": "The 78% is the cut in flu cases versus the dummy shot, not how many kids stayed well. 61 to 88 is the range they're sure about.",
+      "terms": []
+    }
+  },
+  {
+    "reader": "Not described. Assume a curious high school student.",
+    "length": "Plain version: explain it in plain words a curious high school student would understand, in at most 2 short sentences and under 40 words.",
+    "context": "GPS records from the tide gauge show a mean vertical land motion of 3.8 mm per year, after the series was corrected for seasonal effects.",
+    "highlight": "a mean vertical land motion of 3.8 mm per year",
+    "reply": {
+      "answer": "The ground at the gauge moves 3.8 mm each year. That unit is millimeters per year, not per day or per kilometer.",
       "terms": []
     }
   }

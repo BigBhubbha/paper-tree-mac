@@ -1,0 +1,1158 @@
+{
+ "4b": {
+  "r00/plain/default": {
+   "verdict": "explains",
+   "note": "Wrong gas when the air supply is low; 'making junk' is loose but the idea is right."
+  },
+  "r00/plain/beginner": {
+   "verdict": "explains",
+   "note": "Mistake when CO2 is low; wastes energy fixing it."
+  },
+  "r00/plain/grad": {
+   "verdict": "explains",
+   "note": "Oxygen for CO2 when levels fall. C4 pumping is fair textbook background."
+  },
+  "r00/simpler/default": {
+   "verdict": "explains",
+   "note": "Grabs oxygen when CO2 is short; wastes energy."
+  },
+  "r00/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Wrong gas when CO2 is low."
+  },
+  "r00/simpler/grad": {
+   "verdict": "explains",
+   "note": "Error happens more as CO2 drops; wastes energy."
+  },
+  "r00/detail/default": {
+   "verdict": "explains",
+   "note": "Builds sugar from air, grabs oxygen when CO2 is short, has to fix the mistake."
+  },
+  "r00/detail/beginner": {
+   "verdict": "explains",
+   "note": "Same account in everyday words."
+  },
+  "r00/detail/grad": {
+   "verdict": "explains",
+   "note": "Photorespiration and C4 pumping; accurate and at the right level."
+  },
+  "h01/plain/default": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/plain/beginner": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/plain/grad": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/simpler/default": {
+   "verdict": "explains",
+   "note": "Drops two old parts and keeps the one that looks at all words at once."
+  },
+  "h01/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/simpler/grad": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/detail/default": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/detail/beginner": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h01/detail/grad": {
+   "verdict": "explains",
+   "note": "Skips the old loops and sliding windows; attention looks at all words at once and trains faster."
+  },
+  "h02/plain/default": {
+   "verdict": "explains",
+   "note": "Copies 203,000 years and 5.1 sigma and says what they mean."
+  },
+  "h02/plain/beginner": {
+   "verdict": "explains",
+   "note": "Same, after a retry: both figures exact."
+  },
+  "h02/plain/grad": {
+   "verdict": "explains",
+   "note": "False-alarm rate and 5.1 sigma, both exact."
+  },
+  "h02/simpler/default": {
+   "verdict": "explains",
+   "note": "Keeps 203,000 years; needle-in-a-haystack comparison does not invent a scale."
+  },
+  "h02/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Keeps 203,000 years and 5.1 sigma."
+  },
+  "h02/simpler/grad": {
+   "verdict": "explains",
+   "note": "Says 'two hundred thousand years' and 5.1 sigma. Slight rounding of 203,000, but the time span is there."
+  },
+  "h02/detail/default": {
+   "verdict": "explains",
+   "note": "Keeps 203,000 years and explains the false-alarm rate."
+  },
+  "h02/detail/beginner": {
+   "verdict": "explains",
+   "note": "Keeps both 203,000 years and 5.1 sigma."
+  },
+  "h02/detail/grad": {
+   "verdict": "explains",
+   "note": "Both figures exact; says 5.1 sigma is robust against random fluctuations."
+  },
+  "h03/plain/default": {
+   "verdict": "explains",
+   "note": "Far from chance, in units of standard deviation. Mentions coin flips only to reject that reading."
+  },
+  "h03/plain/beginner": {
+   "verdict": "explains",
+   "note": "5.9 from chance; points to the Higgs discovery."
+  },
+  "h03/plain/grad": {
+   "verdict": "explains",
+   "note": "Far from background; the 1.7x10^-9 is the paper's own background-fluctuation probability in the surrounding text, copied exactly."
+  },
+  "h03/simpler/default": {
+   "verdict": "explains",
+   "note": "Far from chance, needle-in-a-haystack comparison, no 'times further' and no invented p-value."
+  },
+  "h03/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Far from chance; needle-in-a-haystack comparison invents no number."
+  },
+  "h03/simpler/grad": {
+   "verdict": "explains",
+   "note": "Qualitative: far from a random background bump, not a fluke. No invented number."
+  },
+  "h03/detail/default": {
+   "verdict": "explains",
+   "note": "Unlikely to be a fluke; a real signal compatible with the Standard Model Higgs. No invented p-value."
+  },
+  "h03/detail/beginner": {
+   "verdict": "explains",
+   "note": "Far from chance, no invented p-value."
+  },
+  "h03/detail/grad": {
+   "verdict": "explains",
+   "note": "5.9 sigma as discovery-level evidence, no invented probability."
+  },
+  "h04/plain/default": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/plain/beginner": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/plain/grad": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/simpler/default": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/simpler/grad": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/detail/default": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/detail/beginner": {
+   "verdict": "explains",
+   "note": "Each layer learns only the change from what came before, which makes deep nets easier to train."
+  },
+  "h04/detail/grad": {
+   "verdict": "explains",
+   "note": "Residuals, 152 layers, 3.57% ImageNet error: all from the paper, and at the right level."
+  },
+  "h05/plain/default": {
+   "verdict": "explains",
+   "note": "Perfect-highway idea; keeps submicron ('smaller than a micrometer') and room-warm conditions."
+  },
+  "h05/plain/beginner": {
+   "verdict": "explains",
+   "note": "Straight travel over very short distances even when it's warm."
+  },
+  "h05/plain/grad": {
+   "verdict": "explains",
+   "note": "No scattering over nanoscale lengths at room temperature."
+  },
+  "h05/simpler/default": {
+   "verdict": "explains",
+   "note": "Straight like a bullet; works in warm rooms, not only when it is very cold. No false 'because the path is tiny'."
+  },
+  "h05/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Keeps normal temperatures and tiny spaces."
+  },
+  "h05/simpler/grad": {
+   "verdict": "explains",
+   "note": "No bouncing off impurities across tiny gaps."
+  },
+  "h05/detail/default": {
+   "verdict": "explains",
+   "note": "Clean movement at tiny scales without cooling."
+  },
+  "h05/detail/beginner": {
+   "verdict": "explains",
+   "note": "Usually heat slows electrons; here they move freely even when it is warm."
+  },
+  "h05/detail/grad": {
+   "verdict": "explains",
+   "note": "Ballistic over submicron distances at room temperature, unlike most materials."
+  },
+  "h06/plain/default": {
+   "verdict": "explains",
+   "note": "Expansion rate now, in km/s per megaparsec."
+  },
+  "h06/plain/beginner": {
+   "verdict": "explains",
+   "note": "How fast the universe is stretching now."
+  },
+  "h06/plain/grad": {
+   "verdict": "explains",
+   "note": "67.4 ± 0.5 km/s/Mpc from Planck under the standard model, both from the paper."
+  },
+  "h06/simpler/default": {
+   "verdict": "explains",
+   "note": "Expansion rate now, in km per second per megaparsec. The unit is kept."
+  },
+  "h06/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Expansion rate now, in km/s per megaparsec."
+  },
+  "h06/simpler/grad": {
+   "verdict": "explains",
+   "note": "67.4 with a small margin of error, per megaparsec."
+  },
+  "h06/detail/default": {
+   "verdict": "explains",
+   "note": "67.4 ± 0.5 km/s/Mpc, expansion rate now."
+  },
+  "h06/detail/beginner": {
+   "verdict": "explains",
+   "note": "Same value and units."
+  },
+  "h06/detail/grad": {
+   "verdict": "explains",
+   "note": "67.4 ± 0.5 km/s/Mpc, and it says 1 Mpc is a megaparsec. Notation is clean this time."
+  },
+  "h07/plain/default": {
+   "verdict": "explains",
+   "note": "Stopped 95% of cases that would have happened otherwise; keeps 90.3 to 97.6."
+  },
+  "h07/plain/beginner": {
+   "verdict": "error",
+   "note": "Same flu slip, though the 95 out of 100 is now correctly compared with the dummy shot, and the interval is kept."
+  },
+  "h07/plain/grad": {
+   "verdict": "explains",
+   "note": "Prevented 95% of cases; interval is the range for true protection."
+  },
+  "h07/simpler/default": {
+   "verdict": "explains",
+   "note": "A 95% cut in chances of getting the virus, with the 90.3 to 97.6 range. Relative, not an absolute 'stayed well' rate."
+  },
+  "h07/simpler/beginner": {
+   "verdict": "error",
+   "note": "The relative-rate reading is now right (95 out of 100 cases versus the fake shot), but it says 'flu cases' for a Covid-19 vaccine."
+  },
+  "h07/simpler/grad": {
+   "verdict": "explains",
+   "note": "Prevented 95% of cases; keeps the 90.3 to 97.6 interval."
+  },
+  "h07/detail/default": {
+   "verdict": "explains",
+   "note": "95% prevention in people 16 and older; interval explained."
+  },
+  "h07/detail/beginner": {
+   "verdict": "explains",
+   "note": "95 out of 100 cases versus those who did not get it; keeps the interval."
+  },
+  "h07/detail/grad": {
+   "verdict": "explains",
+   "note": "95% of cases; interval as a 95% range around the point estimate."
+  },
+  "h08/plain/default": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/plain/beginner": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/plain/grad": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/simpler/default": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/simpler/grad": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/detail/default": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/detail/beginner": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h08/detail/grad": {
+   "verdict": "explains",
+   "note": "Custom RNA tells Cas9 where to cut; a programmable genome-editing tool."
+  },
+  "h09/plain/default": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/plain/beginner": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/plain/grad": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/simpler/default": {
+   "verdict": "explains",
+   "note": "Now says the method can guess the shape even with no similar example, which is the point of the highlight."
+  },
+  "h09/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/simpler/grad": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/detail/default": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/detail/beginner": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h09/detail/grad": {
+   "verdict": "explains",
+   "note": "Usual methods need a similar solved shape; this one still works without it."
+  },
+  "h10/plain/default": {
+   "verdict": "explains",
+   "note": "Keeps 0.75 and 0.64 to 0.89; no percent conversion."
+  },
+  "h10/plain/beginner": {
+   "verdict": "explains",
+   "note": "Same, exact figures, lower chance of heart attacks or strokes."
+  },
+  "h10/plain/grad": {
+   "verdict": "explains",
+   "note": "0.75 vs 1 as no difference; interval excludes 1."
+  },
+  "h10/simpler/default": {
+   "verdict": "explains",
+   "note": "Exact figures, no conversion."
+  },
+  "h10/simpler/beginner": {
+   "verdict": "partly",
+   "note": "Correct 25% reading of 0.75, but that percent is computed, not written in the paper."
+  },
+  "h10/simpler/grad": {
+   "verdict": "partly",
+   "note": "Same correct 25% conversion of the hazard ratio, still a number the paper does not write."
+  },
+  "h10/detail/default": {
+   "verdict": "explains",
+   "note": "Exact figures; whole interval below 1."
+  },
+  "h10/detail/beginner": {
+   "verdict": "explains",
+   "note": "Exact figures, sure it is not luck."
+  },
+  "h10/detail/grad": {
+   "verdict": "explains",
+   "note": "Keeps 0.75 and 0.64 to 0.89, interval below 1, and the 3.26-year follow-up. No 25% conversion."
+  },
+  "h11/plain/default": {
+   "verdict": "explains",
+   "note": "14.9% vs 2.4%, exact."
+  },
+  "h11/plain/beginner": {
+   "verdict": "explains",
+   "note": "Both figures exact."
+  },
+  "h11/plain/grad": {
+   "verdict": "explains",
+   "note": "14.9% vs 2.4%, and the 12.4 point difference and 68 weeks from the paper."
+  },
+  "h11/simpler/default": {
+   "verdict": "explains",
+   "note": "Both figures exact, and it keeps the 68 weeks."
+  },
+  "h11/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Both figures exact."
+  },
+  "h11/simpler/grad": {
+   "verdict": "explains",
+   "note": "Both figures exact over 68 weeks."
+  },
+  "h11/detail/default": {
+   "verdict": "explains",
+   "note": "Week 68, 14.9% vs 2.4%."
+  },
+  "h11/detail/beginner": {
+   "verdict": "explains",
+   "note": "Same, over 68 weeks."
+  },
+  "h11/detail/grad": {
+   "verdict": "explains",
+   "note": "-14.9 vs -2.4, -12.4 point difference, over 68 weeks."
+  },
+  "h12/plain/default": {
+   "verdict": "explains",
+   "note": "76%, 82%, and 27 years all exact; seasonal vs mid-summer read correctly. No 'lighter in spring'."
+  },
+  "h12/plain/beginner": {
+   "verdict": "explains",
+   "note": "Same three figures, correctly framed."
+  },
+  "h12/plain/grad": {
+   "verdict": "explains",
+   "note": "Same three figures over 27 years."
+  },
+  "h12/simpler/default": {
+   "verdict": "explains",
+   "note": "All three figures exact; seasonal vs mid-summer kept."
+  },
+  "h12/simpler/beginner": {
+   "verdict": "explains",
+   "note": "All three figures exact."
+  },
+  "h12/simpler/grad": {
+   "verdict": "partly",
+   "note": "Keeps 76% and 82% and the seasonal vs mid-summer split, but still drops the 27 years."
+  },
+  "h12/detail/default": {
+   "verdict": "explains",
+   "note": "All three figures, plus why biomass matters for food webs."
+  },
+  "h12/detail/beginner": {
+   "verdict": "explains",
+   "note": "All three figures, food chains."
+  },
+  "h12/detail/grad": {
+   "verdict": "explains",
+   "note": "All three figures; decline not explained by weather or land use, from the paper."
+  },
+  "h13/plain/default": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/plain/beginner": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/plain/grad": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/simpler/default": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/simpler/grad": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/detail/default": {
+   "verdict": "explains",
+   "note": "36 of 100, so 64 did not reach the standard. The 64 is a complement, not a new result."
+  },
+  "h13/detail/beginner": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h13/detail/grad": {
+   "verdict": "explains",
+   "note": "Keeps 36% (or a fair 'one in three'); often contrasts it with the 97% of originals."
+  },
+  "h14/plain/default": {
+   "verdict": "explains",
+   "note": "Honeycomb spots; a cell lights up at those points. Fair reading of a triangular grid."
+  },
+  "h14/plain/beginner": {
+   "verdict": "explains",
+   "note": "A grid of perfect triangles, not a square graph paper."
+  },
+  "h14/plain/grad": {
+   "verdict": "explains",
+   "note": "Equilateral triangle vertices; precise and at the right level."
+  },
+  "h14/simpler/default": {
+   "verdict": "explains",
+   "note": "Invisible net of perfect triangles; lights up on the corners."
+  },
+  "h14/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Honeycomb corners, same idea."
+  },
+  "h14/simpler/grad": {
+   "verdict": "explains",
+   "note": "Equilateral triangle pattern covering the space."
+  },
+  "h14/detail/default": {
+   "verdict": "explains",
+   "note": "Matching triangles and vertices; navigation without landmarks. No checkerboard-square mix-up."
+  },
+  "h14/detail/beginner": {
+   "verdict": "explains",
+   "note": "Triangular tiles; fires even if landmarks are gone."
+  },
+  "h14/detail/grad": {
+   "verdict": "explains",
+   "note": "Hexagonal lattice, dorsal-to-ventral spacing from the paper, path integration."
+  },
+  "h15/plain/default": {
+   "verdict": "explains",
+   "note": "The reported numbers may mirror the bias in how people looked for answers."
+  },
+  "h15/plain/beginner": {
+   "verdict": "explains",
+   "note": "Results may show what people already expect, not what is real."
+  },
+  "h15/plain/grad": {
+   "verdict": "explains",
+   "note": "Systematic errors in design or funding, not truths about nature."
+  },
+  "h15/simpler/default": {
+   "verdict": "explains",
+   "note": "Results can reflect what researchers already want to see."
+  },
+  "h15/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Papers may show what people already believe; a clear mirror comparison."
+  },
+  "h15/simpler/grad": {
+   "verdict": "explains",
+   "note": "A small or biased study may reflect the bias rather than a real effect."
+  },
+  "h15/detail/default": {
+   "verdict": "explains",
+   "note": "Expectations or hidden influences; a number does not prove truth on its own."
+  },
+  "h15/detail/beginner": {
+   "verdict": "explains",
+   "note": "Pushed by money or expectations; a study can be designed to make a link appear."
+  },
+  "h15/detail/grad": {
+   "verdict": "explains",
+   "note": "Small samples and flexible designs amplify bias; a positive result may be systematic error."
+  }
+ },
+ "gemini": {
+  "r00/plain/default": {
+   "verdict": "restates",
+   "note": "Closest to the highlight (overlap 0.56). Rephrases the same two facts and adds almost no why."
+  },
+  "r00/plain/beginner": {
+   "verdict": "explains",
+   "note": "Oxygen grabbed by mistake; the plant wastes energy fixing it."
+  },
+  "r00/plain/grad": {
+   "verdict": "explains",
+   "note": "Oxygenase vs carboxylase, photorespiration, energy cost. Accurate textbook."
+  },
+  "r00/simpler/default": {
+   "verdict": "explains",
+   "note": "Wrong-drink comparison; grabs oxygen by mistake."
+  },
+  "r00/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Wrong-ball comparison; keeps the mistake idea."
+  },
+  "r00/simpler/grad": {
+   "verdict": "explains",
+   "note": "Supplies run low, oxygen mistake, wastes energy."
+  },
+  "r00/detail/default": {
+   "verdict": "explains",
+   "note": "Adds C4 plants keeping CO2 high around Rubisco."
+  },
+  "r00/detail/beginner": {
+   "verdict": "explains",
+   "note": "Clear everyday account of the mistake and the energy cost."
+  },
+  "r00/detail/grad": {
+   "verdict": "explains",
+   "note": "Photorespiration and C3 constraint. The auto-flagged 5 is from ribulose-1,5-bisphosphate, not an invented result."
+  },
+  "h01/plain/default": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/plain/beginner": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/plain/grad": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/simpler/default": {
+   "verdict": "explains",
+   "note": "Cake-without-flour comparison is a bit odd, but the point is clear: the old building blocks are gone."
+  },
+  "h01/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/simpler/grad": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/detail/default": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/detail/beginner": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h01/detail/grad": {
+   "verdict": "explains",
+   "note": "Drops recurrence and convolutions; attention looks at everything at once / trains faster."
+  },
+  "h02/plain/default": {
+   "verdict": "explains",
+   "note": "Keeps the 203,000-year figure and says the signal is not noise."
+  },
+  "h02/plain/beginner": {
+   "verdict": "partly",
+   "note": "Drops the 203,000 years and 5.1 sigma; only says it is almost impossible."
+  },
+  "h02/plain/grad": {
+   "verdict": "partly",
+   "note": "Drops 203,000 years, rounds 5.1 to 'five sigma', and calls it a particle-physics threshold. LIGO is gravitational waves."
+  },
+  "h02/simpler/default": {
+   "verdict": "partly",
+   "note": "Drops 203,000 years. Lottery-twice comparison does not keep the scale."
+  },
+  "h02/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Keeps the span in words (two hundred thousand years). Slight rounding of 203,000."
+  },
+  "h02/simpler/grad": {
+   "verdict": "partly",
+   "note": "Drops 203,000 years and 5.1 sigma; grain-of-sand comparison."
+  },
+  "h02/detail/default": {
+   "verdict": "explains",
+   "note": "Keeps 203,000 years and 5.1 sigma and says what they measure."
+  },
+  "h02/detail/beginner": {
+   "verdict": "explains",
+   "note": "Keeps the span in words (two hundred thousand years) and the certainty."
+  },
+  "h02/detail/grad": {
+   "verdict": "partly",
+   "note": "Keeps 5.1 sigma but drops the 203,000-year false-alarm rate."
+  },
+  "h03/plain/default": {
+   "verdict": "explains",
+   "note": "Discovery-level significance, no invented probability."
+  },
+  "h03/plain/beginner": {
+   "verdict": "explains",
+   "note": "How sure scientists are; chance of an accident is tiny."
+  },
+  "h03/plain/grad": {
+   "verdict": "explains",
+   "note": "Background fluctuation is extremely low; meets discovery criteria."
+  },
+  "h03/simpler/default": {
+   "verdict": "partly",
+   "note": "Coin-flip comparison. It never turns 5.9 into a head count, but the comparison does not keep the scale."
+  },
+  "h03/simpler/beginner": {
+   "verdict": "partly",
+   "note": "Same coin-flip comparison, no wrong count."
+  },
+  "h03/simpler/grad": {
+   "verdict": "partly",
+   "note": "Same coin-flip comparison, no wrong count."
+  },
+  "h03/detail/default": {
+   "verdict": "explains",
+   "note": "5.9 is far from chance; names the usual discovery threshold without inventing a p-value."
+  },
+  "h03/detail/beginner": {
+   "verdict": "explains",
+   "note": "Confidence score; 5.9 means it is almost certainly a new particle."
+  },
+  "h03/detail/grad": {
+   "verdict": "explains",
+   "note": "5.9 vs the conventional five-sigma discovery threshold. 'Five' is that convention, not a new result."
+  },
+  "h04/plain/default": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/plain/beginner": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/plain/grad": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/simpler/default": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/simpler/grad": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/detail/default": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/detail/beginner": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h04/detail/grad": {
+   "verdict": "explains",
+   "note": "Layers learn the residual, or the change from the input, instead of a full mapping from scratch."
+  },
+  "h05/plain/default": {
+   "verdict": "explains",
+   "note": "Electrons travel without collisions over short distances even when not cooled."
+  },
+  "h05/plain/beginner": {
+   "verdict": "explains",
+   "note": "Same, in everyday words."
+  },
+  "h05/plain/grad": {
+   "verdict": "explains",
+   "note": "No scattering over submicron scales at ambient conditions."
+  },
+  "h05/simpler/default": {
+   "verdict": "explains",
+   "note": "Bowling-lane comparison; keeps tiny spaces and warm rooms."
+  },
+  "h05/simpler/beginner": {
+   "verdict": "partly",
+   "note": "Bowling-lane comparison is fine, but it drops room temperature."
+  },
+  "h05/simpler/grad": {
+   "verdict": "partly",
+   "note": "Empty-highway comparison; drops the submicron distance and room temperature."
+  },
+  "h05/detail/default": {
+   "verdict": "explains",
+   "note": "No collisions, short distances, usually needs cooling, graphene does it at room temperature."
+  },
+  "h05/detail/beginner": {
+   "verdict": "explains",
+   "note": "Straight-line travel in a warm room; why that helps devices."
+  },
+  "h05/detail/grad": {
+   "verdict": "explains",
+   "note": "Mean free path and mobility at room temperature; accurate."
+  },
+  "h06/plain/default": {
+   "verdict": "explains",
+   "note": "Current expansion rate of the universe (grad also notes the tension with local measurements)."
+  },
+  "h06/simpler/default": {
+   "verdict": "explains",
+   "note": "Balloon comparison; speed at which the universe is expanding."
+  },
+  "h06/detail/default": {
+   "verdict": "explains",
+   "note": "Current expansion rate; grad correctly names 67.4 km/s/Mpc and the Hubble tension."
+  },
+  "h06/plain/beginner": {
+   "verdict": "explains",
+   "note": "Current expansion rate of the universe (grad also notes the tension with local measurements)."
+  },
+  "h06/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Balloon comparison; speed at which the universe is expanding."
+  },
+  "h06/detail/beginner": {
+   "verdict": "explains",
+   "note": "Current expansion rate; grad correctly names 67.4 km/s/Mpc and the Hubble tension."
+  },
+  "h06/plain/grad": {
+   "verdict": "explains",
+   "note": "Current expansion rate of the universe (grad also notes the tension with local measurements)."
+  },
+  "h06/simpler/grad": {
+   "verdict": "explains",
+   "note": "Balloon comparison; speed at which the universe is expanding."
+  },
+  "h06/detail/grad": {
+   "verdict": "explains",
+   "note": "Current expansion rate; grad correctly names 67.4 km/s/Mpc and the Hubble tension."
+  },
+  "h07/plain/default": {
+   "verdict": "explains",
+   "note": "95% of cases prevented; explains the credible interval."
+  },
+  "h07/plain/beginner": {
+   "verdict": "partly",
+   "note": "'Stopped 95 out of every 100 people from getting sick' reads like an absolute rate, not a reduction versus placebo."
+  },
+  "h07/plain/grad": {
+   "verdict": "explains",
+   "note": "95% reduction in symptomatic disease; explains the Bayesian interval."
+  },
+  "h07/simpler/default": {
+   "verdict": "explains",
+   "note": "Shield blocking 95 out of 100 potential infections compared with nothing."
+  },
+  "h07/simpler/beginner": {
+   "verdict": "partly",
+   "note": "'Stopping 95 out of 100 people from getting sick' is the same absolute-rate slip."
+  },
+  "h07/simpler/grad": {
+   "verdict": "explains",
+   "note": "95 percent risk reduction; shield comparison."
+  },
+  "h07/detail/default": {
+   "verdict": "explains",
+   "note": "Risk reduction versus placebo, interval 90.3 to 97.6."
+  },
+  "h07/detail/beginner": {
+   "verdict": "explains",
+   "note": "Most people who got the vaccine stayed healthy compared with those who did not; explains the interval."
+  },
+  "h07/detail/grad": {
+   "verdict": "explains",
+   "note": "Phase 3 efficacy against symptomatic Covid-19; interval described correctly. 'Ninety-five' is 95, not a new number."
+  },
+  "h08/plain/default": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/plain/beginner": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/plain/grad": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/simpler/default": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/simpler/beginner": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/simpler/grad": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/detail/default": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/detail/beginner": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h08/detail/grad": {
+   "verdict": "explains",
+   "note": "RNA-guided Cas9 as programmable scissors or a remote control for editing DNA."
+  },
+  "h09/plain/default": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/plain/beginner": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/plain/grad": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/simpler/default": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/simpler/grad": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/detail/default": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/detail/beginner": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h09/detail/grad": {
+   "verdict": "explains",
+   "note": "Works even without a known similar structure to copy from."
+  },
+  "h10/plain/default": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/plain/beginner": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/plain/grad": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/simpler/default": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/simpler/grad": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/detail/default": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/detail/beginner": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h10/detail/grad": {
+   "verdict": "explains",
+   "note": "Correctly reads 0.75 as a 25% risk reduction. Where it also converts the interval to 11 to 36 percent, that conversion is right too."
+  },
+  "h11/plain/default": {
+   "verdict": "explains",
+   "note": "14.9% vs 2.4%, exact."
+  },
+  "h11/plain/beginner": {
+   "verdict": "partly",
+   "note": "Rounds 14.9% to 'about fifteen' and 2.4% to 'about two'."
+  },
+  "h11/plain/grad": {
+   "verdict": "partly",
+   "note": "'Nearly fifteen' and 'just over two' instead of 14.9 and 2.4."
+  },
+  "h11/simpler/default": {
+   "verdict": "partly",
+   "note": "'About fifteen percent' and 'fifteen pounds out of one hundred'; the control group 'lost very little' drops 2.4%."
+  },
+  "h11/simpler/beginner": {
+   "verdict": "partly",
+   "note": "About 15 percent vs about 2 percent; both rounded."
+  },
+  "h11/simpler/grad": {
+   "verdict": "partly",
+   "note": "About fifteen vs only two; 2.4% is rounded off."
+  },
+  "h11/detail/default": {
+   "verdict": "explains",
+   "note": "More weight loss over 68 weeks than placebo; negative percents are a decrease."
+  },
+  "h11/detail/beginner": {
+   "verdict": "partly",
+   "note": "About 15 percent vs about 2 percent, but it does keep the comparison and the idea."
+  },
+  "h11/detail/grad": {
+   "verdict": "explains",
+   "note": "Clinically meaningful loss over 68 weeks; no rounded-off figures required in this fuller framing."
+  },
+  "h12/plain/default": {
+   "verdict": "partly",
+   "note": "Keeps 27 years, but rounds 76% to 'over three quarters' and 82% to 'over eighty percent'."
+  },
+  "h12/plain/beginner": {
+   "verdict": "partly",
+   "note": "Drops 27 years and the 82% mid-summer figure; 'over three quarters during the summer months' collapses the two declines."
+  },
+  "h12/plain/grad": {
+   "verdict": "partly",
+   "note": "Qualitative long-term loss only; drops 27 years, 76%, and 82%."
+  },
+  "h12/simpler/default": {
+   "verdict": "partly",
+   "note": "Drops 27 years and 82%; only 'over three quarters'."
+  },
+  "h12/simpler/beginner": {
+   "verdict": "partly",
+   "note": "Keeps 27 years but merges the two declines into 'about 80 percent'."
+  },
+  "h12/simpler/grad": {
+   "verdict": "partly",
+   "note": "'Nearly three decades' with no 76% or 82%."
+  },
+  "h12/detail/default": {
+   "verdict": "partly",
+   "note": "Good account of seasonal vs mid-summer, but drops 27 years and the exact percents."
+  },
+  "h12/detail/beginner": {
+   "verdict": "partly",
+   "note": "'Over three quarters'; drops 27 years and 82%."
+  },
+  "h12/detail/grad": {
+   "verdict": "partly",
+   "note": "Strong qualitative account, but drops 27 years, 76%, and 82%."
+  },
+  "h13/plain/default": {
+   "verdict": "explains",
+   "note": "About one third; many original findings were not as strong as first reported."
+  },
+  "h13/plain/beginner": {
+   "verdict": "explains",
+   "note": "Keeps thirty-six percent exactly."
+  },
+  "h13/plain/grad": {
+   "verdict": "explains",
+   "note": "About a third; a drop in reproducibility."
+  },
+  "h13/simpler/default": {
+   "verdict": "partly",
+   "note": "One third is fair, but 'trying a recipe twice and failing once' is a 50% miss, not 36%."
+  },
+  "h13/simpler/beginner": {
+   "verdict": "partly",
+   "note": "Same off recipe-twice comparison."
+  },
+  "h13/simpler/grad": {
+   "verdict": "partly",
+   "note": "One third is fair; the coin-flip comparison does not keep the scale."
+  },
+  "h13/detail/default": {
+   "verdict": "explains",
+   "note": "Thirty-six percent of one hundred studies; reliability of published work."
+  },
+  "h13/detail/beginner": {
+   "verdict": "explains",
+   "note": "About one third; many original findings may be less reliable."
+  },
+  "h13/detail/grad": {
+   "verdict": "explains",
+   "note": "About one third significant on retest; possible false positives or publication bias."
+  },
+  "h14/plain/default": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/plain/beginner": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/plain/grad": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/simpler/default": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/simpler/grad": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/detail/default": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/detail/beginner": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h14/detail/grad": {
+   "verdict": "explains",
+   "note": "Fires at the corners of a repeating triangular or hexagonal grid covering the space."
+  },
+  "h15/plain/default": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/plain/beginner": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/plain/grad": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/simpler/default": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/simpler/beginner": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/simpler/grad": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/detail/default": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/detail/beginner": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  },
+  "h15/detail/grad": {
+   "verdict": "explains",
+   "note": "Claimed findings may just measure prevailing bias or researchers' expectations, not a real effect."
+  }
+ }
+}
