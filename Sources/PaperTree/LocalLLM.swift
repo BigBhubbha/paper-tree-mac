@@ -2,6 +2,11 @@
 // One model and one context stay loaded while they're being used and are let go after a few idle
 // minutes, so the memory comes back. Requests run one at a time on a private queue.
 //
+// Prompt cache: a request can name the fixed start of its prompt (the system prompt and the
+// examples). The first time, the model reads it once and its state is saved; after that the state
+// is restored and only the new part (the highlight) is read. Saving the whole sequence state, not
+// trimming the cache, is what works for Qwen 3.5, whose linear attention layers can't be rolled back.
+//
 // Output can be held to a GBNF grammar (see Resources/LocalAI/*.gbnf). Each token is sampled
 // normally first and only checked against the grammar; if it doesn't fit, the token is sampled again
 // with the grammar applied to the whole vocabulary. That's how llama.cpp's own tools do it, and it
@@ -18,6 +23,8 @@ final class LocalLLM: @unchecked Sendable {
 
     struct Request: Sendable {
         var prompt: String
+        /// The fixed start of `prompt` that's the same on every call, read once and cached.
+        var prefix: String? = nil
         var grammar: String?
         var maxTokens: Int
         var temperature: Float = 0.6
@@ -28,10 +35,14 @@ final class LocalLLM: @unchecked Sendable {
         /// DRY ("don't repeat yourself"): penalizes copying a run of earlier words. 0 is off.
         var dry: Float = 0
         var seed: UInt32 = UInt32.random(in: 1...UInt32.max - 1)
+        /// Send the text so far after this many new tokens (1 is token by token).
+        var streamEvery = 1
     }
 
     struct Stats: Sendable {
         var promptTokens = 0
+        /// Prompt tokens restored from the cache instead of read.
+        var cachedTokens = 0
         var generatedTokens = 0
         var loadSeconds = 0.0
         var promptSeconds = 0.0
@@ -48,6 +59,9 @@ final class LocalLLM: @unchecked Sendable {
     private var usedGPU = false
     private var lastUse = Date()
     private var idleTimer: DispatchSourceTimer?
+    /// Saved model states after a fixed prompt start, newest last. Kept small: each is some MB.
+    private var prefixCache: [(tokens: [llama_token], state: [UInt8])] = []
+    private static let prefixCacheMax = 2
     private static let contextSize: UInt32 = 12_288
     /// Let the model go after this long unused (it holds a few GB).
     static var idleSeconds: Double = 300
@@ -83,12 +97,22 @@ final class LocalLLM: @unchecked Sendable {
         } onCancel: { cancel.set() }
     }
 
-    /// Loads the model in the background if it isn't already, so the first answer starts sooner.
-    func prewarm(modelPath: String) {
+    /// Loads the model in the background if it isn't already, and reads `prefix` (the fixed start of
+    /// the explain prompt) ahead of time, so the first answer only has to read the highlight.
+    func prewarm(modelPath: String, prefix: String? = nil) {
         queue.async {
-            guard self.model == nil || self.loadedPath != modelPath else { self.lastUse = Date(); return }
             var s = Stats()
-            if (try? self.load(modelPath, stats: &s)) != nil { self.scheduleIdle() }
+            if self.model == nil || self.loadedPath != modelPath {
+                guard (try? self.load(modelPath, stats: &s)) != nil else { return }
+            }
+            if let prefix, let ctx = self.ctx, let model = self.model, let vocab = llama_model_get_vocab(model) {
+                // Already saved: nothing to do (this runs on every highlight gesture).
+                let head = self.tokenize(vocab, prefix)
+                if !self.prefixCache.contains(where: { $0.tokens == head }) {
+                    _ = try? self.restoreOrRead(prefix: prefix, ctx: ctx, vocab: vocab, cancel: CancelFlag())
+                }
+            }
+            self.scheduleIdle()
         }
     }
 
@@ -101,6 +125,7 @@ final class LocalLLM: @unchecked Sendable {
         if let c = ctx { llama_free(c) }
         if let m = model { llama_model_free(m) }
         ctx = nil; model = nil; loadedPath = ""
+        prefixCache = []
         idleTimer?.cancel(); idleTimer = nil
     }
 
@@ -176,24 +201,8 @@ final class LocalLLM: @unchecked Sendable {
         return buf.prefix(Int(max(0, n))).map { UInt8(bitPattern: $0) }
     }
 
-    private func run(modelPath: String, _ req: Request, cancel: CancelFlag, onText: (@Sendable (String) -> Void)?) throws -> (String, Stats) {
-        var stats = Stats()
-        try load(modelPath, stats: &stats)
-        defer { scheduleIdle() }
-        guard let model, let ctx, let vocab = llama_model_get_vocab(model) else { throw LocalLLMError(description: "The reader isn't loaded.") }
-        stats.usedGPU = usedGPU
-        stats.model = URL(fileURLWithPath: modelPath).lastPathComponent
-        llama_memory_clear(llama_get_memory(ctx), true)
-
-        var tokens = tokenize(vocab, req.prompt)
-        let room = Int(llama_n_ctx(ctx)) - req.maxTokens - 8
-        guard !tokens.isEmpty else { throw LocalLLMError(description: "Nothing to read.") }
-        if tokens.count > room { throw LocalLLMError(description: "That's more text than the reader can take in at once.") }
-        stats.promptTokens = tokens.count
-
-        // Read the prompt in batches.
-        let t1 = Date()
-        var at = 0
+    private func decode(_ ctx: OpaquePointer, _ tokens: inout [llama_token], from: Int, cancel: CancelFlag) throws {
+        var at = from
         while at < tokens.count {
             if cancel.isSet { throw CancellationError() }
             let n = min(512, tokens.count - at)
@@ -201,10 +210,67 @@ final class LocalLLM: @unchecked Sendable {
             if rc != 0 { throw LocalLLMError(description: "The reader stumbled reading the prompt (\(rc)).") }
             at += n
         }
+    }
+
+    /// Leaves the context holding exactly `prefix`: restored from a saved state when there is one,
+    /// otherwise read now and saved for next time.
+    private func restoreOrRead(prefix: String, ctx: OpaquePointer, vocab: OpaquePointer, cancel: CancelFlag) throws -> (tokens: [llama_token], cached: Bool) {
+        let mem = llama_get_memory(ctx)
+        var head = tokenize(vocab, prefix)
+        llama_memory_clear(mem, true)
+        if let i = prefixCache.firstIndex(where: { $0.tokens == head }) {
+            let entry = prefixCache.remove(at: i)
+            let ok = entry.state.withUnsafeBufferPointer { b in llama_state_seq_set_data(ctx, b.baseAddress, b.count, 0) } > 0
+            if ok, llama_memory_seq_pos_max(mem, 0) == Int32(head.count - 1) {
+                prefixCache.append(entry)
+                return (head, true)
+            }
+            llama_memory_clear(mem, true)
+        }
+        try decode(ctx, &head, from: 0, cancel: cancel)
+        let size = llama_state_seq_get_size(ctx, 0)
+        if size > 0 {
+            var state = [UInt8](repeating: 0, count: size)
+            let got = state.withUnsafeMutableBufferPointer { b in llama_state_seq_get_data(ctx, b.baseAddress, b.count, 0) }
+            if got > 0 {
+                if got < size { state.removeLast(size - got) }
+                prefixCache.append((tokens: head, state: state))
+                if prefixCache.count > Self.prefixCacheMax { prefixCache.removeFirst() }
+            }
+        }
+        return (head, false)
+    }
+
+    private func run(modelPath: String, _ req: Request, cancel: CancelFlag, onText: (@Sendable (String) -> Void)?) throws -> (String, Stats) {
+        var stats = Stats()
+        try load(modelPath, stats: &stats)
+        defer { scheduleIdle() }
+        guard let model, let ctx, let vocab = llama_model_get_vocab(model) else { throw LocalLLMError(description: "The reader isn't loaded.") }
+        stats.usedGPU = usedGPU
+        stats.model = URL(fileURLWithPath: modelPath).lastPathComponent
+        let t1 = Date()
+        var tokens: [llama_token]
+        var start = 0
+        if let prefix = req.prefix, !prefix.isEmpty, req.prompt.hasPrefix(prefix) {
+            let head = try restoreOrRead(prefix: prefix, ctx: ctx, vocab: vocab, cancel: cancel)
+            stats.cachedTokens = head.cached ? head.tokens.count : 0
+            tokens = head.tokens + tokenize(vocab, String(req.prompt.dropFirst(prefix.count)))
+            start = head.tokens.count
+        } else {
+            llama_memory_clear(llama_get_memory(ctx), true)
+            tokens = tokenize(vocab, req.prompt)
+        }
+        let room = Int(llama_n_ctx(ctx)) - req.maxTokens - 8
+        guard tokens.count > start else { throw LocalLLMError(description: "Nothing to read.") }
+        if tokens.count > room { throw LocalLLMError(description: "That's more text than the reader can take in at once.") }
+        stats.promptTokens = tokens.count
+
+        // Read the rest of the prompt in batches.
+        try decode(ctx, &tokens, from: start, cancel: cancel)
         stats.promptSeconds = Date().timeIntervalSince(t1)
         let verbose = ProcessInfo.processInfo.environment["PAPER_TREE_LLM_LOG"] == "1"
         func say(_ s: String) { if verbose { FileHandle.standardError.write(Data(("[llm] " + s + "\n").utf8)) } }
-        say("prompt \(tokens.count) tokens in \(String(format: "%.1f", stats.promptSeconds)) s, GPU \(usedGPU)")
+        say("prompt \(tokens.count) tokens (\(stats.cachedTokens) from the cache) in \(String(format: "%.1f", stats.promptSeconds)) s, GPU \(usedGPU)")
 
         // Samplers: the usual chain, and the grammar on the side.
         let nVocab = llama_vocab_n_tokens(vocab)
@@ -273,7 +339,7 @@ final class LocalLLM: @unchecked Sendable {
             bytes += piece(vocab, token)
             produced += 1
             if verbose, produced % 100 == 0 { say("\(produced) tokens, \(String(format: "%.1f", Date().timeIntervalSince(t2))) s") }
-            if let onText, produced - lastSent >= 3 {
+            if let onText, produced - lastSent >= req.streamEvery {
                 lastSent = produced
                 onText(Self.validUTF8(bytes))
             }

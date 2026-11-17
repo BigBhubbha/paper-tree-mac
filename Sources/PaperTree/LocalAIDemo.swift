@@ -21,6 +21,7 @@ enum LocalAIDemo {
         var seconds: Double
         var loadSeconds: Double?
         var promptTokens: Int?
+        var cachedTokens: Int?
         var promptSeconds: Double?
         var generatedTokens: Int?
         var generateSeconds: Double?
@@ -85,7 +86,7 @@ enum LocalAIDemo {
 
     static func step(_ name: String, _ t: LocalWriter.Timing, output: String) -> Step {
         Step(name: name, seconds: t.seconds, loadSeconds: t.stats.loadSeconds, promptTokens: t.stats.promptTokens,
-             promptSeconds: t.stats.promptSeconds, generatedTokens: t.stats.generatedTokens, generateSeconds: t.stats.generateSeconds,
+             cachedTokens: t.stats.cachedTokens, promptSeconds: t.stats.promptSeconds, generatedTokens: t.stats.generatedTokens, generateSeconds: t.stats.generateSeconds,
              tokensPerSecond: t.stats.tokensPerSecond, usedGPU: t.stats.usedGPU, peakRSSMB: peakRSSMB(), output: output, retried: t.retried)
     }
 
@@ -142,9 +143,9 @@ enum LocalAIDemo {
             explanation = e
             log("explain 1 done in \(String(format: "%.1f", t.seconds)) s (prompt \(t.stats.promptTokens) tok in \(String(format: "%.1f", t.stats.promptSeconds)) s, \(t.stats.generatedTokens) tok at \(String(format: "%.1f", t.stats.tokensPerSecond)) tok/s, GPU \(t.stats.usedGPU)): \(e.text)")
             report.steps.append(step("explain (high school junior, short)", t, output: e.text + " | " + e.terms.map { "\($0.term): \($0.meaning)" }.joined(separator: "; ")))
-            if explainOnly { throw CancellationError() }
+            // The second answer reuses the saved prompt prefix, so it shows the speed after the first.
             let (e2, t2) = try wait { try await LocalWriter.explain(text: hl, context: section2, mode: .plain, reader: phd) }
-            log("explain 2 done in \(t2.seconds) s")
+            log("explain 2 done in \(String(format: "%.1f", t2.seconds)) s (prompt \(t2.stats.promptTokens) tok, \(t2.stats.cachedTokens) cached, read in \(String(format: "%.1f", t2.stats.promptSeconds)) s, \(t2.stats.generatedTokens) tok at \(String(format: "%.1f", t2.stats.tokensPerSecond)) tok/s): \(e2.text)")
             report.steps.append(step("explain (PhD student)", t2, output: e2.text + " | " + e2.terms.map { "\($0.term): \($0.meaning)" }.joined(separator: "; ")))
         } catch is CancellationError {
         } catch {

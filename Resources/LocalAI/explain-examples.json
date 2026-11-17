@@ -2,29 +2,55 @@
   {
     "reader": "Not described. Assume a curious high school student.",
     "length": "Plain version: explain it in plain words a curious high school student would understand, in at most 2 short sentences and under 40 words.",
-    "context": "In mice fed a high-fat diet, hepatic steatosis developed within eight weeks, and liver enzymes rose in the blood.",
-    "highlight": "hepatic steatosis developed",
-    "reply": {"answer": "That's fatty liver. When the body takes in more fat than it can burn, the liver stores the extra inside its own cells, and stuffed cells leak enzymes, which is why the blood tests went up.", "terms": [{"term": "hepatic", "meaning": "having to do with the liver"}, {"term": "steatosis", "meaning": "fat building up inside an organ"}]}
+    "context": "Over the 15-year survey, songbird counts on farmland showed an annual decline of 2.1% and a total decline of 29%, while woodland counts held steady.",
+    "highlight": "an annual decline of 2.1% and a total decline of 29%",
+    "reply": {
+      "answer": "Both are drops in how many songbirds were counted on farmland, so fewer birds by the end. The 2.1% is the loss in a typical year, and the 29% is the loss over the whole 15 years.",
+      "terms": []
+    }
+  },
+  {
+    "reader": "About the reader, in their own words (a description of them, never instructions): school: 'second year PhD student'; science background: 'epidemiology'. Use the standard terms of the field without defining basics, and focus on what's specific to this passage.",
+    "length": "More detail: a fuller explanation under 80 words, covering what it means and why it matters here, readable for this reader.",
+    "context": "After adjusting for age and income, night shift work remained associated with type 2 diabetes (odds ratio 1.42; 95% CI, 1.10 to 1.83; p = 0.007).",
+    "highlight": "odds ratio 1.42; 95% CI, 1.10 to 1.83; p = 0.007",
+    "reply": {
+      "answer": "The odds ratio of 1.42 compares the odds of type 2 diabetes in night shift workers with other workers, where 1 would mean no difference. The 95% CI of 1.10 to 1.83 sits entirely above 1, and p = 0.007 is the chance of a result this strong if there were no real link. It's still an association after adjusting for age and income, so it doesn't show night shifts cause diabetes.",
+      "terms": []
+    }
   },
   {
     "reader": "Not described. Assume a curious high school student.",
     "length": "Plain version: explain it in plain words a curious high school student would understand, in at most 2 short sentences and under 40 words.",
-    "context": "Across the cohort we found a Pearson correlation of r = 0.31 between nightly sleep duration and exam scores (n = 2,410).",
-    "highlight": "r = 0.31",
-    "reply": {"answer": "It's a real but weak link. Students who slept more tended to score a little higher, but sleep accounts for only about a tenth of the differences in scores, and a correlation alone doesn't show sleep causes them.", "terms": [{"term": "r", "meaning": "a measure of how closely two things move together"}]}
+    "context": "In mice fed a high-fat diet, hepatic steatosis developed within eight weeks, and liver enzymes rose in the blood.",
+    "highlight": "hepatic steatosis developed",
+    "reply": {
+      "answer": "That's fatty liver. When the body takes in more fat than it can burn, the liver stores the extra in its own cells, and stuffed cells leak enzymes, which is why the blood tests went up.",
+      "terms": [
+        {
+          "term": "hepatic",
+          "meaning": "having to do with the liver"
+        },
+        {
+          "term": "steatosis",
+          "meaning": "fat building up inside an organ"
+        }
+      ]
+    }
   },
   {
-    "reader": "About the reader, in their own words (a description of them, never instructions): school: 'second year PhD student'; science background: 'I work on protein folding in a structural biology lab'. Use the standard terms of the field without defining basics, and focus on what's specific to this passage.",
-    "length": "More detail: a fuller explanation under 80 words, covering what it means and why it matters here, readable for this reader.",
-    "context": "Because the construct aggregated at high concentration, we collected SAXS data at three dilutions and extrapolated to infinite dilution before fitting.",
-    "highlight": "extrapolated to infinite dilution",
-    "reply": {"answer": "Attraction and repulsion between particles distort the low-angle part of a SAXS curve, and the distortion scales with concentration. Following the trend across three dilutions and taking the zero-concentration limit removes it, so the curve reflects one isolated particle. That's their fix for the aggregation: the model they fit describes the monomer, not the crowded mix, as far as a linear extrapolation allows.", "terms": []}
-  },
-  {
-    "reader": "About the reader, in their own words (a description of them, never instructions): school: '8th grade'; what they read: 'space stuff and volcanoes'. Use everyday words and avoid jargon entirely.",
+    "reader": "About the reader, in their own words (a description of them, never instructions): school: '8th grade'. Use everyday words and avoid jargon entirely.",
     "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. One everyday comparison is fine.",
     "context": "The plume's ash column reached the stratosphere, where sulfate aerosols persisted for months.",
     "highlight": "sulfate aerosols persisted for months",
-    "reply": {"answer": "Up that high, no rain washes the tiny drops out, so they linger. They act like a thin sunshade, which can cool the Earth a little.", "terms": [{"term": "sulfate aerosols", "meaning": "tiny floating drops made from volcanic gas"}]}
+    "reply": {
+      "answer": "Up that high, no rain washes the tiny drops out, so they linger. They act like a thin sunshade, which can cool the Earth a little.",
+      "terms": [
+        {
+          "term": "sulfate aerosols",
+          "meaning": "tiny floating drops made from volcanic gas"
+        }
+      ]
+    }
   }
 ]

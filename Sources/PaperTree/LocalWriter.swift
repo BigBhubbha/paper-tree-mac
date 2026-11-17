@@ -38,11 +38,16 @@ enum LocalPrompts {
 
     /// Qwen's chat format, with thinking switched off (an empty think block, as its template does).
     static func chat(system: String, examples: [(String, String)], user: String) -> String {
+        chatPrefix(system: system, examples: examples) + "<|im_start|>user\n\(user)<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    }
+
+    /// The part of a chat prompt that doesn't change between requests (system prompt and examples),
+    /// which LocalLLM reads once and keeps.
+    static func chatPrefix(system: String, examples: [(String, String)]) -> String {
         var p = "<|im_start|>system\n\(system.trimmingCharacters(in: .whitespacesAndNewlines))<|im_end|>\n"
         for (u, a) in examples {
             p += "<|im_start|>user\n\(u)<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n\(a)<|im_end|>\n"
         }
-        p += "<|im_start|>user\n\(user)<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
         return p
     }
 
@@ -257,7 +262,8 @@ enum LocalWriter {
         "Reader: \(reader)\nLength: \(length)\nSurrounding text from the paper:\n\"\"\"\(context)\"\"\"\nHighlighted:\n\"\"\"\(highlight)\"\"\""
     }
 
-    static func explainPrompt(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool = false) throws -> String {
+    /// The fixed start of every explain prompt: the system prompt and the worked examples.
+    static func explainPrefix() throws -> String {
         struct Example: Decodable {
             struct Reply: Codable { var answer: String; var terms: [Term] }
             struct Term: Codable { var term: String; var meaning: String }
@@ -269,12 +275,20 @@ enum LocalWriter {
             let reply = "{\"answer\": \(jsonLiteral(e.reply.answer)), \"terms\": [\(terms)]}"
             return (explainUser(reader: e.reader, length: e.length, context: e.context, highlight: e.highlight), reply)
         }
+        return LocalPrompts.chatPrefix(system: try LocalPrompts.text("explain-system.txt"), examples: shots)
+    }
+
+    static func explainPrompt(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool = false,
+                              badNumbers: [String] = []) throws -> String {
         let who = reader.note.isEmpty ? "Not described. Assume a curious high school student." : reader.note
         let ctx = LocalPrompts.fence(context, max: ExplainClient.maxContextChars)
         var user = explainUser(reader: who, length: lengthRule(mode, reader),
                                context: ctx.isEmpty ? "(none)" : ctx, highlight: LocalPrompts.fence(text, max: ExplainClient.maxTextChars))
-        if retry { user += "\n" + (try LocalPrompts.text("explain-retry.txt")).trimmingCharacters(in: .whitespacesAndNewlines) }
-        return LocalPrompts.chat(system: try LocalPrompts.text("explain-system.txt"), examples: shots, user: user)
+        if retry {
+            user += "\n" + (try LocalPrompts.text("explain-retry.txt")).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !badNumbers.isEmpty { user += "\nNot in the paper, so leave out: " + badNumbers.prefix(6).joined(separator: ", ") + "." }
+        }
+        return try explainPrefix() + "<|im_start|>user\n\(user)<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
     }
 
     /// The answer so far, pulled out of a reply that's still being written.
@@ -294,28 +308,36 @@ enum LocalWriter {
     static func explain(text: String, context: String, mode: ExplainMode, reader: ReaderNote,
                         onPartial: (@Sendable (String) -> Void)? = nil) async throws -> (Explanation, Timing) {
         let started = Date()
-        var (e, stats) = try await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: false, onPartial: onPartial)
+        var (e, stats) = try await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: false, badNumbers: [], onPartial: onPartial)
         var retried = false
-        // The guard: an answer that mostly says the highlight back gets one more try with a firmer note.
-        let first = Overlap.ratio(answer: e.text, highlight: text)
-        if first >= Overlap.restating {
+        // The guards: an answer that mostly says the highlight back, or uses a number the paper never
+        // gives, gets one more try with a firmer note. The better of the two is kept.
+        let source = text + "\n" + context
+        // Lower is better: restating first, then numbers the paper doesn't give, then overlap.
+        func score(_ a: String) -> (Int, Int, Double) {
+            let ov = Overlap.ratio(answer: a, highlight: text)
+            return (ov >= Overlap.restating ? 1 : 0, Numbers.unsupported(answer: a, source: source).count, ov)
+        }
+        let first = score(e.text)
+        if first.0 > 0 || first.1 > 0 {
             retried = true
-            if let second = try? await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: true, onPartial: onPartial) {
-                if Overlap.ratio(answer: second.0.text, highlight: text) < first { e = second.0 } else { onPartial?(e.text) }
+            let bad = Numbers.unsupported(answer: e.text, source: source)
+            if let second = try? await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: true, badNumbers: bad, onPartial: onPartial) {
+                if score(second.0.text) < first { e = second.0 } else { onPartial?(e.text) }
                 stats = second.1
             }
         }
         return (e, Timing(seconds: Date().timeIntervalSince(started), stats: stats, retried: retried))
     }
 
-    static func explainOnce(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool,
+    static func explainOnce(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool, badNumbers: [String],
                             onPartial: (@Sendable (String) -> Void)?) async throws -> (Explanation, LocalLLM.Stats) {
         let path = try modelPath()
-        let prompt = try explainPrompt(text: text, context: context, mode: mode, reader: reader, retry: retry)
+        let prompt = try explainPrompt(text: text, context: context, mode: mode, reader: reader, retry: retry, badNumbers: badNumbers)
         let maxTokens = mode == .detail ? 420 : 300
         let (raw, stats) = try await LocalLLM.shared.generate(
             modelPath: path,
-            .init(prompt: prompt, grammar: try LocalPrompts.text("explain.gbnf"), maxTokens: maxTokens, temperature: 0.5)) { soFar in
+            .init(prompt: prompt, prefix: try explainPrefix(), grammar: try LocalPrompts.text("explain.gbnf"), maxTokens: maxTokens, temperature: 0.5)) { soFar in
             let a = partialAnswer(soFar)
             if !a.isEmpty { onPartial?(a) }
         }
@@ -365,6 +387,57 @@ enum LocalWriter {
             let a = words(answer)
             guard !a.isEmpty else { return 1 }
             return Double(a.intersection(words(highlight)).count) / Double(a.count)
+        }
+    }
+
+    /// Numbers in an answer that the highlight and its context never use: digits (separators like
+    /// "203 000" or "203,000" count as the same number) and number words such as "three quarters"
+    /// or "billion". 0 and 1 are always fine. scripts/local_ai_quality.py checks answers the same way.
+    enum Numbers {
+        static let units = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
+                            "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"]
+        static let tens: [String: Int] = ["twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90]
+        static let flagged: Set<String> = Set(units.dropFirst(3)).union(tens.keys).union([
+            "hundred", "thousand", "million", "billion", "trillion", "half", "halves", "third", "thirds", "quarter", "quarters",
+            "fifth", "fifths", "sixth", "sixths", "tenth", "tenths", "percent", "twice", "double", "triple", "doubled", "tripled", "quadrupled"])
+
+        static func matches(_ pattern: String, _ s: String) -> [[String?]] {
+            guard let re = try? NSRegularExpression(pattern: pattern) else { return [] }
+            let ns = s as NSString
+            return re.matches(in: s, range: NSRange(location: 0, length: ns.length)).map { m in
+                (0..<m.numberOfRanges).map { i in m.range(at: i).location == NSNotFound ? nil : ns.substring(with: m.range(at: i)) }
+            }
+        }
+
+        static func normalized(_ s: String) -> String {
+            s.lowercased().replacingOccurrences(of: "\u{2212}", with: "-")
+                .replacingOccurrences(of: #"(?<=\d)[ ,\x{2009}\x{202F}\x{00A0}](?=\d{3}(?!\d))"#, with: "", options: .regularExpression)
+        }
+
+        static func numbers(_ s: String) -> Set<String> {
+            Set(matches(#"(?<![a-z\d.])\d+(?:\.\d+)?"#, normalized(s)).compactMap { $0[0] }.map { (n: String) -> String in
+                let t = String(n.drop { $0 == "0" }); return t.isEmpty ? "0" : t
+            })
+        }
+
+        static func words(_ s: String) -> Set<String> { Set(matches("[a-z]+", s.lowercased()).compactMap { $0[0] }) }
+
+        /// Spelled-out numbers in the paper ("Thirty-six percent") as digits.
+        static func spelled(_ s: String) -> Set<String> {
+            var out = Set<String>()
+            for m in matches(#"\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[- ](one|two|three|four|five|six|seven|eight|nine)\b|\b([a-z]+)\b"#, s.lowercased()) {
+                if let t = m[1], let u = m[2], let tv = tens[t], let uv = units.firstIndex(of: u) { out.insert(String(tv + uv)) }
+                else if let w = m[3] { if let i = units.firstIndex(of: w) { out.insert(String(i)) } else if let v = tens[w] { out.insert(String(v)) } }
+            }
+            return out
+        }
+
+        static func unsupported(answer: String, source: String) -> [String] {
+            let srcNumbers = numbers(source).union(spelled(source))
+            var srcWords = words(source)
+            if source.contains("%") { srcWords.insert("percent") }
+            let bad = numbers(answer).filter { !srcNumbers.contains($0) && $0 != "0" && $0 != "1" }.sorted()
+            return bad + words(answer).filter { flagged.contains($0) && !srcWords.contains($0) }.sorted()
         }
     }
 
@@ -434,7 +507,7 @@ enum LocalWriter {
         let (raw, stats) = try await LocalLLM.shared.generate(
             modelPath: path,
             .init(prompt: prompt, grammar: try podcastGrammar(lines: count), maxTokens: count * 60 + 60, temperature: 0.7,
-                  repeatPenalty: 1.08, dry: 0.8)) { soFar in
+                  repeatPenalty: 1.08, dry: 0.8, streamEvery: 4)) { soFar in
             let (t, ls) = parseScript(soFar, complete: false)
             if ls.count != lastCount.value || (lastCount.value == 0 && !t.isEmpty) {
                 lastCount.value = ls.count

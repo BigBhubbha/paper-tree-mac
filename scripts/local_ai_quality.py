@@ -50,6 +50,36 @@ def overlap(answer, highlight):
 RESTATING = 0.5  # LocalWriter.Overlap.restating
 
 
+# ---- Number check (mirrors LocalWriter.Numbers) ----
+UNITS = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
+TENS = {"twenty":20,"thirty":30,"forty":40,"fifty":50,"sixty":60,"seventy":70,"eighty":80,"ninety":90}
+WORDVAL = {w:i for i,w in enumerate(UNITS)}; WORDVAL.update(TENS)
+# Number words an answer may not use unless the paper text does.
+FLAG_WORDS = set(UNITS[3:]) | set(TENS) | {"hundred","thousand","million","billion","trillion","half","halves","third","thirds",
+    "quarter","quarters","fifth","fifths","sixth","sixths","tenth","tenths","percent","twice","double","triple","doubled","tripled","quadrupled"}
+ALLOWED_DIGITS = {"0","1"}
+def _norm(s):
+    s = s.lower().replace("\u2212","-")
+    return re.sub(r"(?<=\d)[ ,\u2009\u202f\u00a0](?=\d{3}(?!\d))", "", s)
+def numbers(s):
+    return set(m.lstrip("0") or "0" for m in re.findall(r"(?<![a-z\d.])\d+(?:\.\d+)?", _norm(s)))
+def words(s):
+    return set(re.findall(r"[a-z]+", s.lower()))
+def spelled(s):
+    out=set()
+    for m in re.finditer(r"\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[- ](one|two|three|four|five|six|seven|eight|nine)\b|\b([a-z]+)\b", s.lower()):
+        if m.group(1): out.add(str(TENS[m.group(1)]+WORDVAL[m.group(2)]))
+        elif m.group(3) in WORDVAL: out.add(str(WORDVAL[m.group(3)]))
+    return out
+def unsupported(answer, source):
+    """Numbers and number words in the answer that the highlight and its context never use."""
+    src_n = numbers(source) | spelled(source); src_w = words(source) | ({"percent"} if "%" in source else set())
+    bad = sorted(n for n in numbers(answer) if n not in src_n and n not in ALLOWED_DIGITS)
+    bad += sorted(w for w in words(answer) if w in FLAG_WORDS and w not in src_w)
+    return bad
+
+
+
 # ---- Prompt building (mirrors LocalPrompts / LocalWriter) ----
 def fence(s, mx):
     t = s[:mx]
@@ -89,7 +119,7 @@ def explain_user(reader, length, context, highlight):
 RETRY_NOTE = res("explain-retry.txt").strip() if os.path.exists(os.path.join(RES, "explain-retry.txt")) else ""
 
 
-def explain_prompt(text, context, mode, retry=False):
+def explain_prompt(text, context, mode, retry=False, bad_numbers=()):
     shots = []
     for e in json.loads(res("explain-examples.json")):
         terms = ", ".join("{\"term\": %s, \"meaning\": %s}" % (jlit(t["term"]), jlit(t["meaning"])) for t in e["reply"]["terms"])
@@ -100,6 +130,8 @@ def explain_prompt(text, context, mode, retry=False):
                         ctx if ctx else "(none)", fence(text, 1500))
     if retry:
         user += "\n" + RETRY_NOTE
+        if bad_numbers:
+            user += "\nNot in the paper, so leave out: " + ", ".join(bad_numbers) + "."
     return chat(res("explain-system.txt"), shots, user)
 
 
@@ -140,10 +172,10 @@ def post(url, body, timeout=3600, headers=None):
         return json.loads(r.read().decode())
 
 
-def complete(server, prompt, grammar, n_predict, temperature, seed, repeat_penalty=1.05, dry=0.0):
+def complete(server, prompt, grammar, n_predict, temperature, seed, repeat_penalty=1.05, dry=0.0, cache=True):
     body = {"prompt": prompt, "grammar": grammar, "n_predict": n_predict, "temperature": temperature,
             "top_k": 40, "top_p": 0.9, "min_p": 0.05, "repeat_penalty": repeat_penalty, "repeat_last_n": 64,
-            "seed": seed, "cache_prompt": False, "samplers": ["penalties", "dry", "top_k", "top_p", "min_p", "temperature"]}
+            "seed": seed, "cache_prompt": cache, "samplers": ["penalties", "dry", "top_k", "top_p", "min_p", "temperature"]}
     if dry > 0:
         body.update({"dry_multiplier": dry, "dry_base": 1.75, "dry_allowed_length": 2, "dry_penalty_last_n": 8192,
                      "dry_sequence_breakers": ["\n", ":", "\"", "*"]})
@@ -151,7 +183,7 @@ def complete(server, prompt, grammar, n_predict, temperature, seed, repeat_penal
     r = post(server.rstrip("/") + "/completion", body)
     tm = r.get("timings", {})
     return r["content"], {"seconds": round(time.time() - t0, 1), "promptTokens": tm.get("prompt_n"),
-                          "promptSeconds": round(tm.get("prompt_ms", 0) / 1000, 1), "generatedTokens": tm.get("predicted_n"),
+                          "promptSeconds": round(tm.get("prompt_ms", 0) / 1000, 1), "cachedTokens": tm.get("cache_n"), "generatedTokens": tm.get("predicted_n"),
                           "tokensPerSecond": round(tm.get("predicted_per_second", 0), 2)}
 
 
@@ -172,22 +204,23 @@ def run_local(a):
         if a.only and it["id"] not in a.only.split(","):
             continue
         n_predict = 420 if it["mode"] == "detail" else 300
+        src = it["highlight"] + "\n" + it["context"]
         raw, t = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"]), grammar, n_predict, 0.5, 1000 + i)
         ans, terms = parse_answer(raw)
-        first = {"answer": ans, "overlap": round(overlap(ans, it["highlight"]), 2), **t}
+        first = {"answer": ans, "overlap": round(overlap(ans, it["highlight"]), 2), "unsupported": unsupported(ans, src), **t}
         rec = {"id": it["id"], "first": first, "retried": False}
-        if first["overlap"] >= RESTATING and RETRY_NOTE and not a.no_guard:
-            raw2, t2 = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"], retry=True), grammar, n_predict, 0.5, 2000 + i)
+        if (first["overlap"] >= RESTATING or first["unsupported"]) and RETRY_NOTE and not a.no_guard:
+            raw2, t2 = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"], retry=True, bad_numbers=first["unsupported"]), grammar, n_predict, 0.5, 2000 + i)
             ans2, terms2 = parse_answer(raw2)
             rec["retried"] = True
-            ov2 = overlap(ans2, it["highlight"])
-            if ans2 and ov2 < first["overlap"]:
+            def score(x): return (overlap(x, it["highlight"]) >= RESTATING, len(unsupported(x, src)), overlap(x, it["highlight"]))
+            if ans2 and score(ans2) < score(ans):
                 ans, terms = ans2, terms2
             t = {k: (round(t[k] + t2[k], 1) if k in ("seconds", "promptSeconds") else t2[k]) for k in t}
-        rec.update({"answer": ans, "terms": terms, "overlap": round(overlap(ans, it["highlight"]), 2),
+        rec.update({"answer": ans, "terms": terms, "overlap": round(overlap(ans, it["highlight"]), 2), "unsupported": unsupported(ans, src),
                     "words": len(ans.split()), **t})
         out["items"].append(rec)
-        print(f"{it['id']} {t['seconds']}s ov={rec['overlap']} retried={rec['retried']}: {ans}", flush=True)
+        print(f"{it['id']} {t['seconds']}s cached={t.get('cachedTokens')} ov={rec['overlap']} nums={rec['unsupported']} retried={rec['retried']}: {ans}", flush=True)
         json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
     if not a.skip_podcast:
         prompt, count = podcast_prompt(ts["podcast"])
@@ -260,17 +293,18 @@ def run_report(a):
                         "flagged": flagged, "avgOverlap": sum(x["overlap"] for x in xs) / n,
                         "avgWords": sum(x["words"] for x in xs) / n, "avgSeconds": sum(x["seconds"] for x in xs) / n,
                         "retried": sum(1 for x in xs if x.get("retried")),
+                        "numberFlags": sum(1 for x in xs if unsupported(x["answer"], byid[x["id"]]["highlight"] + "\n" + byid[x["id"]]["context"])),
                         "explains": vs.count("explains"), "partly": vs.count("partly"), "restates": vs.count("restates"),
                         "wrong": sum(1 for v in vs if v.startswith("error"))})
     os.makedirs(a.out, exist_ok=True)
     head = a.header.strip() + "\n\n" if a.header else ""
     md = ["# Paper Tree local reader: quality test", "", head.strip(), ""]
     md += ["## Summary (the 15 real highlights)", "",
-           "| Model | Restating (overlap 0.5 or more) | Avg overlap | Avg words | Avg time per explanation | Guard retries | My read: explains / partly / restates / has an error |",
-           "|---|---|---|---|---|---|---|"]
+           "| Model | Restating (overlap 0.5 or more) | Avg overlap | Avg words | Avg time per explanation | Guard retries | Numbers not in the paper (auto check) | My read: explains / partly / restates / has an error |",
+           "|---|---|---|---|---|---|---|---|"]
     for s_ in summary:
         md.append(f"| {s_['name']} | {s_['flagged']} of {s_['n']} ({100*s_['flagged']/s_['n']:.0f}%) | {s_['avgOverlap']:.2f} | {s_['avgWords']:.0f} | "
-                  f"{s_['avgSeconds']:.1f} s ({s_['runner']}) | {s_['retried']} | {s_['explains']} / {s_['partly']} / {s_['restates']} / {s_['wrong']} |")
+                  f"{s_['avgSeconds']:.1f} s ({s_['runner']}) | {s_['retried']} | {s_['numberFlags']} of {s_['n']} | {s_['explains']} / {s_['partly']} / {s_['restates']} / {s_['wrong']} |")
     md += ["", "Overlap is the share of an answer's content words that already appear in the highlight (stop words left out). "
            "It catches word-for-word restating, not a paraphrase in new words, so each answer also has my own short note.", ""]
     for h in ts["highlights"]:

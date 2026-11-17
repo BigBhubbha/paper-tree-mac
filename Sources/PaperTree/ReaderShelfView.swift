@@ -99,10 +99,11 @@ struct ReaderShelf: View {
                                 Text(w.title).font(.uiBold(12.5)).foregroundColor(Palette.ink)
                                 Text(w.file.bytes.sizeText).font(.text(12.5)).foregroundColor(Palette.ink3)
                                 if w.id == LocalModels.suggestedWriter.id {
-                                    Text("suits this Mac").font(.hand(13.5)).foregroundColor(Palette.green)
+                                    Text("recommended").font(.hand(13.5)).foregroundColor(Palette.green)
                                 }
                             }
-                            Text(w.detail).font(.text(12.5)).foregroundColor(Palette.ink2)
+                            Text(w.memoryGB > 8 && !w.fitsThisMac ? w.detail + " This Mac has less memory than that." : w.detail)
+                                .font(.text(12.5)).foregroundColor(Palette.ink2)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }

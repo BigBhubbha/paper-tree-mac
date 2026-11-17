@@ -24,6 +24,7 @@ struct WriterChoice: Identifiable, Sendable, Hashable {
     var file: ModelFile
     /// Memory this Mac should have for it to run comfortably.
     var memoryGB: Int
+    var fitsThisMac: Bool { Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824 >= Double(memoryGB) - 1 }
 }
 
 enum LocalModels {
@@ -37,18 +38,18 @@ enum LocalModels {
 
     // Pinned to exact files: same bytes for everyone, checked by hash.
     static let writers: [WriterChoice] = [
-        WriterChoice(id: "qwen3.5-9b-q4km", title: "Full reader",
-                     detail: "Qwen 3.5, 9 billion parameters. Best answers. For Macs with 16 GB of memory or more.",
-                     file: ModelFile(name: "Qwen3.5-9B-Q4_K_M.gguf",
-                                     url: "https://huggingface.co/lmstudio-community/Qwen3.5-9B-GGUF/resolve/1379f25c6b505a3fc737bd7818cb09389cf807c1/Qwen3.5-9B-Q4_K_M.gguf",
-                                     bytes: 5_627_044_256, sha256: "cd76ec205963b3b33350093e6904d9de16c4e666fd104e1f632d25c7f15f2a13"),
-                     memoryGB: 16),
-        WriterChoice(id: "qwen3.5-4b-q4km", title: "Light reader",
-                     detail: "Qwen 3.5, 4 billion parameters. Quicker and smaller, a little plainer. Fine on 8 GB Macs.",
+        WriterChoice(id: "qwen3.5-4b-q4km", title: "Quick reader",
+                     detail: "Qwen 3.5, 4 billion parameters. Answers in seconds. The default, fine on 8 GB Macs.",
                      file: ModelFile(name: "Qwen3.5-4B-Q4_K_M.gguf",
                                      url: "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/e87f176479d0855a907a41277aca2f8ee7a09523/Qwen3.5-4B-Q4_K_M.gguf",
                                      bytes: 2_740_937_888, sha256: "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4"),
                      memoryGB: 8),
+        WriterChoice(id: "qwen3.5-9b-q4km", title: "Full reader",
+                     detail: "Qwen 3.5, 9 billion parameters. A little richer, but about twice as slow. Optional, for Macs with 16 GB of memory or more.",
+                     file: ModelFile(name: "Qwen3.5-9B-Q4_K_M.gguf",
+                                     url: "https://huggingface.co/lmstudio-community/Qwen3.5-9B-GGUF/resolve/1379f25c6b505a3fc737bd7818cb09389cf807c1/Qwen3.5-9B-Q4_K_M.gguf",
+                                     bytes: 5_627_044_256, sha256: "cd76ec205963b3b33350093e6904d9de16c4e666fd104e1f632d25c7f15f2a13"),
+                     memoryGB: 16),
     ]
 
     static let voiceFolder = "kokoro-v1.0"
@@ -64,11 +65,9 @@ enum LocalModels {
                   sha256: "7daaab53a181be9885b853a8582bf1838186317e5dadacbcef9c426d6fa0da14"),
     ]
 
-    /// The writer that suits this Mac's memory.
-    static var suggestedWriter: WriterChoice {
-        let gb = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824
-        return gb >= 15 ? writers[0] : writers[1]
-    }
+    /// The default writer on every Mac: the 4B, because explanations need to come back in seconds.
+    /// The 9B stays in the list as an option for 16 GB Macs.
+    static var suggestedWriter: WriterChoice { writers[0] }
 
     static func writer(id: String) -> WriterChoice? { writers.first { $0.id == id } }
 

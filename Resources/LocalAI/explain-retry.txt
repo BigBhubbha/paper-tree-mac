@@ -1,1 +1,1 @@
-Your first try mostly said the highlighted words back. The reader has already read them. Don't reword the highlight. Explain why it happens, what it means or what the number tells you, or why it matters in this paper, using new words.
+Your first try either said the highlight back or used a number the paper doesn't give. Don't reword the highlight. Copy the paper's numbers exactly and never compute new ones. Explain what they measure, why it happens, or why it matters, in new words.

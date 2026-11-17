@@ -66,7 +66,7 @@ struct ExplainClient {
     static func warmUp(endpoint: String) {
         if AIEngine.current == .local {
             // Nothing to call: open the reader's model ahead of the first question instead.
-            if let path = LocalModels.writerPath() { LocalLLM.shared.prewarm(modelPath: path) }
+            if let path = LocalModels.writerPath() { LocalLLM.shared.prewarm(modelPath: path, prefix: try? LocalWriter.explainPrefix()) }
             return
         }
         guard let url = URL(string: endpoint.trimmingCharacters(in: .whitespacesAndNewlines)), url.scheme == "https" else { return }
