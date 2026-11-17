@@ -500,7 +500,7 @@ enum LocalWriter {
             }
             let hasSigma = source.range(of: #"standard deviation|\bsigma\b|\bσ\b"#, options: [.regularExpression, .caseInsensitive]) != nil
             if hasSigma, !source.lowercased().contains("times") {
-                for m in matches(#"(?<![a-z\d])(\d+(?:\.\d+)?)\s*times\s+(?:further|stronger|more|as)\b"#, answer) {
+                for m in matches(#"(?<![a-z\d])(\d+(?:\.\d+)?)\s*times\s+(?:further|stronger|more|as)\b|\bhow many times\s+(?:further|stronger|more|as)\b|\btimes\s+(?:further|stronger|more)\s+from\b"#, answer) {
                     if let phrase = m[0], !bad.contains(phrase) { bad.append(phrase) }
                 }
             }

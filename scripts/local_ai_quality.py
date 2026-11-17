@@ -77,7 +77,7 @@ _SCI = re.compile(
     r"|(?<![a-z\d])(\d+(?:\.\d+)?)[eE]([+\-−]?)(\d+)"
     r"|(?<![a-z\d])10\s*(?:\^|\*\*)\s*([−\-–]?)\s*(\d+)",
     re.I)
-_TIMES = re.compile(r"(?<![a-z\d])(\d+(?:\.\d+)?)\s*times\s+(?:further|stronger|more|as)\b", re.I)
+_TIMES = re.compile(r"(?<![a-z\d])(\d+(?:\.\d+)?)\s*times\s+(?:further|stronger|more|as)\b|\bhow many times\s+(?:further|stronger|more|as)\b|\btimes\s+(?:further|stronger|more)\s+from\b", re.I)
 # Rate denominators: "per year", "/Mpc", "every kilometer", "kilometer of distance".
 UNIT_FAM = {
     "megaparsec": "mpc", "megaparsecs": "mpc", "mpc": "mpc",

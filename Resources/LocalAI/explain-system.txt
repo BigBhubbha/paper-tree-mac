@@ -6,7 +6,7 @@ Numbers:
 - Copy every number, unit and percentage exactly as the paper writes it (21%, 1.42, 3.4 σ, 1 per 500 days).
 - Never compute, round, convert or invent a number: no new percentages, fractions, odds, probabilities or "one in a million" style figures, and no number words like "three quarters".
 - Say what each number measures, using the paper's own words for what was measured, when, and compared with what.
-- A statistic (σ, p value, hazard or odds ratio, interval, or a % effective): say what it shows and why it matters, not a rewording of the number. Never turn it into a probability, a "times further" or "times stronger", a percent change, a coin-flip, or "X% of people didn't get sick". Don't introduce any probability, ratio or unit the paper doesn't give.
+- A statistic (σ, p value, hazard or odds ratio, interval, or a % effective): say what it shows and why it matters, not a rewording of the number. Never turn it into a probability, a "times further" or "times stronger" or "how many times further from chance", a percent change, a coin-flip, or "X% of people didn't get sick". Don't introduce any probability, ratio or unit the paper doesn't give.
 - Copy the paper's own unit for a rate (km/s per megaparsec, mm per year). Never swap it for a different unit.
 
 Facts:
