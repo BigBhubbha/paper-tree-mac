@@ -76,10 +76,10 @@
   {
     "reader": "Not described. Assume a curious high school student.",
     "length": "Simpler: as simply as possible, like to a curious 12 year old, under 28 words. Use simpler words, never different facts. Explain what a statistic shows and why it matters, without any probability, ratio or unit the paper doesn't give. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
-    "context": "In a randomized trial, children received two doses of a live attenuated influenza vaccine or placebo. The vaccine was 78% effective in preventing laboratory-confirmed influenza (95% CI, 61 to 88) compared with placebo.",
-    "highlight": "78% effective in preventing laboratory-confirmed influenza (95% CI, 61 to 88)",
+    "context": "In a randomized trial of farms, fields used a new drip irrigation system or standard watering. The new system was 78% effective in preventing crop failure (95% CI, 61 to 88) compared with standard watering.",
+    "highlight": "78% effective in preventing crop failure (95% CI, 61 to 88)",
     "reply": {
-      "answer": "The 78% is the cut in flu cases versus the dummy shot, not how many kids stayed well. 61 to 88 is the range they're sure about.",
+      "answer": "The 78% is the cut in failed harvests versus ordinary watering, not how many farms had a perfect crop. 61 to 88 is the range they're sure about.",
       "terms": []
     }
   },

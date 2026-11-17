@@ -254,39 +254,39 @@
   },
   "h07/plain/default": {
    "verdict": "explains",
-   "note": "Stopped 95% of cases that would have happened otherwise; keeps 90.3 to 97.6."
+   "note": "95 out of 100 cases versus placebo; keeps 90.3 to 97.6. No flu."
   },
   "h07/plain/beginner": {
-   "verdict": "error",
-   "note": "Same flu slip, though the 95 out of 100 is now correctly compared with the dummy shot, and the interval is kept."
+   "verdict": "explains",
+   "note": "95 out of 100 people versus the fake shot; keeps the interval. Says 'the virus', not flu."
   },
   "h07/plain/grad": {
    "verdict": "explains",
-   "note": "Prevented 95% of cases; interval is the range for true protection."
+   "note": "95% protection against lab-confirmed Covid-19; interval 90.3 to 97.6."
   },
   "h07/simpler/default": {
    "verdict": "explains",
-   "note": "A 95% cut in chances of getting the virus, with the 90.3 to 97.6 range. Relative, not an absolute 'stayed well' rate."
+   "note": "95 out of 100 cases versus placebo; keeps the interval. No flu."
   },
   "h07/simpler/beginner": {
-   "verdict": "error",
-   "note": "The relative-rate reading is now right (95 out of 100 cases versus the fake shot), but it says 'flu cases' for a Covid-19 vaccine."
+   "verdict": "partly",
+   "note": "Now says Covid-19, not flu, and keeps 95% and the interval, but it leaves out the comparison with placebo."
   },
   "h07/simpler/grad": {
    "verdict": "explains",
-   "note": "Prevented 95% of cases; keeps the 90.3 to 97.6 interval."
+   "note": "95 out of 100 infections versus placebo; interval explained. No flu."
   },
   "h07/detail/default": {
    "verdict": "explains",
-   "note": "95% prevention in people 16 and older; interval explained."
+   "note": "95 of 100 compared with a fake shot; keeps 90.3 to 97.6."
   },
   "h07/detail/beginner": {
-   "verdict": "explains",
-   "note": "95 out of 100 cases versus those who did not get it; keeps the interval."
+   "verdict": "partly",
+   "note": "Stops 95 of 100 from getting confirmed Covid-19 and keeps the interval, but it leaves out the comparison with placebo."
   },
   "h07/detail/grad": {
    "verdict": "explains",
-   "note": "95% of cases; interval as a 95% range around the point estimate."
+   "note": "95% efficacy versus placebo, cuts infection risk by 95%; interval and trial size from the paper."
   },
   "h08/plain/default": {
    "verdict": "explains",

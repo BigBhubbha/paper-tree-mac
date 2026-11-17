@@ -1,0 +1,956 @@
+{
+ "engine": "local",
+ "model": "Qwen3.5-4B-Q4_K_M",
+ "label": "4b",
+ "prompts": "new",
+ "runner": "box, 6 threads, 15 GB, CPU only",
+ "modes": [
+  "plain",
+  "simpler",
+  "detail"
+ ],
+ "profiles": [
+  "default",
+  "beginner",
+  "grad"
+ ],
+ "items": [
+  {
+   "id": "h03/plain/default",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "That means the signal is very far from what chance alone would make. It's not a coin flip or a 'times stronger' figure, but a statistical distance showing it's real.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 21.3,
+    "promptTokens": 2729,
+    "promptSeconds": 16.5,
+    "cachedTokens": 0,
+    "generatedTokens": 47,
+    "tokensPerSecond": 10.03
+   },
+   "retried": false,
+   "answer": "That means the signal is very far from what chance alone would make. It's not a coin flip or a 'times stronger' figure, but a statistical distance showing it's real.",
+   "terms": [],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 21.3,
+   "promptTokens": 2729,
+   "promptSeconds": 16.5,
+   "cachedTokens": 0,
+   "generatedTokens": 47,
+   "tokensPerSecond": 10.03
+  },
+  {
+   "id": "h03/plain/beginner",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "That number means the chance this result is just random noise is incredibly small. It's like flipping a coin 10 million times and never seeing heads.",
+    "overlap": 0.0,
+    "unsupported": [
+     "10",
+     "million"
+    ],
+    "missingSpans": [],
+    "seconds": 9.8,
+    "promptTokens": 527,
+    "promptSeconds": 4.0,
+    "cachedTokens": 2213,
+    "generatedTokens": 62,
+    "tokensPerSecond": 10.55
+   },
+   "retried": true,
+   "answer": "That number means the chance this result is just random noise is incredibly small. It's like flipping a coin 10 million times and never seeing heads.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "how far away a result is from what we expect"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "10",
+    "million"
+   ],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 17.8,
+   "promptTokens": 606,
+   "promptSeconds": 8.4,
+   "cachedTokens": 2224,
+   "generatedTokens": 38,
+   "tokensPerSecond": 10.19
+  },
+  {
+   "id": "h03/plain/grad",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The 5.9 standard deviation signal means it's far beyond what background noise would produce by chance. That probability is roughly one in a billion, making a discovery.",
+    "overlap": 0.19,
+    "unsupported": [
+     "billion"
+    ],
+    "missingSpans": [],
+    "seconds": 7.6,
+    "promptTokens": 439,
+    "promptSeconds": 2.9,
+    "cachedTokens": 2314,
+    "generatedTokens": 44,
+    "tokensPerSecond": 9.03
+   },
+   "retried": true,
+   "answer": "5.9 standard deviations is how far the signal stands above background noise in this specific search. It means the chance of this being just random fluctuation is 1.7x10^-9, which is extremely low.",
+   "terms": [],
+   "overlap": 0.16,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 16.7,
+   "promptTokens": 525,
+   "promptSeconds": 6.6,
+   "cachedTokens": 2314,
+   "generatedTokens": 56,
+   "tokensPerSecond": 10.19
+  },
+  {
+   "id": "h03/simpler/default",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "That's how sure we are it's not just noise. It means the chance it's a random mistake is one in nearly 1.7 billion.",
+    "overlap": 0.0,
+    "unsupported": [
+     "billion"
+    ],
+    "missingSpans": [],
+    "seconds": 6.6,
+    "promptTokens": 451,
+    "promptSeconds": 2.9,
+    "cachedTokens": 2323,
+    "generatedTokens": 41,
+    "tokensPerSecond": 10.92
+   },
+   "retried": true,
+   "answer": "The result is 5.9 standard deviations, meaning the signal sits far from the expected background noise. It's not a probability or a 'times stronger' figure.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "how far something is from what chance would usually produce"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 16.2,
+   "promptTokens": 537,
+   "promptSeconds": 6.4,
+   "cachedTokens": 2323,
+   "generatedTokens": 65,
+   "tokensPerSecond": 10.49
+  },
+  {
+   "id": "h03/simpler/beginner",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "That number means the signal is far from what random noise would look like. It's like finding a coin that lands heads 60 times in a row, which is extremely unlikely to be a fluke.",
+    "overlap": 0.0,
+    "unsupported": [
+     "60"
+    ],
+    "missingSpans": [],
+    "seconds": 8.4,
+    "promptTokens": 440,
+    "promptSeconds": 3.1,
+    "cachedTokens": 2344,
+    "generatedTokens": 52,
+    "tokensPerSecond": 9.65
+   },
+   "retried": true,
+   "answer": "The result is 5.9 standard deviations, which means the finding is far from what random chance would usually do. It's strong proof of the particle, not a fluke.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how far away something is from average"
+    }
+   ],
+   "overlap": 0.21,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 18.7,
+   "promptTokens": 528,
+   "promptSeconds": 6.6,
+   "cachedTokens": 2344,
+   "generatedTokens": 68,
+   "tokensPerSecond": 9.96
+  },
+  {
+   "id": "h03/simpler/grad",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "This is the strongest statistical signal found so far for a new particle. It means the chance this was just random noise is one in a billion, which is exceptionally rare.",
+    "overlap": 0.0,
+    "unsupported": [
+     "billion"
+    ],
+    "missingSpans": [],
+    "seconds": 7.2,
+    "promptTokens": 441,
+    "promptSeconds": 3.0,
+    "cachedTokens": 2356,
+    "generatedTokens": 44,
+    "tokensPerSecond": 10.4
+   },
+   "retried": true,
+   "answer": "The 5.9 standard deviations is how many times further from chance than expected. It means the bump is very unlikely to be a random fluctuation.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how far something is from average"
+    }
+   ],
+   "overlap": 0.27,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 16.6,
+   "promptTokens": 527,
+   "promptSeconds": 6.6,
+   "cachedTokens": 2356,
+   "generatedTokens": 61,
+   "tokensPerSecond": 10.24
+  },
+  {
+   "id": "h03/detail/default",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "This means the result is extremely unlikely to be a random fluke, like winning the lottery 1.7 times in a row. It's strong proof that something new was found.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.0,
+    "promptTokens": 362,
+    "promptSeconds": 2.5,
+    "cachedTokens": 2367,
+    "generatedTokens": 47,
+    "tokensPerSecond": 10.46
+   },
+   "retried": false,
+   "answer": "This means the result is extremely unlikely to be a random fluke, like winning the lottery 1.7 times in a row. It's strong proof that something new was found.",
+   "terms": [],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 7.0,
+   "promptTokens": 362,
+   "promptSeconds": 2.5,
+   "cachedTokens": 2367,
+   "generatedTokens": 47,
+   "tokensPerSecond": 10.46
+  },
+  {
+   "id": "h03/detail/beginner",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The 5.9 standard deviations means the result is very unlikely to be a random fluke. It's like flipping a coin and getting heads 60 times in a row. This strong signal suggests the new particle really exists.",
+    "overlap": 0.14,
+    "unsupported": [
+     "60"
+    ],
+    "missingSpans": [],
+    "seconds": 7.7,
+    "promptTokens": 373,
+    "promptSeconds": 2.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 57,
+    "tokensPerSecond": 10.68
+   },
+   "retried": true,
+   "answer": "5.9 standard deviations means the signal is far from what random noise would produce. It's strong proof of discovery, not a coin flip or a 'times stronger' figure.",
+   "terms": [],
+   "overlap": 0.18,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 15.4,
+   "promptTokens": 461,
+   "promptSeconds": 5.7,
+   "cachedTokens": 2367,
+   "generatedTokens": 46,
+   "tokensPerSecond": 10.33
+  },
+  {
+   "id": "h03/detail/grad",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "This 5.9 sigma result means the signal is so far from background fluctuations that it's not a statistical fluke. It corresponds to a background fluctuation probability of 1.7x10^-9, confirming the observation is highly significant and compatible with the Standard Model Higgs boson.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.1,
+    "promptTokens": 386,
+    "promptSeconds": 2.5,
+    "cachedTokens": 2367,
+    "generatedTokens": 71,
+    "tokensPerSecond": 10.6
+   },
+   "retried": false,
+   "answer": "This 5.9 sigma result means the signal is so far from background fluctuations that it's not a statistical fluke. It corresponds to a background fluctuation probability of 1.7x10^-9, confirming the observation is highly significant and compatible with the Standard Model Higgs boson.",
+   "terms": [],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 42,
+   "seconds": 9.1,
+   "promptTokens": 386,
+   "promptSeconds": 2.5,
+   "cachedTokens": 2367,
+   "generatedTokens": 71,
+   "tokensPerSecond": 10.6
+  },
+  {
+   "id": "h06/plain/default",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The Hubble constant is how fast the universe is expanding right now, measured in kilometers per second per megaparsec. It's a key number for figuring out how old and big the universe is.",
+    "overlap": 0.12,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.9,
+    "promptTokens": 628,
+    "promptSeconds": 4.2,
+    "cachedTokens": 2367,
+    "generatedTokens": 71,
+    "tokensPerSecond": 10.44
+   },
+   "retried": false,
+   "answer": "The Hubble constant is how fast the universe is expanding right now, measured in kilometers per second per megaparsec. It's a key number for figuring out how old and big the universe is.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe is expanding"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 10.9,
+   "promptTokens": 628,
+   "promptSeconds": 4.2,
+   "cachedTokens": 2367,
+   "generatedTokens": 71,
+   "tokensPerSecond": 10.44
+  },
+  {
+   "id": "h06/plain/beginner",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The Hubble constant tells us how fast the universe is stretching right now. A higher number means galaxies are running away from us faster.",
+    "overlap": 0.13,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.7,
+    "promptTokens": 639,
+    "promptSeconds": 4.1,
+    "cachedTokens": 2367,
+    "generatedTokens": 57,
+    "tokensPerSecond": 9.97
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells us how fast the universe is stretching right now. A higher number means galaxies are running away from us faster.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the speed at which the universe is expanding"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 9.7,
+   "promptTokens": 639,
+   "promptSeconds": 4.1,
+   "cachedTokens": 2367,
+   "generatedTokens": 57,
+   "tokensPerSecond": 9.97
+  },
+  {
+   "id": "h06/plain/grad",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The Hubble constant is the rate of cosmic expansion, measured as 67.4 km/s per megaparsec. This value implies a universe expanding slower than some other models suggest, which has implications for the age and fate of the cosmos.",
+    "overlap": 0.1,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 14.0,
+    "promptTokens": 652,
+    "promptSeconds": 4.2,
+    "cachedTokens": 2367,
+    "generatedTokens": 102,
+    "tokensPerSecond": 10.34
+   },
+   "retried": false,
+   "answer": "The Hubble constant is the rate of cosmic expansion, measured as 67.4 km/s per megaparsec. This value implies a universe expanding slower than some other models suggest, which has implications for the age and fate of the cosmos.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe expands"
+    },
+    {
+     "term": "$Ω_m$",
+     "meaning": "the fraction of the universe's density that is matter"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 14.0,
+   "promptTokens": 652,
+   "promptSeconds": 4.2,
+   "cachedTokens": 2367,
+   "generatedTokens": 102,
+   "tokensPerSecond": 10.34
+  },
+  {
+   "id": "h06/simpler/default",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "The Hubble constant tells how fast the universe is stretching right now, measured in kilometers per second per megaparsec.",
+    "overlap": 0.17,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.3,
+    "promptTokens": 673,
+    "promptSeconds": 4.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 53,
+    "tokensPerSecond": 10.69
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells how fast the universe is stretching right now, measured in kilometers per second per megaparsec.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "how fast the universe is expanding"
+    }
+   ],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 19,
+   "seconds": 9.3,
+   "promptTokens": 673,
+   "promptSeconds": 4.4,
+   "cachedTokens": 2367,
+   "generatedTokens": 53,
+   "tokensPerSecond": 10.69
+  },
+  {
+   "id": "h06/simpler/beginner",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "The Hubble constant is how fast the universe stretches right now, measured in km per second for every megaparsec of distance.",
+    "overlap": 0.15,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.8,
+    "promptTokens": 683,
+    "promptSeconds": 4.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 57,
+    "tokensPerSecond": 10.33
+   },
+   "retried": false,
+   "answer": "The Hubble constant is how fast the universe stretches right now, measured in km per second for every megaparsec of distance.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "a number showing how fast the universe expands"
+    }
+   ],
+   "overlap": 0.15,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 21,
+   "seconds": 9.8,
+   "promptTokens": 683,
+   "promptSeconds": 4.4,
+   "cachedTokens": 2367,
+   "generatedTokens": 57,
+   "tokensPerSecond": 10.33
+  },
+  {
+   "id": "h06/simpler/grad",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The Hubble constant here is 67.4 km/s/Mpc, which tells us how fast the universe is expanding on average right now. This value is derived from CMB lensing and other data, not just distance measurements.",
+    "overlap": 0.11,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.5,
+    "promptTokens": 696,
+    "promptSeconds": 4.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 76,
+    "tokensPerSecond": 10.55
+   },
+   "retried": false,
+   "answer": "The Hubble constant here is 67.4 km/s/Mpc, which tells us how fast the universe is expanding on average right now. This value is derived from CMB lensing and other data, not just distance measurements.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate of current cosmic expansion"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 34,
+   "seconds": 11.5,
+   "promptTokens": 696,
+   "promptSeconds": 4.4,
+   "cachedTokens": 2367,
+   "generatedTokens": 76,
+   "tokensPerSecond": 10.55
+  },
+  {
+   "id": "h06/detail/default",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "The Hubble constant is 67.4 km/s per megaparsec, meaning galaxies move faster as they are farther away. It tells us the current expansion rate of the universe and helps estimate its age.",
+    "overlap": 0.1,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.4,
+    "promptTokens": 628,
+    "promptSeconds": 4.3,
+    "cachedTokens": 2367,
+    "generatedTokens": 74,
+    "tokensPerSecond": 10.3
+   },
+   "retried": false,
+   "answer": "The Hubble constant is 67.4 km/s per megaparsec, meaning galaxies move faster as they are farther away. It tells us the current expansion rate of the universe and helps estimate its age.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe is expanding"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 11.4,
+   "promptTokens": 628,
+   "promptSeconds": 4.3,
+   "cachedTokens": 2367,
+   "generatedTokens": 74,
+   "tokensPerSecond": 10.3
+  },
+  {
+   "id": "h06/detail/beginner",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The Hubble constant tells us how fast the universe is stretching right now, measured in kilometers per second per megaparsec. It helps us figure out how old the universe is and how much space there is between galaxies.",
+    "overlap": 0.11,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.4,
+    "promptTokens": 639,
+    "promptSeconds": 4.2,
+    "cachedTokens": 2367,
+    "generatedTokens": 74,
+    "tokensPerSecond": 10.21
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells us how fast the universe is stretching right now, measured in kilometers per second per megaparsec. It helps us figure out how old the universe is and how much space there is between galaxies.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe expands"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 11.4,
+   "promptTokens": 639,
+   "promptSeconds": 4.2,
+   "cachedTokens": 2367,
+   "generatedTokens": 74,
+   "tokensPerSecond": 10.21
+  },
+  {
+   "id": "h06/detail/grad",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The Planck CMB data yields a Hubble constant of $H_0 = (67.4\\\\\\pm 0.5)$ km/s/Mpc. This value represents the current expansion rate of the universe, derived from the angular acoustic scale and other base-$Λ$CDM parameters. It is consistent with local measurements but slightly lower than some recent results, highlighting ongoing tensions in cosmological parameter estimation.",
+    "overlap": 0.05,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 15.5,
+    "promptTokens": 652,
+    "promptSeconds": 4.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 115,
+    "tokensPerSecond": 10.32
+   },
+   "retried": false,
+   "answer": "The Planck CMB data yields a Hubble constant of $H_0 = (67.4\\\\\\pm 0.5)$ km/s/Mpc. This value represents the current expansion rate of the universe, derived from the angular acoustic scale and other base-$Λ$CDM parameters. It is consistent with local measurements but slightly lower than some recent results, highlighting ongoing tensions in cosmological parameter estimation.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the current expansion rate of the universe"
+    }
+   ],
+   "overlap": 0.05,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 54,
+   "seconds": 15.5,
+   "promptTokens": 652,
+   "promptSeconds": 4.4,
+   "cachedTokens": 2367,
+   "generatedTokens": 115,
+   "tokensPerSecond": 10.32
+  },
+  {
+   "id": "h07/plain/default",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The vaccine stopped 95 out of every 100 cases compared to the placebo group. The 90.3 to 97.6 range is where the true protection level likely falls.",
+    "overlap": 0.18,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.2,
+    "promptTokens": 617,
+    "promptSeconds": 4.2,
+    "cachedTokens": 2367,
+    "generatedTokens": 52,
+    "tokensPerSecond": 10.24
+   },
+   "retried": false,
+   "answer": "The vaccine stopped 95 out of every 100 cases compared to the placebo group. The 90.3 to 97.6 range is where the true protection level likely falls.",
+   "terms": [],
+   "overlap": 0.18,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 9.2,
+   "promptTokens": 617,
+   "promptSeconds": 4.2,
+   "cachedTokens": 2367,
+   "generatedTokens": 52,
+   "tokensPerSecond": 10.24
+  },
+  {
+   "id": "h07/plain/beginner",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The vaccine stopped 95 out of every 100 people from getting the virus compared to the fake shot group. The 90.3 to 97.6 range shows how sure scientists are about that number.",
+    "overlap": 0.16,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.7,
+    "promptTokens": 628,
+    "promptSeconds": 4.3,
+    "cachedTokens": 2367,
+    "generatedTokens": 57,
+    "tokensPerSecond": 10.38
+   },
+   "retried": false,
+   "answer": "The vaccine stopped 95 out of every 100 people from getting the virus compared to the fake shot group. The 90.3 to 97.6 range shows how sure scientists are about that number.",
+   "terms": [],
+   "overlap": 0.16,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 9.7,
+   "promptTokens": 628,
+   "promptSeconds": 4.3,
+   "cachedTokens": 2367,
+   "generatedTokens": 57,
+   "tokensPerSecond": 10.38
+  },
+  {
+   "id": "h07/plain/grad",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The 95% figure is the vaccine's protection rate against lab-confirmed Covid-19, with a 95% credible interval of 90.3 to 97.6 indicating high certainty in that estimate.",
+    "overlap": 0.41,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.9,
+    "promptTokens": 641,
+    "promptSeconds": 4.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 79,
+    "tokensPerSecond": 10.29
+   },
+   "retried": false,
+   "answer": "The 95% figure is the vaccine's protection rate against lab-confirmed Covid-19, with a 95% credible interval of 90.3 to 97.6 indicating high certainty in that estimate.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range of values likely to contain the true effect"
+    }
+   ],
+   "overlap": 0.41,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 11.9,
+   "promptTokens": 641,
+   "promptSeconds": 4.4,
+   "cachedTokens": 2367,
+   "generatedTokens": 79,
+   "tokensPerSecond": 10.29
+  },
+  {
+   "id": "h07/simpler/default",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "This means the vaccine stopped 95 out of 100 cases compared to the placebo group. The 90.3 to 97.6 range is where the true protection likely lies.",
+    "overlap": 0.19,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.1,
+    "promptTokens": 662,
+    "promptSeconds": 4.4,
+    "cachedTokens": 2367,
+    "generatedTokens": 52,
+    "tokensPerSecond": 10.76
+   },
+   "retried": false,
+   "answer": "This means the vaccine stopped 95 out of 100 cases compared to the placebo group. The 90.3 to 97.6 range is where the true protection likely lies.",
+   "terms": [],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 9.1,
+   "promptTokens": 662,
+   "promptSeconds": 4.4,
+   "cachedTokens": 2367,
+   "generatedTokens": 52,
+   "tokensPerSecond": 10.76
+  },
+  {
+   "id": "h07/simpler/beginner",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "The 95% means the vaccine stopped 95 out of 100 cases of Covid-19. The range from 90.3 to 97.6 is how sure scientists are about that number.",
+    "overlap": 0.36,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.5,
+    "promptTokens": 672,
+    "promptSeconds": 4.2,
+    "cachedTokens": 2367,
+    "generatedTokens": 58,
+    "tokensPerSecond": 10.7
+   },
+   "retried": false,
+   "answer": "The 95% means the vaccine stopped 95 out of 100 cases of Covid-19. The range from 90.3 to 97.6 is how sure scientists are about that number.",
+   "terms": [],
+   "overlap": 0.36,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 9.5,
+   "promptTokens": 672,
+   "promptSeconds": 4.2,
+   "cachedTokens": 2367,
+   "generatedTokens": 58,
+   "tokensPerSecond": 10.7
+  },
+  {
+   "id": "h07/simpler/grad",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The vaccine stopped 95 out of every 100 infections compared to placebo. The 95% credible interval means we are 95% confident the true protection rate is between 90.3% and 97.6%. It's a Bayesian estimate, not a frequentist p-value or confidence interval.",
+    "overlap": 0.22,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.7,
+    "promptTokens": 685,
+    "promptSeconds": 4.3,
+    "cachedTokens": 2367,
+    "generatedTokens": 78,
+    "tokensPerSecond": 10.35
+   },
+   "retried": false,
+   "answer": "The vaccine stopped 95 out of every 100 infections compared to placebo. The 95% credible interval means we are 95% confident the true protection rate is between 90.3% and 97.6%. It's a Bayesian estimate, not a frequentist p-value or confidence interval.",
+   "terms": [],
+   "overlap": 0.22,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 11.7,
+   "promptTokens": 685,
+   "promptSeconds": 4.3,
+   "cachedTokens": 2367,
+   "generatedTokens": 78,
+   "tokensPerSecond": 10.35
+  },
+  {
+   "id": "h07/detail/default",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "95% effectiveness means out of 100 people who got it, about 95 didn't get the disease compared to those who got a fake shot. The 90.3 to 97.6 range shows the best guess and how sure we are. This is strong proof that the vaccine works well for most people.",
+    "overlap": 0.14,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.8,
+    "promptTokens": 617,
+    "promptSeconds": 4.1,
+    "cachedTokens": 2367,
+    "generatedTokens": 80,
+    "tokensPerSecond": 10.25
+   },
+   "retried": false,
+   "answer": "95% effectiveness means out of 100 people who got it, about 95 didn't get the disease compared to those who got a fake shot. The 90.3 to 97.6 range shows the best guess and how sure we are. This is strong proof that the vaccine works well for most people.",
+   "terms": [],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 50,
+   "seconds": 11.8,
+   "promptTokens": 617,
+   "promptSeconds": 4.1,
+   "cachedTokens": 2367,
+   "generatedTokens": 80,
+   "tokensPerSecond": 10.25
+  },
+  {
+   "id": "h07/detail/beginner",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The vaccine stopped 95 out of every 100 people from getting confirmed Covid-19. The range from 90.3 to 97.6 shows how sure the researchers are about that number, and it works well for almost everyone.",
+    "overlap": 0.24,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.9,
+    "promptTokens": 628,
+    "promptSeconds": 4.2,
+    "cachedTokens": 2367,
+    "generatedTokens": 64,
+    "tokensPerSecond": 10.98
+   },
+   "retried": false,
+   "answer": "The vaccine stopped 95 out of every 100 people from getting confirmed Covid-19. The range from 90.3 to 97.6 shows how sure the researchers are about that number, and it works well for almost everyone.",
+   "terms": [],
+   "overlap": 0.24,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 9.9,
+   "promptTokens": 628,
+   "promptSeconds": 4.2,
+   "cachedTokens": 2367,
+   "generatedTokens": 64,
+   "tokensPerSecond": 10.98
+  },
+  {
+   "id": "h07/detail/grad",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The 95% efficacy is the vaccine's protection rate against lab-confirmed Covid-19 versus placebo, meaning it cuts infection risk by 95%. The 95% credible interval of 90.3 to 97.6 reflects the range where the true effect likely lies, based on Bayesian inference from the 43,448 participants in this pivotal trial.",
+    "overlap": 0.21,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 16.4,
+    "promptTokens": 641,
+    "promptSeconds": 4.1,
+    "cachedTokens": 2367,
+    "generatedTokens": 130,
+    "tokensPerSecond": 10.55
+   },
+   "retried": false,
+   "answer": "The 95% efficacy is the vaccine's protection rate against lab-confirmed Covid-19 versus placebo, meaning it cuts infection risk by 95%. The 95% credible interval of 90.3 to 97.6 reflects the range where the true effect likely lies, based on Bayesian inference from the 43,448 participants in this pivotal trial.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a probability range for a parameter"
+    },
+    {
+     "term": "pivotal efficacy trial",
+     "meaning": "the definitive study to prove vaccine effectiveness"
+    }
+   ],
+   "overlap": 0.21,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 49,
+   "seconds": 16.4,
+   "promptTokens": 641,
+   "promptSeconds": 4.1,
+   "cachedTokens": 2367,
+   "generatedTokens": 130,
+   "tokensPerSecond": 10.55
+  }
+ ],
+ "podcast": null
+}
