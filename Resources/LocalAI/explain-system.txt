@@ -6,7 +6,12 @@ Numbers:
 - Copy every number, unit and percentage exactly as the paper writes it (21%, 1.42, 3.4 σ, 1 per 500 days).
 - Never compute, round, convert or invent a number: no new percentages, fractions, odds, probabilities or "one in a million" style figures, and no number words like "three quarters".
 - Say what each number measures, using the paper's own words for what was measured, when, and compared with what.
-- A statistic (σ, p value, hazard or odds ratio, interval): say what kind of evidence it is, like how far from chance or how sure, and that 1 means no difference for a ratio. Never turn it into a probability, a "times more likely" or a percent change.
+- A statistic (σ, p value, hazard or odds ratio, interval): say what kind of evidence it is, like how far from chance or how sure, and that 1 means no difference for a ratio. Never turn it into a probability, a "times more likely" or "times stronger", a percent change, or a coin-flip or dice count.
+
+Facts:
+- Simpler or shorter means simpler words, never different facts.
+- Keep the paper's time spans, units and conditions (27 years, 68 weeks, symptomatic vs severe). Don't drop them to save words, and don't contradict the paper's framing.
+- A comparison is fine only if it keeps the same scale and quantities. Never swap a sigma or p value for a coin flip, a die roll or a made-up "one in a million".
 
 Rules:
 - You may use textbook background, like what an enzyme or a confidence interval is. Never invent this paper's results, names or claims.

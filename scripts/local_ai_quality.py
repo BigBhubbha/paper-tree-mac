@@ -79,6 +79,99 @@ def unsupported(answer, source):
     return bad
 
 
+SPAN_UNITS = ("year", "week", "day", "month", "hour", "minute", "decade", "second")
+_SPAN_NUM = re.compile(
+    r"(?<![a-z\d.])(\d+(?:[ ,\u2009\u202f\u00a0]\d{3})?(?:\.\d+)?)\s*-?\s*(" + "|".join(SPAN_UNITS) + r")s?\b",
+    re.I)
+_SPAN_SPELL = re.compile(
+    r"\b((?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[- ](?:one|two|three|four|five|six|seven|eight|nine)|"
+    r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|"
+    r"fifteen|sixteen|seventeen|eighteen|nineteen))\s*-?\s*(" + "|".join(SPAN_UNITS) + r")s?\b",
+    re.I)
+
+
+def time_spans(s):
+    """Time spans in s as (normalized number, unit stem, display phrase), first mention only."""
+    out, seen = [], set()
+    for m in _SPAN_NUM.finditer(s):
+        n = next(iter(numbers(m.group(1))), m.group(1))
+        unit = m.group(2).lower()
+        key = n + "|" + unit
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((n, unit, m.group(0).strip()))
+    for m in _SPAN_SPELL.finditer(s.lower()):
+        n = next(iter(spelled(m.group(1))), m.group(1))
+        unit = m.group(2).lower()
+        key = n + "|" + unit
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((n, unit, m.group(0).strip()))
+    return out
+
+
+def missing_spans(answer, highlight):
+    """Time spans written in the highlight that the answer dropped."""
+    ans_n = numbers(answer) | spelled(answer)
+    ans_w = words(answer)
+    miss = []
+    for n, unit, phrase in time_spans(highlight):
+        if n not in ans_n or (unit not in ans_w and unit + "s" not in ans_w):
+            miss.append(phrase)
+    return miss
+
+
+# Reader profiles (mirrors ReaderNote in LocalWriter.swift)
+SCHOOLS = {
+    "middle": "a middle school student", "hs9": "a high school freshman", "hs10": "a high school sophomore",
+    "hs11": "a high school junior", "hs12": "a high school senior", "ug1": "a first year college student",
+    "ug2": "a second year college student", "ug3": "a third year college student", "ug4": "a fourth year college student",
+    "grad": "a grad student", "none": "an adult reader not in school",
+}
+EXPERTISE = {
+    "beginner": "a curious beginner in science", "classes": "someone who has taken some science classes",
+    "ra": "an undergrad researcher or research assistant", "grad": "a grad student in science",
+    "pro": "a professional scientist or principal investigator",
+}
+EXPERT_RE = re.compile(
+    r"\b(ph\.? ?d|phd student|doctoral|postdoc|professor|faculty|principal investigator|research scientist|"
+    r"staff scientist|grad(uate)? student|in grad(uate)? school|master'?s (student|degree)|physician|"
+    r"medical doctor|work(ing)? as an? (scientist|researcher|chemist|biologist|physicist|engineer))\b", re.I)
+NOVICE_RE = re.compile(
+    r"\b(middle school|[5-8]th grade|grade [5-8]|year [5-8]|high school freshman|freshman in high school|"
+    r"9th grade|beginner|new to (science|this|reading)|no science|not much science|little science|"
+    r"never (took|taken|studied|done))\b", re.I)
+
+
+def reader_note(school=None, expertise=None, fields=None, length=None):
+    who, said = [], []
+    if school and school in SCHOOLS:
+        who.append(SCHOOLS[school])
+    if expertise and expertise in EXPERTISE:
+        who.append(EXPERTISE[expertise])
+    expert = expertise in ("grad", "pro") or school == "grad" or bool(EXPERT_RE.search(" ".join(x for x in (school, expertise) if x and x not in SCHOOLS and x not in EXPERTISE)))
+    novice = (not expert) and (expertise == "beginner" or school in ("middle", "hs9", "hs10") or bool(NOVICE_RE.search(" ".join(x for x in (school, expertise) if x and x not in SCHOOLS and x not in EXPERTISE))))
+    n = ""
+    if who:
+        n += "The reader is " + ", and ".join(who) + ". "
+    if expert:
+        n += "Use the standard terms of the field without defining basics, and focus on what's specific or surprising in this passage. "
+    elif novice:
+        n += "Use everyday words and avoid jargon entirely. "
+    elif who or said:
+        n += "Pitch the vocabulary at their level. "
+    return {"note": n.strip(), "scale": 1.0, "expert": expert, "novice": novice,
+            "school": school, "expertise": expertise}
+
+
+PROFILES = {
+    "default": reader_note(),
+    "beginner": reader_note(school="middle", expertise="beginner"),
+    "grad": reader_note(school="grad", expertise="grad"),
+}
+
 
 # ---- Prompt building (mirrors LocalPrompts / LocalWriter) ----
 def fence(s, mx):
@@ -103,12 +196,16 @@ def jlit(s):
 BASE_WORDS = {"plain": 40, "simpler": 28, "detail": 80}
 
 
-def length_rule(mode):  # no reader profile: scale 1, "a curious high school student"
-    who, words = "a curious high school student", BASE_WORDS[mode]
+def length_rule(mode, reader=None):
+    reader = reader or PROFILES["default"]
+    who = "a curious high school student" if not reader.get("note") else "this reader"
+    words = int(round(BASE_WORDS[mode] * reader.get("scale", 1)))
     if mode == "plain":
         return f"Plain version: explain it in plain words {who} would understand, in at most 2 short sentences and under {words} words."
     if mode == "simpler":
-        return f"Simpler: as simply as possible, like to a curious 12 year old, under {words} words. One everyday comparison is fine."
+        like = "like to a curious 12 year old" if not reader.get("note") else "in the simplest everyday words"
+        return (f"Simpler: as simply as possible, {like}, under {words} words. Use simpler words, never different facts. "
+                "One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.")
     return f"More detail: a fuller explanation under {words} words, covering what it means and why it matters here, readable for {who}."
 
 
@@ -119,19 +216,22 @@ def explain_user(reader, length, context, highlight):
 RETRY_NOTE = res("explain-retry.txt").strip() if os.path.exists(os.path.join(RES, "explain-retry.txt")) else ""
 
 
-def explain_prompt(text, context, mode, retry=False, bad_numbers=()):
+def explain_prompt(text, context, mode, retry=False, bad_numbers=(), keep_spans=(), reader=None):
+    reader = reader or PROFILES["default"]
     shots = []
     for e in json.loads(res("explain-examples.json")):
         terms = ", ".join("{\"term\": %s, \"meaning\": %s}" % (jlit(t["term"]), jlit(t["meaning"])) for t in e["reply"]["terms"])
         reply = "{\"answer\": %s, \"terms\": [%s]}" % (jlit(e["reply"]["answer"]), terms)
         shots.append((explain_user(e["reader"], e["length"], e["context"], e["highlight"]), reply))
     ctx = fence(context, 1800)
-    user = explain_user("Not described. Assume a curious high school student.", length_rule(mode),
-                        ctx if ctx else "(none)", fence(text, 1500))
+    who = "Not described. Assume a curious high school student." if not reader.get("note") else reader["note"]
+    user = explain_user(who, length_rule(mode, reader), ctx if ctx else "(none)", fence(text, 1500))
     if retry:
         user += "\n" + RETRY_NOTE
         if bad_numbers:
             user += "\nNot in the paper, so leave out: " + ", ".join(bad_numbers) + "."
+        if keep_spans:
+            user += "\nThe highlight also gives these time spans, so keep them: " + ", ".join(keep_spans) + "."
     return chat(res("explain-system.txt"), shots, user)
 
 
@@ -196,31 +296,78 @@ def parse_answer(raw):
         return (tidy(m.group(1)) if m else ""), []
 
 
+def parse_list(s, allowed, default):
+    if not s:
+        return list(default)
+    out = [x.strip() for x in s.split(",") if x.strip()]
+    bad = [x for x in out if x not in allowed]
+    if bad:
+        raise SystemExit("unknown value(s): " + ", ".join(bad) + "; expected one of " + ", ".join(allowed))
+    return out
+
+
+def jobs(ts, modes, profiles, only=""):
+    """Expand highlights across modes and reader profiles. Default (empty flags) keeps each item's own mode and the default profile."""
+    only = [x for x in (only or "").split(",") if x]
+    out = []
+    for i, it in enumerate(ts["highlights"]):
+        if only and it["id"] not in only:
+            continue
+        use_modes = modes if modes else [it["mode"]]
+        use_profiles = profiles if profiles else ["default"]
+        for mode in use_modes:
+            for prof in use_profiles:
+                rec_id = it["id"] if (mode == it["mode"] and prof == "default" and not modes and not profiles) else f"{it['id']}/{mode}/{prof}"
+                out.append({**it, "id": rec_id, "base_id": it["id"], "mode": mode, "profile": prof, "seed": 1000 + i * 50 + (["plain", "simpler", "detail"].index(mode) * 3 + ["default", "beginner", "grad"].index(prof) if prof in ("default", "beginner", "grad") else 9)})
+    return out
+
+
+def score_answer(ans, highlight, src):
+    ov = overlap(ans, highlight)
+    return (ov >= RESTATING, len(unsupported(ans, src)), len(missing_spans(ans, highlight)), ov)
+
+
 def run_local(a):
     ts = json.load(open(TESTSET, encoding="utf-8"))
-    out = {"engine": "local", "model": a.model, "label": a.label or a.model, "prompts": "old" if os.environ.get("PAPER_TREE_PROMPTS") else "new", "runner": a.runner, "items": [], "podcast": None}
+    modes = parse_list(getattr(a, "modes", ""), ("plain", "simpler", "detail"), [])
+    profiles = parse_list(getattr(a, "profiles", ""), tuple(PROFILES), [])
+    out = {"engine": "local", "model": a.model, "label": a.label or a.model, "prompts": "old" if os.environ.get("PAPER_TREE_PROMPTS") else "new",
+           "runner": a.runner, "modes": modes, "profiles": profiles, "items": [], "podcast": None}
+    if a.out and os.path.exists(a.out):
+        try:
+            prev = json.load(open(a.out, encoding="utf-8"))
+            if prev.get("items") and prev.get("model") == a.model:
+                out["items"] = prev["items"]
+        except Exception:
+            pass
+    done = {x["id"] for x in out["items"]}
     grammar = res("explain.gbnf")
-    for i, it in enumerate(ts["highlights"]):
-        if a.only and it["id"] not in a.only.split(","):
+    work = jobs(ts, modes, profiles, a.only)
+    for n, it in enumerate(work, 1):
+        if it["id"] in done:
+            print(f"skip {it['id']}", flush=True)
             continue
+        reader = PROFILES[it["profile"]]
         n_predict = 420 if it["mode"] == "detail" else 300
         src = it["highlight"] + "\n" + it["context"]
-        raw, t = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"]), grammar, n_predict, 0.5, 1000 + i)
+        raw, t = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"], reader=reader), grammar, n_predict, 0.5, it["seed"])
         ans, terms = parse_answer(raw)
-        first = {"answer": ans, "overlap": round(overlap(ans, it["highlight"]), 2), "unsupported": unsupported(ans, src), **t}
-        rec = {"id": it["id"], "first": first, "retried": False}
-        if (first["overlap"] >= RESTATING or first["unsupported"]) and RETRY_NOTE and not a.no_guard:
-            raw2, t2 = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"], retry=True, bad_numbers=first["unsupported"]), grammar, n_predict, 0.5, 2000 + i)
+        first = {"answer": ans, "overlap": round(overlap(ans, it["highlight"]), 2), "unsupported": unsupported(ans, src),
+                 "missingSpans": missing_spans(ans, it["highlight"]), **t}
+        rec = {"id": it["id"], "base_id": it["base_id"], "mode": it["mode"], "profile": it["profile"], "first": first, "retried": False}
+        if (first["overlap"] >= RESTATING or first["unsupported"] or first["missingSpans"]) and RETRY_NOTE and not a.no_guard:
+            raw2, t2 = complete(a.server, explain_prompt(it["highlight"], it["context"], it["mode"], retry=True,
+                                                         bad_numbers=first["unsupported"], keep_spans=first["missingSpans"], reader=reader),
+                                grammar, n_predict, 0.5, 2000 + it["seed"])
             ans2, terms2 = parse_answer(raw2)
             rec["retried"] = True
-            def score(x): return (overlap(x, it["highlight"]) >= RESTATING, len(unsupported(x, src)), overlap(x, it["highlight"]))
-            if ans2 and score(ans2) < score(ans):
+            if ans2 and score_answer(ans2, it["highlight"], src) < score_answer(ans, it["highlight"], src):
                 ans, terms = ans2, terms2
             t = {k: (round(t[k] + t2[k], 1) if k in ("seconds", "promptSeconds") else t2[k]) for k in t}
         rec.update({"answer": ans, "terms": terms, "overlap": round(overlap(ans, it["highlight"]), 2), "unsupported": unsupported(ans, src),
-                    "words": len(ans.split()), **t})
+                    "missingSpans": missing_spans(ans, it["highlight"]), "words": len(ans.split()), **t})
         out["items"].append(rec)
-        print(f"{it['id']} {t['seconds']}s cached={t.get('cachedTokens')} ov={rec['overlap']} nums={rec['unsupported']} retried={rec['retried']}: {ans}", flush=True)
+        print(f"[{n}/{len(work)}] {it['id']} {t['seconds']}s cached={t.get('cachedTokens')} ov={rec['overlap']} nums={rec['unsupported']} spans={rec['missingSpans']} retried={rec['retried']}: {ans}", flush=True)
         json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
     if not a.skip_podcast:
         prompt, count = podcast_prompt(ts["podcast"])
@@ -245,16 +392,40 @@ def run_local(a):
 
 def run_gemini(a):
     ts = json.load(open(TESTSET, encoding="utf-8"))
-    out = {"engine": "gemini", "model": "", "runner": "Paper Tree Worker (read-only)", "items": []}
-    for it in ts["highlights"]:
+    modes = parse_list(getattr(a, "modes", ""), ("plain", "simpler", "detail"), [])
+    profiles = parse_list(getattr(a, "profiles", ""), tuple(PROFILES), [])
+    out = {"engine": "gemini", "model": "", "label": getattr(a, "label", "") or "gemini",
+           "runner": "Paper Tree Worker (read-only)", "modes": modes, "profiles": profiles, "items": []}
+    if a.out and os.path.exists(a.out):
+        try:
+            prev = json.load(open(a.out, encoding="utf-8"))
+            if prev.get("items") and prev.get("engine") == "gemini":
+                out["items"] = prev["items"]
+                out["model"] = prev.get("model", "")
+        except Exception:
+            pass
+    done = {x["id"] for x in out["items"]}
+    work = jobs(ts, modes, profiles, getattr(a, "only", ""))
+    for n, it in enumerate(work, 1):
+        if it["id"] in done:
+            print(f"skip {it['id']}", flush=True)
+            continue
+        body = {"text": it["highlight"][:1500], "context": it["context"][:1800], "mode": it["mode"]}
+        reader = PROFILES[it["profile"]]
+        if it["profile"] != "default":
+            body["profile"] = {"school": reader.get("school"), "expertise": reader.get("expertise")}
         t0 = time.time()
-        r = post(WORKER, {"text": it["highlight"][:1500], "context": it["context"][:1800], "mode": it["mode"]},
-                 timeout=120, headers={"User-Agent": "PaperTree-Mac/quality-test"})
+        r = post(WORKER, body, timeout=120, headers={"User-Agent": "PaperTree-Mac/quality-test"})
         ans = tidy(r.get("text") or "")
+        src = it["highlight"] + "\n" + it["context"]
         out["model"] = r.get("model", out["model"])
-        out["items"].append({"id": it["id"], "answer": ans, "terms": r.get("terms") or [], "overlap": round(overlap(ans, it["highlight"]), 2),
-                             "words": len(ans.split()), "seconds": round(time.time() - t0, 1), "retried": False})
-        print(it["id"], out["items"][-1]["overlap"], ans, flush=True)
+        rec = {"id": it["id"], "base_id": it["base_id"], "mode": it["mode"], "profile": it["profile"],
+               "answer": ans, "terms": r.get("terms") or [], "overlap": round(overlap(ans, it["highlight"]), 2),
+               "unsupported": unsupported(ans, src), "missingSpans": missing_spans(ans, it["highlight"]),
+               "words": len(ans.split()), "seconds": round(time.time() - t0, 1), "retried": False}
+        out["items"].append(rec)
+        print(f"[{n}/{len(work)}] {it['id']}", rec["overlap"], ans, flush=True)
+        json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
         time.sleep(1)
     json.dump(out, open(a.out, "w"), indent=1, ensure_ascii=False)
 
@@ -281,46 +452,128 @@ def run_report(a):
     def verdict(label, hid):
         return notes.get(label, {}).get(hid, {})
 
+    def base_of(x):
+        return x.get("base_id") or x["id"].split("/")[0]
+
+    def real_items(r):
+        xs = [x for x in r["items"] if not byid.get(base_of(x), {}).get("regression")]
+        return xs
+
     summary = []
     for r in runs:
-        xs = [item(r, h["id"]) for h in real]
-        xs = [x for x in xs if x]
+        xs = real_items(r)
         if not xs:
             continue
         n = len(xs)
         flagged = sum(1 for x in xs if x["overlap"] >= RESTATING)
         vs = [verdict(r["label"], x["id"]).get("verdict", "") for x in xs]
+        def source(x):
+            h = byid[base_of(x)]
+            return h["highlight"] + "\n" + h["context"]
         summary.append({"label": r["label"], "name": name.get(r["label"], r["label"]), "runner": r.get("runner", ""), "n": n,
                         "flagged": flagged, "avgOverlap": sum(x["overlap"] for x in xs) / n,
                         "avgWords": sum(x["words"] for x in xs) / n, "avgSeconds": sum(x["seconds"] for x in xs) / n,
                         "retried": sum(1 for x in xs if x.get("retried")),
-                        "numberFlags": sum(1 for x in xs if unsupported(x["answer"], byid[x["id"]]["highlight"] + "\n" + byid[x["id"]]["context"])),
+                        "numberFlags": sum(1 for x in xs if unsupported(x["answer"], source(x))),
+                        "spanFlags": sum(1 for x in xs if x.get("missingSpans") or missing_spans(x["answer"], byid[base_of(x)]["highlight"])),
                         "explains": vs.count("explains"), "partly": vs.count("partly"), "restates": vs.count("restates"),
                         "wrong": sum(1 for v in vs if v.startswith("error"))})
     os.makedirs(a.out, exist_ok=True)
     head = a.header.strip() + "\n\n" if a.header else ""
     md = ["# Paper Tree local reader: quality test", "", head.strip(), ""]
-    md += ["## Summary (the 15 real highlights)", "",
-           "| Model | Restating (overlap 0.5 or more) | Avg overlap | Avg words | Avg time per explanation | Guard retries | Numbers not in the paper (auto check) | My read: explains / partly / restates / has an error |",
-           "|---|---|---|---|---|---|---|---|"]
+    md += ["## Summary (real highlights, regression left out)", "",
+           "| Model | n | Restating (overlap 0.5 or more) | Avg overlap | Avg words | Avg time per explanation | Guard retries | Numbers not in the paper (auto check) | Dropped time spans | My read: explains / partly / restates / has an error |",
+           "|---|---|---|---|---|---|---|---|---|---|"]
     for s_ in summary:
-        md.append(f"| {s_['name']} | {s_['flagged']} of {s_['n']} ({100*s_['flagged']/s_['n']:.0f}%) | {s_['avgOverlap']:.2f} | {s_['avgWords']:.0f} | "
-                  f"{s_['avgSeconds']:.1f} s ({s_['runner']}) | {s_['retried']} | {s_['numberFlags']} of {s_['n']} | {s_['explains']} / {s_['partly']} / {s_['restates']} / {s_['wrong']} |")
+        md.append(f"| {s_['name']} | {s_['n']} | {s_['flagged']} of {s_['n']} ({100*s_['flagged']/s_['n']:.0f}%) | {s_['avgOverlap']:.2f} | {s_['avgWords']:.0f} | "
+                  f"{s_['avgSeconds']:.1f} s ({s_['runner']}) | {s_['retried']} | {s_['numberFlags']} of {s_['n']} | {s_.get('spanFlags', 0)} of {s_['n']} | {s_['explains']} / {s_['partly']} / {s_['restates']} / {s_['wrong']} |")
     md += ["", "Overlap is the share of an answer's content words that already appear in the highlight (stop words left out). "
            "It catches word-for-word restating, not a paraphrase in new words, so each answer also has my own short note.", ""]
-    for h in ts["highlights"]:
-        md += [f"## {h['id']}. {h['paper']}" + (" (regression check, not scored)" if h.get("regression") else ""), "",
-               f"Source: {h['source']}  ", f"Mode: {h['mode']}  ", f"Highlight: \"{h['highlight']}\"", ""]
-        for r in runs:
-            x = item(r, h["id"])
-            if not x:
-                continue
-            v = verdict(r["label"], h["id"])
-            meta = f"overlap {x['overlap']:.2f}, {x['words']} words, {x['seconds']:.1f} s" + (", guard retried" if x.get("retried") else "")
-            md.append(f"- **{name.get(r['label'], r['label'])}** ({meta}): {x['answer']}")
-            if v:
-                md.append(f"  - Note: {v.get('verdict', '')}. {v.get('note', '')}".rstrip())
+
+    # Per-mode and per-profile breakdown when a run used more than one of either.
+    def counts_for(run, pred):
+        xs = [x for x in run["items"] if pred(x) and not byid.get(x.get("base_id") or x["id"].split("/")[0], {}).get("regression")]
+        vs = [verdict(run["label"], x["id"]).get("verdict", "") for x in xs]
+        n = len(xs)
+        if not n:
+            return None
+        return {"n": n, "explains": vs.count("explains"), "partly": vs.count("partly"), "restates": vs.count("restates"),
+                "wrong": sum(1 for v in vs if v.startswith("error")),
+                "avgSeconds": sum(x.get("seconds") or 0 for x in xs) / n,
+                "flagged": sum(1 for x in xs if x.get("overlap", 0) >= RESTATING),
+                "numberFlags": sum(1 for x in xs if x.get("unsupported")),
+                "spanFlags": sum(1 for x in xs if x.get("missingSpans"))}
+
+    levels_used = any(x.get("mode") and x.get("profile") for r in runs for x in r.get("items") or [])
+    if levels_used:
+        md += ["## Counts by mode and by reader profile", ""]
+        for axis, keys, title in (("mode", ("plain", "simpler", "detail"), "Mode"),
+                                  ("profile", ("default", "beginner", "grad"), "Reader profile")):
+            md += [f"### By {title.lower()}", "",
+                   f"| {title} | Model | n | My read: explains / partly / restates / has an error | Avg time | Restating | Numbers not in the paper | Dropped time spans |",
+                   "|---|---|---|---|---|---|---|---|"]
+            for key in keys:
+                for r in runs:
+                    c = counts_for(r, lambda x, k=key, ax=axis: x.get(ax) == k or (ax == "mode" and not x.get(ax) and byid.get(x.get("base_id") or x["id"], {}).get("mode") == k))
+                    if not c:
+                        continue
+                    md.append(f"| {key} | {name.get(r['label'], r['label'])} | {c['n']} | {c['explains']} / {c['partly']} / {c['restates']} / {c['wrong']} | {c['avgSeconds']:.1f} s | {c['flagged']} | {c['numberFlags']} | {c['spanFlags']} |")
+            md.append("")
+        md += ["### Mode and profile together", "",
+               "| Mode | Profile | Model | n | My read: explains / partly / restates / has an error | Avg time |",
+               "|---|---|---|---|---|---|"]
+        for mode in ("plain", "simpler", "detail"):
+            for prof in ("default", "beginner", "grad"):
+                for r in runs:
+                    c = counts_for(r, lambda x, m=mode, p=prof: x.get("mode") == m and x.get("profile") == p)
+                    if not c:
+                        continue
+                    md.append(f"| {mode} | {prof} | {name.get(r['label'], r['label'])} | {c['n']} | {c['explains']} / {c['partly']} / {c['restates']} / {c['wrong']} | {c['avgSeconds']:.1f} s |")
         md.append("")
+    def item_meta(x):
+        extra = []
+        if x.get("unsupported"):
+            extra.append("nums " + ", ".join(x["unsupported"]))
+        if x.get("missingSpans"):
+            extra.append("dropped " + ", ".join(x["missingSpans"]))
+        if x.get("retried"):
+            extra.append("guard retried")
+        meta = f"overlap {x['overlap']:.2f}, {x['words']} words, {x['seconds']:.1f} s"
+        if extra:
+            meta += ", " + ", ".join(extra)
+        return meta
+
+    if levels_used:
+        for h in ts["highlights"]:
+            md += [f"## {h['id']}. {h['paper']}" + (" (regression check, not scored)" if h.get("regression") else ""), "",
+                   f"Source: {h['source']}  ", f"Highlight: \"{h['highlight']}\"", ""]
+            for mode in ("plain", "simpler", "detail"):
+                md += [f"### {h['id']} · {mode}", ""]
+                for prof in ("default", "beginner", "grad"):
+                    rid = f"{h['id']}/{mode}/{prof}"
+                    md.append(f"**{prof}**")
+                    for r in runs:
+                        x = item(r, rid)
+                        if not x:
+                            continue
+                        v = verdict(r["label"], rid)
+                        md.append(f"- **{name.get(r['label'], r['label'])}** ({item_meta(x)}): {x['answer']}")
+                        if v:
+                            md.append(f"  - Note: {v.get('verdict', '')}. {v.get('note', '')}".rstrip())
+                    md.append("")
+    else:
+        for h in ts["highlights"]:
+            md += [f"## {h['id']}. {h['paper']}" + (" (regression check, not scored)" if h.get("regression") else ""), "",
+                   f"Source: {h['source']}  ", f"Mode: {h['mode']}  ", f"Highlight: \"{h['highlight']}\"", ""]
+            for r in runs:
+                x = item(r, h["id"])
+                if not x:
+                    continue
+                v = verdict(r["label"], h["id"])
+                md.append(f"- **{name.get(r['label'], r['label'])}** ({item_meta(x)}): {x['answer']}")
+                if v:
+                    md.append(f"  - Note: {v.get('verdict', '')}. {v.get('note', '')}".rstrip())
+            md.append("")
     pods = [r for r in runs if r.get("podcast")]
     if pods:
         md += ["## Podcast (21 lines, abstract only)", "", f"Paper: {ts['podcast']['paper']} ({ts['podcast']['source']})", ""]
@@ -334,7 +587,8 @@ def run_report(a):
             if v:
                 md += ["", f"Note: {v.get('note', '')}"]
             md.append("")
-    open(os.path.join(a.out, "comparison.md"), "w", encoding="utf-8").write("\n".join(md).replace("\n\n\n", "\n\n"))
+    md_name = getattr(a, "name", "") or "comparison.md"
+    open(os.path.join(a.out, md_name), "w", encoding="utf-8").write("\n".join(md).replace("\n\n\n", "\n\n"))
 
     # HTML side-by-side: the three engines that matter for shipping.
     main = [r for r in runs if r["label"] in ("gemini", "4b", "9b")]
@@ -383,13 +637,20 @@ def main():
     l.add_argument("--skip-podcast", action="store_true")
     l.add_argument("--no-guard", action="store_true")
     l.add_argument("--label", default="")
+    l.add_argument("--modes", default="", help="comma list: plain,simpler,detail. Empty uses each item's own mode.")
+    l.add_argument("--profiles", default="", help="comma list: default,beginner,grad. Empty uses default only.")
     g = sub.add_parser("gemini")
     g.add_argument("--out", required=True)
+    g.add_argument("--only", default="")
+    g.add_argument("--modes", default="")
+    g.add_argument("--profiles", default="")
+    g.add_argument("--label", default="")
     rp = sub.add_parser("report")
     rp.add_argument("results", nargs="+")
     rp.add_argument("--notes", default=os.path.join(ROOT, "scripts", "local-ai-quality", "notes.json"))
     rp.add_argument("--header", default="")
     rp.add_argument("--out", required=True)
+    rp.add_argument("--name", default="comparison.md", help="markdown file name (use comparison-levels.md for a levels pass)")
     a = p.parse_args()
     {"local": run_local, "gemini": run_gemini, "report": run_report}[a.cmd](a)
 

@@ -253,7 +253,7 @@ enum LocalWriter {
         let who = reader.note.isEmpty ? "a curious high school student" : "this reader"
         switch mode {
         case .plain: return "Plain version: explain it in plain words \(who) would understand, in at most 2 short sentences and under \(words) words."
-        case .simpler: return "Simpler: as simply as possible, \(reader.note.isEmpty ? "like to a curious 12 year old" : "in the simplest everyday words"), under \(words) words. One everyday comparison is fine."
+        case .simpler: return "Simpler: as simply as possible, \(reader.note.isEmpty ? "like to a curious 12 year old" : "in the simplest everyday words"), under \(words) words. Use simpler words, never different facts. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions."
         case .detail: return "More detail: a fuller explanation under \(words) words, covering what it means and why it matters here, readable for \(who)."
         }
     }
@@ -279,7 +279,7 @@ enum LocalWriter {
     }
 
     static func explainPrompt(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool = false,
-                              badNumbers: [String] = []) throws -> String {
+                              badNumbers: [String] = [], keepSpans: [String] = []) throws -> String {
         let who = reader.note.isEmpty ? "Not described. Assume a curious high school student." : reader.note
         let ctx = LocalPrompts.fence(context, max: ExplainClient.maxContextChars)
         var user = explainUser(reader: who, length: lengthRule(mode, reader),
@@ -287,6 +287,7 @@ enum LocalWriter {
         if retry {
             user += "\n" + (try LocalPrompts.text("explain-retry.txt")).trimmingCharacters(in: .whitespacesAndNewlines)
             if !badNumbers.isEmpty { user += "\nNot in the paper, so leave out: " + badNumbers.prefix(6).joined(separator: ", ") + "." }
+            if !keepSpans.isEmpty { user += "\nThe highlight also gives these time spans, so keep them: " + keepSpans.prefix(6).joined(separator: ", ") + "." }
         }
         return try explainPrefix() + "<|im_start|>user\n\(user)<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
     }
@@ -308,21 +309,25 @@ enum LocalWriter {
     static func explain(text: String, context: String, mode: ExplainMode, reader: ReaderNote,
                         onPartial: (@Sendable (String) -> Void)? = nil) async throws -> (Explanation, Timing) {
         let started = Date()
-        var (e, stats) = try await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: false, badNumbers: [], onPartial: onPartial)
+        var (e, stats) = try await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: false, badNumbers: [], keepSpans: [], onPartial: onPartial)
         var retried = false
-        // The guards: an answer that mostly says the highlight back, or uses a number the paper never
-        // gives, gets one more try with a firmer note. The better of the two is kept.
+        // The guards: an answer that mostly says the highlight back, uses a number the paper never
+        // gives, or drops a time span from the highlight, gets one more try with a firmer note.
+        // The better of the two is kept.
         let source = text + "\n" + context
-        // Lower is better: restating first, then numbers the paper doesn't give, then overlap.
-        func score(_ a: String) -> (Int, Int, Double) {
+        // Lower is better: restating first, then numbers the paper doesn't give, then dropped
+        // time spans, then overlap.
+        func score(_ a: String) -> (Int, Int, Int, Double) {
             let ov = Overlap.ratio(answer: a, highlight: text)
-            return (ov >= Overlap.restating ? 1 : 0, Numbers.unsupported(answer: a, source: source).count, ov)
+            return (ov >= Overlap.restating ? 1 : 0, Numbers.unsupported(answer: a, source: source).count,
+                    Qualifiers.missing(answer: a, highlight: text).count, ov)
         }
         let first = score(e.text)
-        if first.0 > 0 || first.1 > 0 {
+        if first.0 > 0 || first.1 > 0 || first.2 > 0 {
             retried = true
             let bad = Numbers.unsupported(answer: e.text, source: source)
-            if let second = try? await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: true, badNumbers: bad, onPartial: onPartial) {
+            let spans = Qualifiers.missing(answer: e.text, highlight: text)
+            if let second = try? await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: true, badNumbers: bad, keepSpans: spans, onPartial: onPartial) {
                 if score(second.0.text) < first { e = second.0 } else { onPartial?(e.text) }
                 stats = second.1
             }
@@ -331,9 +336,9 @@ enum LocalWriter {
     }
 
     static func explainOnce(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool, badNumbers: [String],
-                            onPartial: (@Sendable (String) -> Void)?) async throws -> (Explanation, LocalLLM.Stats) {
+                            keepSpans: [String], onPartial: (@Sendable (String) -> Void)?) async throws -> (Explanation, LocalLLM.Stats) {
         let path = try modelPath()
-        let prompt = try explainPrompt(text: text, context: context, mode: mode, reader: reader, retry: retry, badNumbers: badNumbers)
+        let prompt = try explainPrompt(text: text, context: context, mode: mode, reader: reader, retry: retry, badNumbers: badNumbers, keepSpans: keepSpans)
         let maxTokens = mode == .detail ? 420 : 300
         let (raw, stats) = try await LocalLLM.shared.generate(
             modelPath: path,
@@ -438,6 +443,42 @@ enum LocalWriter {
             if source.contains("%") { srcWords.insert("percent") }
             let bad = numbers(answer).filter { !srcNumbers.contains($0) && $0 != "0" && $0 != "1" }.sorted()
             return bad + words(answer).filter { flagged.contains($0) && !srcWords.contains($0) }.sorted()
+        }
+    }
+
+    /// Time spans written in the highlight (27 years, 68 weeks, 15-year) that the answer dropped.
+    /// scripts/local_ai_quality.py checks answers the same way, and a miss triggers one retry.
+    enum Qualifiers {
+        static let units = ["year", "week", "day", "month", "hour", "minute", "decade", "second"]
+
+        static func timeSpans(_ s: String) -> [(number: String, unit: String, phrase: String)] {
+            var out: [(String, String, String)] = []
+            let unitAlt = units.joined(separator: "|")
+            let num = #"(?<![a-z\d.])(\d+(?:[ ,\x{2009}\x{202F}\x{00A0}]\d{3})?(?:\.\d+)?)"#
+            for m in Numbers.matches(num + #"\s*-?\s*("# + unitAlt + #")s?\b"#, Numbers.normalized(s)) {
+                guard let raw = m[1], let unit = m[2]?.lowercased() else { continue }
+                let n = Numbers.numbers(raw).first ?? raw
+                let phrase = (m[0] ?? raw).trimmingCharacters(in: .whitespaces)
+                out.append((n, unit, phrase))
+            }
+            let spell = #"\b((?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)[- ](?:one|two|three|four|five|six|seven|eight|nine)|(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen))\s*-?\s*("# + unitAlt + #")s?\b"#
+            for m in Numbers.matches(spell, s.lowercased()) {
+                guard let raw = m[1], let unit = m[2]?.lowercased() else { continue }
+                let n = Numbers.spelled(raw).first ?? raw
+                out.append((n, unit, (m[0] ?? raw).trimmingCharacters(in: .whitespaces)))
+            }
+            // Keep the first mention of each number+unit.
+            var seen = Set<String>()
+            return out.filter { seen.insert("\($0.0)|\($0.1)").inserted }.map { (number: $0.0, unit: $0.1, phrase: $0.2) }
+        }
+
+        static func missing(answer: String, highlight: String) -> [String] {
+            let ansNumbers = Numbers.numbers(answer).union(Numbers.spelled(answer))
+            let ansWords = Numbers.words(answer)
+            return timeSpans(highlight).compactMap { span in
+                let hasUnit = ansWords.contains(span.unit) || ansWords.contains(span.unit + "s")
+                return ansNumbers.contains(span.number) && hasUnit ? nil : span.phrase
+            }
         }
     }
 

@@ -374,8 +374,9 @@ jobs:
         run: echo "Release $TAG already exists, so this run only uploads the build as an artifact. Bump CFBundleShortVersionString to publish a new version."
 
   # Local reader quality test: the app's prompts, grammar, sampler settings and restatement guard
-  # (scripts/local_ai_quality.py mirrors LocalWriter) on the same llama.cpp release the app links,
-  # with 15 real paper highlights and one short podcast. Linux runners have 16 GB, so the 9B fits.
+  # (scripts/local_ai_quality.py mirrors LocalWriter) on the same llama.cpp release the app links.
+  # This levels pass runs every highlight at Plain, Simpler and More detail for three reader
+  # profiles on the 4B only (the 9B is skipped; a full 4B matrix is already a long job).
   quality:
     if: inputs.local_ai_quality && github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -388,10 +389,6 @@ jobs:
             file: Qwen3.5-4B-Q4_K_M.gguf
             url: https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/e87f176479d0855a907a41277aca2f8ee7a09523/Qwen3.5-4B-Q4_K_M.gguf
             sha: 00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4
-          - label: 9b
-            file: Qwen3.5-9B-Q4_K_M.gguf
-            url: https://huggingface.co/lmstudio-community/Qwen3.5-9B-GGUF/resolve/1379f25c6b505a3fc737bd7818cb09389cf807c1/Qwen3.5-9B-Q4_K_M.gguf
-            sha: cd76ec205963b3b33350093e6904d9de16c4e666fd104e1f632d25c7f15f2a13
     steps:
       - uses: actions/checkout@v4
         with:
@@ -427,6 +424,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/quality"
           python3 scripts/local_ai_quality.py local --server http://127.0.0.1:8080 --model "${{ matrix.file }}" --label "${{ matrix.label }}" \
+            --modes plain,simpler,detail --profiles default,beginner,grad --skip-podcast \
             --runner "GitHub ubuntu-latest, $(nproc) vCPU, $(free -g | awk '/Mem:/{print $2}') GB, CPU only" --out "$RUNNER_TEMP/quality/results-${{ matrix.label }}.json"
 
       - uses: actions/upload-artifact@v4

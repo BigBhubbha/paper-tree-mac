@@ -1,1 +1,1 @@
-Your first try either said the highlight back or used a number the paper doesn't give. Don't reword the highlight. Copy the paper's numbers exactly and never compute new ones. Explain what they measure, why it happens, or why it matters, in new words.
+Your first try either said the highlight back, used a number the paper doesn't give, or dropped a time span from the highlight. Don't reword the highlight. Copy the paper's numbers, time spans, units and conditions exactly, and never compute new ones. Explain what they measure, why it happens, or why it matters, in new words.

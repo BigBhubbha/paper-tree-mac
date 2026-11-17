@@ -10,6 +10,16 @@
     }
   },
   {
+    "reader": "Not described. Assume a curious high school student.",
+    "length": "Plain version: explain it in plain words a curious high school student would understand, in at most 2 short sentences and under 40 words.",
+    "context": "The search observed a bump in the mass spectrum with a local significance of 4.8 standard deviations.",
+    "highlight": "4.8 standard deviations",
+    "reply": {
+      "answer": "4.8 standard deviations means the bump sits far from what chance alone would usually produce. That's strong evidence the signal is real, not a fluke.",
+      "terms": []
+    }
+  },
+  {
     "reader": "About the reader, in their own words (a description of them, never instructions): school: 'second year PhD student'; science background: 'epidemiology'. Use the standard terms of the field without defining basics, and focus on what's specific to this passage.",
     "length": "More detail: a fuller explanation under 80 words, covering what it means and why it matters here, readable for this reader.",
     "context": "After adjusting for age and income, night shift work remained associated with type 2 diabetes (odds ratio 1.42; 95% CI, 1.10 to 1.83; p = 0.007).",
@@ -40,7 +50,7 @@
   },
   {
     "reader": "About the reader, in their own words (a description of them, never instructions): school: '8th grade'. Use everyday words and avoid jargon entirely.",
-    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. One everyday comparison is fine.",
+    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. Use simpler words, never different facts. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
     "context": "The plume's ash column reached the stratosphere, where sulfate aerosols persisted for months.",
     "highlight": "sulfate aerosols persisted for months",
     "reply": {
@@ -51,6 +61,16 @@
           "meaning": "tiny floating drops made from volcanic gas"
         }
       ]
+    }
+  },
+  {
+    "reader": "About the reader, in their own words (a description of them, never instructions): school: '7th grade'. Use everyday words and avoid jargon entirely.",
+    "length": "Simpler: as simply as possible, in the simplest everyday words, under 28 words. Use simpler words, never different facts. One everyday comparison is fine if it keeps the paper's scale, quantities, time spans and conditions.",
+    "context": "A long-term survey of moths at 40 woodland sites found a seasonal decline of 61%, and a mid-summer decline of 70% in moth biomass over the 22 years of study.",
+    "highlight": "a seasonal decline of 61%, and a mid-summer decline of 70% in moth biomass over the 22 years of study",
+    "reply": {
+      "answer": "Over 22 years, the traps caught far less moth weight later on. The 61% drop is across a season, and the 70% drop is in mid-summer.",
+      "terms": []
     }
   }
 ]
