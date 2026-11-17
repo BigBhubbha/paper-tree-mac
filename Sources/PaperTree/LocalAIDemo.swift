@@ -29,6 +29,7 @@ enum LocalAIDemo {
         var audioSeconds: Double?
         var peakRSSMB: Double?
         var output: String?
+        var retried: Bool?
     }
 
     static let highlight = "Rubisco also reacts with oxygen, and that side reaction becomes more common as carbon dioxide inside the leaf drops."
@@ -85,7 +86,7 @@ enum LocalAIDemo {
     static func step(_ name: String, _ t: LocalWriter.Timing, output: String) -> Step {
         Step(name: name, seconds: t.seconds, loadSeconds: t.stats.loadSeconds, promptTokens: t.stats.promptTokens,
              promptSeconds: t.stats.promptSeconds, generatedTokens: t.stats.generatedTokens, generateSeconds: t.stats.generateSeconds,
-             tokensPerSecond: t.stats.tokensPerSecond, usedGPU: t.stats.usedGPU, peakRSSMB: peakRSSMB(), output: output)
+             tokensPerSecond: t.stats.tokensPerSecond, usedGPU: t.stats.usedGPU, peakRSSMB: peakRSSMB(), output: output, retried: t.retried)
     }
 
     static func samplePaper() -> Paper {

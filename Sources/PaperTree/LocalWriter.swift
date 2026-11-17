@@ -230,7 +230,7 @@ func jsonLiteral(_ s: String) -> String {
 
 /// The local reader's jobs.
 enum LocalWriter {
-    struct Timing: Sendable { var seconds: Double; var stats: LocalLLM.Stats }
+    struct Timing: Sendable { var seconds: Double; var stats: LocalLLM.Stats; var retried = false }
 
     static func modelPath() throws -> String {
         guard let p = LocalModels.writerPath() else { throw ReaderMissing() }
@@ -257,7 +257,7 @@ enum LocalWriter {
         "Reader: \(reader)\nLength: \(length)\nSurrounding text from the paper:\n\"\"\"\(context)\"\"\"\nHighlighted:\n\"\"\"\(highlight)\"\"\""
     }
 
-    static func explainPrompt(text: String, context: String, mode: ExplainMode, reader: ReaderNote) throws -> String {
+    static func explainPrompt(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool = false) throws -> String {
         struct Example: Decodable {
             struct Reply: Codable { var answer: String; var terms: [Term] }
             struct Term: Codable { var term: String; var meaning: String }
@@ -271,8 +271,9 @@ enum LocalWriter {
         }
         let who = reader.note.isEmpty ? "Not described. Assume a curious high school student." : reader.note
         let ctx = LocalPrompts.fence(context, max: ExplainClient.maxContextChars)
-        let user = explainUser(reader: who, length: lengthRule(mode, reader),
+        var user = explainUser(reader: who, length: lengthRule(mode, reader),
                                context: ctx.isEmpty ? "(none)" : ctx, highlight: LocalPrompts.fence(text, max: ExplainClient.maxTextChars))
+        if retry { user += "\n" + (try LocalPrompts.text("explain-retry.txt")).trimmingCharacters(in: .whitespacesAndNewlines) }
         return LocalPrompts.chat(system: try LocalPrompts.text("explain-system.txt"), examples: shots, user: user)
     }
 
@@ -292,9 +293,25 @@ enum LocalWriter {
 
     static func explain(text: String, context: String, mode: ExplainMode, reader: ReaderNote,
                         onPartial: (@Sendable (String) -> Void)? = nil) async throws -> (Explanation, Timing) {
-        let path = try modelPath()
-        let prompt = try explainPrompt(text: text, context: context, mode: mode, reader: reader)
         let started = Date()
+        var (e, stats) = try await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: false, onPartial: onPartial)
+        var retried = false
+        // The guard: an answer that mostly says the highlight back gets one more try with a firmer note.
+        let first = Overlap.ratio(answer: e.text, highlight: text)
+        if first >= Overlap.restating {
+            retried = true
+            if let second = try? await explainOnce(text: text, context: context, mode: mode, reader: reader, retry: true, onPartial: onPartial) {
+                if Overlap.ratio(answer: second.0.text, highlight: text) < first { e = second.0 } else { onPartial?(e.text) }
+                stats = second.1
+            }
+        }
+        return (e, Timing(seconds: Date().timeIntervalSince(started), stats: stats, retried: retried))
+    }
+
+    static func explainOnce(text: String, context: String, mode: ExplainMode, reader: ReaderNote, retry: Bool,
+                            onPartial: (@Sendable (String) -> Void)?) async throws -> (Explanation, LocalLLM.Stats) {
+        let path = try modelPath()
+        let prompt = try explainPrompt(text: text, context: context, mode: mode, reader: reader, retry: retry)
         let maxTokens = mode == .detail ? 420 : 300
         let (raw, stats) = try await LocalLLM.shared.generate(
             modelPath: path,
@@ -317,7 +334,38 @@ enum LocalWriter {
             answer = partialAnswer(raw)
         }
         guard !answer.isEmpty else { throw ExplainError(title: "The reader came back empty.", detail: "Try highlighting a little more of the sentence.") }
-        return (Explanation(text: answer, terms: terms), Timing(seconds: Date().timeIntervalSince(started), stats: stats))
+        return (Explanation(text: answer, terms: terms), stats)
+    }
+
+    /// How much of an answer is just the highlight's own words: the share of the answer's content
+    /// words (stop words left out, plural s dropped) that already appear in the highlight.
+    /// scripts/local_ai_quality.py scores answers the same way.
+    enum Overlap {
+        static let restating = 0.5
+        static let stopWords: Set<String> = {
+            let raw = (try? LocalPrompts.text("overlap-stopwords.txt")) ?? ""
+            return Set(raw.split(separator: "\n").filter { !$0.hasPrefix("#") }.flatMap { $0.split(separator: " ").map(String.init) })
+        }()
+
+        static func words(_ s: String) -> Set<String> {
+            let t = s.lowercased().replacingOccurrences(of: "\u{2019}", with: "'")
+            let ns = t as NSString
+            var out = Set<String>()
+            guard let wordPattern = try? NSRegularExpression(pattern: "[a-z0-9]+(?:\\.[0-9]+)?") else { return out }
+            for m in wordPattern.matches(in: t, range: NSRange(location: 0, length: ns.length)) {
+                var w = ns.substring(with: m.range)
+                if stopWords.contains(w) { continue }
+                if w.count > 3, w.hasSuffix("s"), !w.hasSuffix("ss") { w.removeLast() }
+                out.insert(w)
+            }
+            return out
+        }
+
+        static func ratio(answer: String, highlight: String) -> Double {
+            let a = words(answer)
+            guard !a.isEmpty else { return 1 }
+            return Double(a.intersection(words(highlight)).count) / Double(a.count)
+        }
     }
 
     // MARK: Podcast scripts

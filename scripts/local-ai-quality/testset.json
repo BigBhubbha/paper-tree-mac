@@ -1,0 +1,143 @@
+{
+ "note": "Real abstracts fetched from the arXiv API and Europe PMC on 2026-11-17. Highlights are verbatim spans; context is the abstract (an 1800 character window around the highlight when longer, the app's limit). r00 is a regression check from Paper Tree's own sample text and is left out of the 15-highlight scores.",
+ "highlights": [
+  {
+   "id": "r00",
+   "regression": true,
+   "paper": "Leaves in a dry spell (Paper Tree's own sample text, the highlight the 2B restated)",
+   "source": "Sources/PaperTree/Snapshots.swift",
+   "mode": "plain",
+   "highlight": "Rubisco also reacts with oxygen, and that side reaction becomes more common as carbon dioxide inside the leaf drops.",
+   "context": "The enzyme that fixes carbon, Rubisco, works best when carbon dioxide is plentiful inside the leaf. Rubisco also reacts with oxygen, and that side reaction becomes more common as carbon dioxide inside the leaf drops. The plant then spends energy recovering carbon it had already fixed. Plants with C4 metabolism concentrate carbon dioxide around Rubisco and lose less this way, which is one reason many grasses of hot, dry places use it."
+  },
+  {
+   "id": "h01",
+   "paper": "Attention Is All You Need",
+   "source": "https://arxiv.org/abs/1706.03762",
+   "mode": "plain",
+   "highlight": "dispensing with recurrence and convolutions entirely",
+   "context": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data."
+  },
+  {
+   "id": "h02",
+   "paper": "Observation of Gravitational Waves from a Binary Black Hole Merger",
+   "source": "https://arxiv.org/abs/1602.03837",
+   "mode": "plain",
+   "highlight": "a false alarm rate estimated to be less than 1 event per 203 000 years, equivalent to a significance greater than 5.1 σ",
+   "context": "On September 14, 2015 at 09:50:45 UTC the two detectors of the Laser Interferometer Gravitational-Wave Observatory simultaneously observed a transient gravitational-wave signal. The signal sweeps upwards in frequency from 35 to 250 Hz with a peak gravitational-wave strain of $1.0 \\times 10^{-21}$. It matches the waveform predicted by general relativity for the inspiral and merger of a pair of black holes and the ringdown of the resulting single black hole. The signal was observed with a matched-filter signal-to-noise ratio of 24 and a false alarm rate estimated to be less than 1 event per 203 000 years, equivalent to a significance greater than 5.1 σ. The source lies at a luminosity distance of $410^{+160}_{-180}$ Mpc corresponding to a redshift $z = 0.09^{+0.03}_{-0.04}$. In the source frame, the initial black hole masses are $36^{+5}_{-4} M_\\odot$ and $29^{+4}_{-4} M_\\odot$, and the final black hole mass is $62^{+4}_{-4} M_\\odot$, with $3.0^{+0.5}_{-0.5} M_\\odot c^2$ radiated in gravitational waves. All uncertainties define 90% credible intervals.These observations demonstrate the existence of binary stellar-mass black hole systems. This is the first direct detection of gravitational waves and the first observation of a binary black hole merger."
+  },
+  {
+   "id": "h03",
+   "paper": "Observation of a new particle in the search for the Standard Model Higgs boson with the ATLAS detector at the LHC",
+   "source": "https://arxiv.org/abs/1207.7214",
+   "mode": "plain",
+   "highlight": "5.9 standard deviations",
+   "context": "A search for the Standard Model Higgs boson in proton-proton collisions with the ATLAS detector at the LHC is presented. The datasets used correspond to integrated luminosities of approximately 4.8 fb^-1 collected at sqrt(s) = 7 TeV in 2011 and 5.8 fb^-1 at sqrt(s) = 8 TeV in 2012. Individual searches in the channels H->ZZ^(*)->llll, H->gamma gamma and H->WW->e nu mu nu in the 8 TeV data are combined with previously published results of searches for H->ZZ^(*), WW^(*), bbbar and tau^+tau^- in the 7 TeV data and results from improved analyses of the H->ZZ^(*)->llll and H->gamma gamma channels in the 7 TeV data. Clear evidence for the production of a neutral boson with a measured mass of 126.0 +/- 0.4(stat) +/- 0.4(sys) GeV is presented. This observation, which has a significance of 5.9 standard deviations, corresponding to a background fluctuation probability of 1.7x10^-9, is compatible with the production and decay of the Standard Model Higgs boson."
+  },
+  {
+   "id": "h04",
+   "paper": "Deep Residual Learning for Image Recognition",
+   "source": "https://arxiv.org/abs/1512.03385",
+   "mode": "detail",
+   "highlight": "We explicitly reformulate the layers as learning residual functions with reference to the layer inputs, instead of learning unreferenced functions.",
+   "context": "Deeper neural networks are more difficult to train. We present a residual learning framework to ease the training of networks that are substantially deeper than those used previously. We explicitly reformulate the layers as learning residual functions with reference to the layer inputs, instead of learning unreferenced functions. We provide comprehensive empirical evidence showing that these residual networks are easier to optimize, and can gain accuracy from considerably increased depth. On the ImageNet dataset we evaluate residual nets with a depth of up to 152 layers---8x deeper than VGG nets but still having lower complexity. An ensemble of these residual nets achieves 3.57% error on the ImageNet test set. This result won the 1st place on the ILSVRC 2015 classification task. We also present analysis on CIFAR-10 with 100 and 1000 layers. The depth of representations is of central importance for many visual recognition tasks. Solely due to our extremely deep representations, we obtain a 28% relative improvement on the COCO object detection dataset. Deep residual nets are foundations of our submissions to ILSVRC & COCO 2015 competitions, where we also won the 1st places on the tasks of ImageNet detection, ImageNet localization, COCO detection, and COCO segmentation."
+  },
+  {
+   "id": "h05",
+   "paper": "Electric Field Effect in Atomically Thin Carbon Films",
+   "source": "https://arxiv.org/abs/cond-mat/0410550",
+   "mode": "plain",
+   "highlight": "ballistic transport at submicron distances even at room temperature",
+   "context": "We report a naturally-occurring two-dimensional material (graphene that can be viewed as a gigantic flat fullerene molecule, describe its electronic properties and demonstrate all-metallic field-effect transistor, which uniquely exhibits ballistic transport at submicron distances even at room temperature."
+  },
+  {
+   "id": "h06",
+   "paper": "Planck 2018 results. VI. Cosmological parameters",
+   "source": "https://arxiv.org/abs/1807.06209",
+   "mode": "plain",
+   "highlight": "Hubble constant",
+   "context": "We present cosmological parameter results from the final full-mission Planck measurements of the CMB anisotropies. We find good consistency with the standard spatially-flat 6-parameter $Λ$CDM cosmology having a power-law spectrum of adiabatic scalar perturbations (denoted \"base $Λ$CDM\" in this paper), from polarization, temperature, and lensing, separately and in combination. A combined analysis gives dark matter density $Ω_c h^2 = 0.120\\pm 0.001$, baryon density $Ω_b h^2 = 0.0224\\pm 0.0001$, scalar spectral index $n_s = 0.965\\pm 0.004$, and optical depth $τ= 0.054\\pm 0.007$ (in this abstract we quote $68\\,\\%$ confidence regions on measured parameters and $95\\,\\%$ on upper limits). The angular acoustic scale is measured to $0.03\\,\\%$ precision, with $100θ_*=1.0411\\pm 0.0003$. These results are only weakly dependent on the cosmological model and remain stable, with somewhat increased errors, in many commonly considered extensions. Assuming the base-$Λ$CDM cosmology, the inferred late-Universe parameters are: Hubble constant $H_0 = (67.4\\pm 0.5)$km/s/Mpc; matter density parameter $Ω_m = 0.315\\pm 0.007$; and matter fluctuation amplitude $σ_8 = 0.811\\pm 0.006$. We find no compelling evidence for extensions to the base-$Λ$CDM model. Combining with BAO we constrain the effective extra relativistic degrees of freedom to be $N_{\\rm eff} = 2.99\\pm 0.17$, and the neutrino mass is tightly constrained to $\\sum m_ν< 0.12$eV. The CMB spectra continue to prefer higher lensing amplitudes than predicted in base -$Λ$CDM at over $2\\,σ$, which pulls some parameters that affect the lensing amplitude away from the base-$Λ$CDM model; however, this is not supported by the lensing reconstruction or (in models that also change the background geometry) BAO data. (Abridged)"
+  },
+  {
+   "id": "h07",
+   "paper": "Safety and Efficacy of the BNT162b2 mRNA Covid-19 Vaccine",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/33301246/",
+   "mode": "plain",
+   "highlight": "BNT162b2 was 95% effective in preventing Covid-19 (95% credible interval, 90.3 to 97.6)",
+   "context": "re needed urgently. Methods: In an ongoing multinational, placebo-controlled, observer-blinded, pivotal efficacy trial, we randomly assigned persons 16 years of age or older in a 1:1 ratio to receive two doses, 21 days apart, of either placebo or the BNT162b2 vaccine candidate (30 μg per dose). BNT162b2 is a lipid nanoparticle-formulated, nucleoside-modified RNA vaccine that encodes a prefusion stabilized, membrane-anchored SARS-CoV-2 full-length spike protein. The primary end points were efficacy of the vaccine against laboratory-confirmed Covid-19 and safety. Results: A total of 43,548 participants underwent randomization, of whom 43,448 received injections: 21,720 with BNT162b2 and 21,728 with placebo. There were 8 cases of Covid-19 with onset at least 7 days after the second dose among participants assigned to receive BNT162b2 and 162 cases among those assigned to placebo; BNT162b2 was 95% effective in preventing Covid-19 (95% credible interval, 90.3 to 97.6). Similar vaccine efficacy (generally 90 to 100%) was observed across subgroups defined by age, sex, race, ethnicity, baseline body-mass index, and the presence of coexisting conditions. Among 10 cases of severe Covid-19 with onset after the first dose, 9 occurred in placebo recipients and 1 in a BNT162b2 recipient. The safety profile of BNT162b2 was characterized by short-term, mild-to-moderate pain at the injection site, fatigue, and headache. The incidence of serious adverse events was low and was similar in the vaccine and placebo groups. Conclusions: A two-dose regimen of BNT162b2 conferred 95% protection against Covid-19 in persons 16 years of age or older. Safety over a median of 2 months was similar to that of other viral vaccines. (Funded by BioNTech and Pfizer; ClinicalTrials.gov number, NCT04368728.)."
+  },
+  {
+   "id": "h08",
+   "paper": "A programmable dual-RNA-guided DNA endonuclease in adaptive bacterial immunity",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/22745249/",
+   "mode": "plain",
+   "highlight": "the potential to exploit the system for RNA-programmable genome editing",
+   "context": "Clustered regularly interspaced short palindromic repeats (CRISPR)/CRISPR-associated (Cas) systems provide bacteria and archaea with adaptive immunity against viruses and plasmids by using CRISPR RNAs (crRNAs) to guide the silencing of invading nucleic acids. We show here that in a subset of these systems, the mature crRNA that is base-paired to trans-activating crRNA (tracrRNA) forms a two-RNA structure that directs the CRISPR-associated protein Cas9 to introduce double-stranded (ds) breaks in target DNA. At sites complementary to the crRNA-guide sequence, the Cas9 HNH nuclease domain cleaves the complementary strand, whereas the Cas9 RuvC-like domain cleaves the noncomplementary strand. The dual-tracrRNA:crRNA, when engineered as a single RNA chimera, also directs sequence-specific Cas9 dsDNA cleavage. Our study reveals a family of endonucleases that use dual-RNAs for site-specific DNA cleavage and highlights the potential to exploit the system for RNA-programmable genome editing."
+  },
+  {
+   "id": "h09",
+   "paper": "Highly accurate protein structure prediction with AlphaFold",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/34265844/",
+   "mode": "plain",
+   "highlight": "even in cases in which no similar structure is known",
+   "context": "Proteins are essential to life, and understanding their structure can facilitate a mechanistic understanding of their function. Through an enormous experimental effort1-4, the structures of around 100,000 unique proteins have been determined5, but this represents a small fraction of the billions of known protein sequences6,7. Structural coverage is bottlenecked by the months to years of painstaking effort required to determine a single protein structure. Accurate computational approaches are needed to address this gap and to enable large-scale structural bioinformatics. Predicting the three-dimensional structure that a protein will adopt based solely on its amino acid sequence-the structure prediction component of the 'protein folding problem'8-has been an important open research problem for more than 50 years9. Despite recent progress10-14, existing methods fall far short of atomic accuracy, especially when no homologous structure is available. Here we provide the first computational method that can regularly predict protein structures with atomic accuracy even in cases in which no similar structure is known. We validated an entirely redesigned version of our neural network-based model, AlphaFold, in the challenging 14th Critical Assessment of protein Structure Prediction (CASP14)15, demonstrating accuracy competitive with experimental structures in a majority of cases and greatly outperforming other methods. Underpinning the latest version of AlphaFold is a novel machine learning approach that incorporates physical and biological knowledge about protein structure, leveraging multi-sequence alignments, into the design of the deep learning algorithm."
+  },
+  {
+   "id": "h10",
+   "paper": "A Randomized Trial of Intensive versus Standard Blood-Pressure Control",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/26551272/",
+   "mode": "plain",
+   "highlight": "hazard ratio with intensive treatment, 0.75; 95% confidence interval [CI], 0.64 to 0.89",
+   "context": "ncertain. Methods: We randomly assigned 9361 persons with a systolic blood pressure of 130 mm Hg or higher and an increased cardiovascular risk, but without diabetes, to a systolic blood-pressure target of less than 120 mm Hg (intensive treatment) or a target of less than 140 mm Hg (standard treatment). The primary composite outcome was myocardial infarction, other acute coronary syndromes, stroke, heart failure, or death from cardiovascular causes. Results: At 1 year, the mean systolic blood pressure was 121.4 mm Hg in the intensive-treatment group and 136.2 mm Hg in the standard-treatment group. The intervention was stopped early after a median follow-up of 3.26 years owing to a significantly lower rate of the primary composite outcome in the intensive-treatment group than in the standard-treatment group (1.65% per year vs. 2.19% per year; hazard ratio with intensive treatment, 0.75; 95% confidence interval [CI], 0.64 to 0.89; P<0.001). All-cause mortality was also significantly lower in the intensive-treatment group (hazard ratio, 0.73; 95% CI, 0.60 to 0.90; P=0.003). Rates of serious adverse events of hypotension, syncope, electrolyte abnormalities, and acute kidney injury or failure, but not of injurious falls, were higher in the intensive-treatment group than in the standard-treatment group. Conclusions: Among patients at high risk for cardiovascular events but without diabetes, targeting a systolic blood pressure of less than 120 mm Hg, as compared with less than 140 mm Hg, resulted in lower rates of fatal and nonfatal major cardiovascular events and death from any cause, although significantly higher rates of some adverse events were observed in the intensive-treatment group. (Funded by the National Institutes of Health; ClinicalTrials.gov number, NCT01206062.)."
+  },
+  {
+   "id": "h11",
+   "paper": "Once-Weekly Semaglutide in Adults with Overweight or Obesity",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/33567185/",
+   "mode": "simpler",
+   "highlight": "-14.9% in the semaglutide group as compared with -2.4% with placebo",
+   "context": "s divided by the square of the height in meters) of 30 or greater (≥27 in persons with ≥1 weight-related coexisting condition), who did not have diabetes, and randomly assigned them, in a 2:1 ratio, to 68 weeks of treatment with once-weekly subcutaneous semaglutide (at a dose of 2.4 mg) or placebo, plus lifestyle intervention. The coprimary end points were the percentage change in body weight and weight reduction of at least 5%. The primary estimand (a precise description of the treatment effect reflecting the objective of the clinical trial) assessed effects regardless of treatment discontinuation or rescue interventions. Results: The mean change in body weight from baseline to week 68 was -14.9% in the semaglutide group as compared with -2.4% with placebo, for an estimated treatment difference of -12.4 percentage points (95% confidence interval [CI], -13.4 to -11.5; P<0.001). More participants in the semaglutide group than in the placebo group achieved weight reductions of 5% or more (1047 participants [86.4%] vs. 182 [31.5%]), 10% or more (838 [69.1%] vs. 69 [12.0%]), and 15% or more (612 [50.5%] vs. 28 [4.9%]) at week 68 (P<0.001 for all three comparisons of odds). The change in body weight from baseline to week 68 was -15.3 kg in the semaglutide group as compared with -2.6 kg in the placebo group (estimated treatment difference, -12.7 kg; 95% CI, -13.7 to -11.7). Participants who received semaglutide had a greater improvement with respect to cardiometabolic risk factors and a greater increase in participant-reported physical functioning from baseline than those who received placebo. Nausea and diarrhea were the most common adverse events with semaglutide; they were typically transient and mild-to-moderate in severity and subsided with time. More participants in the"
+  },
+  {
+   "id": "h12",
+   "paper": "More than 75 percent decline over 27 years in total flying insect biomass in protected areas",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/29045418/",
+   "mode": "plain",
+   "highlight": "a seasonal decline of 76%, and mid-summer decline of 82% in flying insect biomass over the 27 years of study",
+   "context": "Global declines in insects have sparked wide interest among scientists, politicians, and the general public. Loss of insect diversity and abundance is expected to provoke cascading effects on food webs and to jeopardize ecosystem services. Our understanding of the extent and underlying causes of this decline is based on the abundance of single species or taxonomic groups only, rather than changes in insect biomass which is more relevant for ecological functioning. Here, we used a standardized protocol to measure total insect biomass using Malaise traps, deployed over 27 years in 63 nature protection areas in Germany (96 unique location-year combinations) to infer on the status and trend of local entomofauna. Our analysis estimates a seasonal decline of 76%, and mid-summer decline of 82% in flying insect biomass over the 27 years of study. We show that this decline is apparent regardless of habitat type, while changes in weather, land use, and habitat characteristics cannot explain this overall decline. This yet unrecognized loss of insect biomass must be taken into account in evaluating declines in abundance of species depending on insects as a food source, and ecosystem functioning in the European landscape."
+  },
+  {
+   "id": "h13",
+   "paper": "PSYCHOLOGY. Estimating the reproducibility of psychological science",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/26315443/",
+   "mode": "plain",
+   "highlight": "Thirty-six percent of replications had statistically significant results",
+   "context": "Reproducibility is a defining feature of science, but the extent to which it characterizes current research is unknown. We conducted replications of 100 experimental and correlational studies published in three psychology journals using high-powered designs and original materials when available. Replication effects were half the magnitude of original effects, representing a substantial decline. Ninety-seven percent of original studies had statistically significant results. Thirty-six percent of replications had statistically significant results; 47% of original effect sizes were in the 95% confidence interval of the replication effect size; 39% of effects were subjectively rated to have replicated the original result; and if no bias in original results is assumed, combining original and replication results left 68% with statistically significant effects. Correlational tests suggest that replication success was better predicted by the strength of original evidence than by characteristics of the original and replication teams."
+  },
+  {
+   "id": "h14",
+   "paper": "Microstructure of a spatial map in the entorhinal cortex",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/15965463/",
+   "mode": "detail",
+   "highlight": "any vertex of a regular grid of equilateral triangles spanning the surface of the environment",
+   "context": "The ability to find one's way depends on neural algorithms that integrate information about place, distance and direction, but the implementation of these operations in cortical microcircuits is poorly understood. Here we show that the dorsocaudal medial entorhinal cortex (dMEC) contains a directionally oriented, topographically organized neural map of the spatial environment. Its key unit is the 'grid cell', which is activated whenever the animal's position coincides with any vertex of a regular grid of equilateral triangles spanning the surface of the environment. Grids of neighbouring cells share a common orientation and spacing, but their vertex locations (their phases) differ. The spacing and size of individual fields increase from dorsal to ventral dMEC. The map is anchored to external landmarks, but persists in their absence, suggesting that grid cells may be part of a generalized, path-integration-based map of the spatial environment."
+  },
+  {
+   "id": "h15",
+   "paper": "Why most published research findings are false",
+   "source": "https://pubmed.ncbi.nlm.nih.gov/16060722/",
+   "mode": "plain",
+   "highlight": "claimed research findings may often be simply accurate measures of the prevailing bias",
+   "context": "There is increasing concern that most current published research findings are false. The probability that a research claim is true may depend on study power and bias, the number of other studies on the same question, and, importantly, the ratio of true to no relationships among the relationships probed in each scientific field. In this framework, a research finding is less likely to be true when the studies conducted in a field are smaller; when effect sizes are smaller; when there is a greater number and lesser preselection of tested relationships; where there is greater flexibility in designs, definitions, outcomes, and analytical modes; when there is greater financial and other interest and prejudice; and when more teams are involved in a scientific field in chase of statistical significance. Simulations show that for most study designs and settings, it is more likely for a research claim to be false than true. Moreover, for many current scientific fields, claimed research findings may often be simply accurate measures of the prevailing bias. In this essay, I discuss the implications of these problems for the conduct and interpretation of research."
+  }
+ ],
+ "podcast": {
+  "paper": "Estimating the reproducibility of psychological science",
+  "authors": [
+   "Open Science Collaboration"
+  ],
+  "year": 2015,
+  "source": "https://pubmed.ncbi.nlm.nih.gov/26315443/",
+  "text": "Abstract\nReproducibility is a defining feature of science, but the extent to which it characterizes current research is unknown. We conducted replications of 100 experimental and correlational studies published in three psychology journals using high-powered designs and original materials when available. Replication effects were half the magnitude of original effects, representing a substantial decline. Ninety-seven percent of original studies had statistically significant results. Thirty-six percent of replications had statistically significant results; 47% of original effect sizes were in the 95% confidence interval of the replication effect size; 39% of effects were subjectively rated to have replicated the original result; and if no bias in original results is assumed, combining original and replication results left 68% with statistically significant effects. Correlational tests suggest that replication success was better predicted by the strength of original evidence than by characteristics of the original and replication teams."
+ }
+}
