@@ -264,12 +264,25 @@ def podcast_prompt(p, source="abstract"):
 
 
 # ---- Running ----
-def post(url, body, timeout=3600, headers=None):
+def post(url, body, timeout=3600, headers=None, retries=0):
     h = {"Content-Type": "application/json"}
     h.update(headers or {})
     req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=h)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.loads(r.read().decode())
+    last = None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.loads(r.read().decode())
+        except Exception as e:
+            last = e
+            code = getattr(e, "code", None)
+            if attempt >= retries or (code is not None and code not in (408, 429, 500, 502, 503, 504)):
+                raise
+            wait = min(30, 3 * (attempt + 1))
+            print(f"retry in {wait}s after {code or type(e).__name__}", flush=True)
+            time.sleep(wait)
+            req = urllib.request.Request(url, data=json.dumps(body).encode(), headers=h)
+    raise last
 
 
 def complete(server, prompt, grammar, n_predict, temperature, seed, repeat_penalty=1.05, dry=0.0, cache=True):
@@ -415,7 +428,7 @@ def run_gemini(a):
         if it["profile"] != "default":
             body["profile"] = {"school": reader.get("school"), "expertise": reader.get("expertise")}
         t0 = time.time()
-        r = post(WORKER, body, timeout=120, headers={"User-Agent": "PaperTree-Mac/quality-test"})
+        r = post(WORKER, body, timeout=120, headers={"User-Agent": "PaperTree-Mac/quality-test"}, retries=4)
         ans = tidy(r.get("text") or "")
         src = it["highlight"] + "\n" + it["context"]
         out["model"] = r.get("model", out["model"])

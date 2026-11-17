@@ -1,0 +1,3265 @@
+{
+ "engine": "gemini",
+ "model": "gemini-3.1-flash-lite",
+ "label": "gemini",
+ "runner": "Paper Tree Worker (read-only)",
+ "modes": [
+  "plain",
+  "simpler",
+  "detail"
+ ],
+ "profiles": [
+  "default",
+  "beginner",
+  "grad"
+ ],
+ "items": [
+  {
+   "id": "r00/plain/default",
+   "base_id": "r00",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "Rubisco sometimes accidentally reacts with oxygen instead of carbon dioxide. This wasteful side reaction increases when carbon dioxide levels inside the leaf go down.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that fixes carbon in plants"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unintended secondary chemical process"
+    }
+   ],
+   "overlap": 0.56,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "r00/plain/beginner",
+   "base_id": "r00",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "Sometimes the plant helper molecule accidentally grabs oxygen instead of carbon dioxide. When this happens, the plant wastes energy trying to fix the mistake.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "a helper molecule in plants that grabs carbon"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an accidental extra process"
+    }
+   ],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 9.3,
+   "retried": false
+  },
+  {
+   "id": "r00/plain/grad",
+   "base_id": "r00",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "Rubisco acts as an oxygenase when CO2 concentrations are low, initiating photorespiration. This competitive inhibition forces the plant to expend metabolic energy to recycle the resulting phosphoglycolate.",
+   "terms": [
+    {
+     "term": "side reaction",
+     "meaning": "oxygenation of ribulose bisphosphate"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 3.1,
+   "retried": false
+  },
+  {
+   "id": "r00/simpler/default",
+   "base_id": "r00",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "Rubisco is a protein that helps plants grow. It sometimes grabs oxygen by mistake, like a person accidentally picking up the wrong drink at a crowded party.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that helps plants turn carbon into food"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unintended chemical process occurring alongside the main one"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 2.5,
+   "retried": false
+  },
+  {
+   "id": "r00/simpler/beginner",
+   "base_id": "r00",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "Sometimes the plant helper molecule makes a mistake and grabs oxygen instead of carbon dioxide, like catching the wrong ball.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "a plant protein that grabs carbon"
+    }
+   ],
+   "overlap": 0.21,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 20,
+   "seconds": 6.2,
+   "retried": false
+  },
+  {
+   "id": "r00/simpler/grad",
+   "base_id": "r00",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Like a worker making a mistake when supplies run low, Rubisco messes up with oxygen when carbon dioxide gets too low, wasting the plant's energy.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "The main carbon fixing enzyme in plants"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "An unintended chemical process competing with the main goal"
+    }
+   ],
+   "overlap": 0.29,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 6.9,
+   "retried": false
+  },
+  {
+   "id": "r00/detail/default",
+   "base_id": "r00",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This means Rubisco sometimes makes a mistake by reacting with oxygen instead of carbon dioxide, which wastes the plant's energy. This problem gets worse when there is not enough carbon dioxide available. C4 plants avoid this waste by keeping carbon dioxide levels high around Rubisco.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that fixes carbon in plants"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unintended and wasteful chemical process"
+    }
+   ],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 45,
+   "seconds": 1.5,
+   "retried": false
+  },
+  {
+   "id": "r00/detail/beginner",
+   "base_id": "r00",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "Rubisco is a helper molecule that normally grabs carbon dioxide to help plants grow. However, it sometimes grabs oxygen by mistake instead. When there is not enough carbon dioxide around, this mistake happens more often. This is a problem because the plant then has to waste extra energy to fix the error and get back on track. This process makes the plant less efficient at making its own food.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "a protein that helps plants build food"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an accidental or unintended chemical process"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 69,
+   "seconds": 2.9,
+   "retried": false
+  },
+  {
+   "id": "r00/detail/grad",
+   "base_id": "r00",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This highlights the oxygenase activity of Rubisco, which competes with its carboxylase function. As the CO2 to O2 ratio decreases, the enzyme increasingly catalyzes the oxygenation of ribulose-1,5-bisphosphate. This initiates photorespiration, a metabolically expensive pathway that releases previously fixed carbon and consumes ATP and reducing power. This inefficiency is a primary constraint on photosynthetic productivity in C3 plants, particularly under conditions of stomatal closure or high temperatures.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "ribulose-1,5-bisphosphate carboxylase/oxygenase"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [
+    "5"
+   ],
+   "missingSpans": [],
+   "words": 67,
+   "seconds": 2.8,
+   "retried": false
+  },
+  {
+   "id": "h01/plain/default",
+   "base_id": "h01",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "The authors are creating a new model that completely removes the need for traditional recurrent or convolutional neural network structures.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or doing without"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "repeating a process in a sequence"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a specific type of mathematical data processing"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 20,
+   "seconds": 0.4,
+   "retried": false
+  },
+  {
+   "id": "h01/plain/beginner",
+   "base_id": "h01",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means the new model completely stops using two older methods for processing data. It replaces them with a simpler system that focuses only on paying attention to specific parts of the information.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or doing without"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "repeating a process over and over"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a specific way of filtering data"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 3.1,
+   "retried": false
+  },
+  {
+   "id": "h01/plain/grad",
+   "base_id": "h01",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The authors propose replacing traditional RNN and CNN architectures with a pure attention mechanism. This shift eliminates sequential processing constraints, enabling full parallelization during training.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or omitting"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 2.5,
+   "retried": false
+  },
+  {
+   "id": "h01/simpler/default",
+   "base_id": "h01",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means completely throwing away the old building blocks of AI, like baking a cake without using flour or sugar, and using a totally new method instead.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "processing text step by step in order"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "analyzing data through sliding filters"
+    },
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of something completely"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 6.6,
+   "retried": false
+  },
+  {
+   "id": "h01/simpler/beginner",
+   "base_id": "h01",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means the new model completely stops using two older, slower ways of processing information, like switching from a winding path to a straight highway.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or stopping the use of"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "repeating a process over and over"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a specific way of processing data patterns"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 3.6,
+   "retried": false
+  },
+  {
+   "id": "h01/simpler/grad",
+   "base_id": "h01",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "This means removing the traditional step by step processing methods to rely only on attention, like reading a whole page at once instead of word by word.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "sequential processing of data points"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "local feature extraction via sliding filters"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 1.4,
+   "retried": false
+  },
+  {
+   "id": "h01/detail/default",
+   "base_id": "h01",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This phrase means that the new Transformer model completely removes the use of recurrent and convolutional neural networks. These older methods process data in a specific step by step order. By getting rid of them, the authors can use attention mechanisms to process all parts of the data at the same time. This makes the model much faster to train and more efficient than previous designs.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or doing without"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "repeating a process in a sequence"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "mathematical operations used to process spatial data"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 66,
+   "seconds": 1.5,
+   "retried": false
+  },
+  {
+   "id": "h01/detail/beginner",
+   "base_id": "h01",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This phrase means that the new model completely removes two traditional ways of processing information. Recurrence and convolutions are methods that look at data in a specific order or step by step. By getting rid of them, the new system can process all parts of a sentence at the same time instead of waiting for each piece to finish. This makes the model much faster and more efficient at learning.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "getting rid of or doing without"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "repeating a process in a sequence"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a math method for filtering data"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 70,
+   "seconds": 2.1,
+   "retried": false
+  },
+  {
+   "id": "h01/detail/grad",
+   "base_id": "h01",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This phrase signifies a paradigm shift in sequence modeling by abandoning the sequential processing constraints of recurrent neural networks and the local receptive fields of convolutional neural networks. By relying exclusively on self-attention mechanisms, the architecture achieves global dependency modeling and full parallelization across the sequence length. This transition is critical because it eliminates the computational bottlenecks inherent in sequential hidden state updates, enabling significantly more efficient training on modern hardware accelerators.",
+   "terms": [
+    {
+     "term": "dispensing with",
+     "meaning": "omitting or operating without"
+    },
+    {
+     "term": "recurrence",
+     "meaning": "sequential processing via hidden state feedback loops"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 72,
+   "seconds": 5.6,
+   "retried": false
+  },
+  {
+   "id": "h02/plain/default",
+   "base_id": "h02",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "This means scientists are extremely certain the signal was real and not random noise. A chance accident like this would only happen once every 203,000 years.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "probability of a chance accident"
+    },
+    {
+     "term": "significance",
+     "meaning": "statistical certainty of a result"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 0.4,
+   "retried": false
+  },
+  {
+   "id": "h02/plain/beginner",
+   "base_id": "h02",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means the signal was so clear that it is almost impossible for it to be a mistake. It is extremely unlikely to happen by chance.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a random mistake looks like a discovery"
+    },
+    {
+     "term": "significance",
+     "meaning": "a measure of how certain a result is"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "a high score showing the discovery is real"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 26,
+   "seconds": 1.8,
+   "retried": false
+  },
+  {
+   "id": "h02/plain/grad",
+   "base_id": "h02",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The detection is statistically robust, with the background noise probability being extremely low. This exceeds the five sigma threshold typically required to claim a formal discovery in particle physics.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "frequency of background noise mimicking a signal"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "statistical significance level exceeding five standard deviations"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "five"
+   ],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 29,
+   "seconds": 1.9,
+   "retried": false
+  },
+  {
+   "id": "h02/simpler/default",
+   "base_id": "h02",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means the signal was so clear that it was extremely unlikely to be a random mistake, like winning the lottery twice in a row.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "frequency of incorrectly identifying random noise as signal"
+    },
+    {
+     "term": "significance",
+     "meaning": "statistical measure of how likely results are real"
+    },
+    {
+     "term": "σ",
+     "meaning": "standard deviation used to measure statistical confidence"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "twice"
+   ],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 25,
+   "seconds": 2.0,
+   "retried": false
+  },
+  {
+   "id": "h02/simpler/beginner",
+   "base_id": "h02",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means the signal is almost certainly real and not just a random mistake, like winning a lottery that happens only once every two hundred thousand years.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a mistake looks like a discovery"
+    },
+    {
+     "term": "significance",
+     "meaning": "a measure of how certain a result is"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "a high level of statistical certainty"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [
+    "hundred",
+    "thousand"
+   ],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 27,
+   "seconds": 1.7,
+   "retried": false
+  },
+  {
+   "id": "h02/simpler/grad",
+   "base_id": "h02",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "The signal is so distinct that it is statistically impossible for it to be random noise, like finding a specific grain of sand in a desert.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "frequency of noise mimicking a real signal"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "statistical measure of confidence level"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 26,
+   "seconds": 5.3,
+   "retried": false
+  },
+  {
+   "id": "h02/detail/default",
+   "base_id": "h02",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This phrase explains that the detection of the gravitational wave was extremely unlikely to be a random error or background noise. By calculating that such a signal would only occur by chance once every 203,000 years, the researchers prove their observation is statistically certain. The 5.1 sigma value is a scientific measure of confidence, indicating that the discovery is almost certainly real and not just a fluke in the data.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "probability of a signal being a random error"
+    },
+    {
+     "term": "significance",
+     "meaning": "statistical measure of how likely results are real"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "high level of statistical confidence"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 70,
+   "seconds": 1.6,
+   "retried": false
+  },
+  {
+   "id": "h02/detail/beginner",
+   "base_id": "h02",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This means the scientists are extremely confident that the signal they detected was real and not just a random glitch or mistake. Because the chance of this happening by accident is so tiny, like once every two hundred thousand years, they know they truly found something special. This high level of certainty is important because it proves their discovery of gravitational waves is solid and not just a lucky guess.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a mistake happens by accident"
+    },
+    {
+     "term": "significance",
+     "meaning": "a measure of how certain a result is"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "a statistical score showing high certainty"
+    }
+   ],
+   "overlap": 0.03,
+   "unsupported": [
+    "hundred",
+    "thousand"
+   ],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 70,
+   "seconds": 1.6,
+   "retried": false
+  },
+  {
+   "id": "h02/detail/grad",
+   "base_id": "h02",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This statistical threshold confirms the detection is not a stochastic noise fluctuation. By demonstrating that the false alarm rate is extremely low, the authors establish that the signal is a genuine astrophysical event rather than an instrumental artifact. A significance exceeding 5.1 sigma provides the rigorous confidence level required to claim a discovery in gravitational wave astronomy, effectively ruling out the null hypothesis that the observed strain resulted from background detector noise.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "expected frequency of noise mimicking a signal"
+    },
+    {
+     "term": "5.1 σ",
+     "meaning": "statistical measure of confidence above background noise"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 72,
+   "seconds": 1.5,
+   "retried": false
+  },
+  {
+   "id": "h03/plain/default",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "This is a statistical measurement showing that the discovery is extremely unlikely to be a random error. It confirms that the particle detected is almost certainly real and not just a fluke.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of statistical significance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h03/plain/beginner",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This is a way scientists measure how sure they are about a discovery. It means the chance that the result happened by accident is so tiny that the discovery is almost certainly real.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a way to measure how likely something is"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 4.7,
+   "retried": false
+  },
+  {
+   "id": "h03/plain/grad",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "This value represents the statistical significance of the observation. It indicates that the probability of the signal being a random background fluctuation is extremely low, meeting the formal criteria for a discovery.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "measure of statistical significance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 2.5,
+   "retried": false
+  },
+  {
+   "id": "h03/simpler/default",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This is a statistical measurement showing that the discovery is extremely unlikely to be a random accident. It is like flipping a coin and getting heads repeatedly.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how spread out data is"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 2.5,
+   "retried": false
+  },
+  {
+   "id": "h03/simpler/beginner",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This is a way to show that a scientific discovery is almost certainly real, like flipping a coin and getting heads many times in a row.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how likely a result is real"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 2.3,
+   "retried": false
+  },
+  {
+   "id": "h03/simpler/grad",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "This indicates the result is statistically robust. It is like flipping a coin and getting heads so many times that luck is essentially impossible.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "statistical measure of signal significance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 3.2,
+   "retried": false
+  },
+  {
+   "id": "h03/detail/default",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "In statistics, standard deviations measure how far a result is from what would happen by pure chance. A value of 5.9 means the result is extremely unlikely to be a random error. In particle physics, this specific number is the threshold required to claim a formal discovery. It provides the high level of certainty needed to confirm that the scientists actually found the Higgs boson rather than just seeing a random glitch in their data.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "statistical measure of distance from an average"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 75,
+   "seconds": 6.7,
+   "retried": false
+  },
+  {
+   "id": "h03/detail/beginner",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "In science, this number measures how sure researchers are about a discovery. It acts like a confidence score. A score of 5.9 means the result is extremely unlikely to be just a random accident or a mistake. Because this number is so high, scientists are very confident that they actually found a new particle rather than seeing a false signal in their data.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a way to measure how likely something is real"
+    }
+   ],
+   "overlap": 0.03,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 63,
+   "seconds": 7.3,
+   "retried": false
+  },
+  {
+   "id": "h03/detail/grad",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This value represents the statistical significance of the Higgs boson discovery. In particle physics, a five sigma threshold is the conventional benchmark for claiming a formal discovery, as it indicates the probability of the observed signal being a random background fluctuation is extremely low. Reaching 5.9 standard deviations provides robust evidence that the excess of events is a genuine physical phenomenon rather than a statistical artifact, confirming the observation of the new neutral boson.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "measure of statistical significance in Gaussian distributions"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [
+    "five"
+   ],
+   "missingSpans": [],
+   "words": 74,
+   "seconds": 3.3,
+   "retried": false
+  },
+  {
+   "id": "h04/plain/default",
+   "base_id": "h04",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "Instead of teaching layers to learn totally new information from scratch, the system has them learn changes based on the original inputs.",
+   "terms": [
+    {
+     "term": "reformulate",
+     "meaning": "change the structure of something"
+    },
+    {
+     "term": "residual functions",
+     "meaning": "functions that calculate the remaining difference"
+    }
+   ],
+   "overlap": 0.23,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 22,
+   "seconds": 4.5,
+   "retried": false
+  },
+  {
+   "id": "h04/plain/beginner",
+   "base_id": "h04",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "Instead of teaching the computer layers from scratch, the system learns the small changes needed from the previous step. This makes training much easier.",
+   "terms": [
+    {
+     "term": "reformulate",
+     "meaning": "change how something is set up"
+    },
+    {
+     "term": "residual functions",
+     "meaning": "leftover changes between inputs and outputs"
+    },
+    {
+     "term": "unreferenced",
+     "meaning": "built without using original input data"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 5.8,
+   "retried": false
+  },
+  {
+   "id": "h04/plain/grad",
+   "base_id": "h04",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The layers are redesigned to learn the difference, or residual, between the input and the desired output, rather than trying to fit the full underlying mapping directly. This shift makes gradient propagation much more stable in ultra-deep networks.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "mappings representing the difference between input and output"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "standard mappings without direct input connection reference"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 1.5,
+   "retried": false
+  },
+  {
+   "id": "h04/simpler/default",
+   "base_id": "h04",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "Instead of teaching a computer layer to learn a brand new task from scratch, we have it focus only on fixing the leftover mistakes.",
+   "terms": [
+    {
+     "term": "reformulate",
+     "meaning": "change the way something is done"
+    },
+    {
+     "term": "residual functions",
+     "meaning": "equations calculating what is left over"
+    }
+   ],
+   "overlap": 0.15,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 4.0,
+   "retried": false
+  },
+  {
+   "id": "h04/simpler/beginner",
+   "base_id": "h04",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "Instead of teaching computer layers new information from scratch, we have them learn the difference or leftovers from the input, like finding the missing puzzle piece.",
+   "terms": [
+    {
+     "term": "reformulate",
+     "meaning": "to change or rewrite something"
+    },
+    {
+     "term": "residual functions",
+     "meaning": "leftover parts remaining after calculation"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 2.1,
+   "retried": false
+  },
+  {
+   "id": "h04/simpler/grad",
+   "base_id": "h04",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Instead of learning total new data transformations, layers learn just the small changes needed. Think of it like editing a draft instead of rewriting the page.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "functions learning the difference from inputs"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "standard functions without direct input reference"
+    }
+   ],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 1.5,
+   "retried": false
+  },
+  {
+   "id": "h04/detail/default",
+   "base_id": "h04",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "The authors are changing how neural network layers process information. Instead of asking each layer to learn a completely new output from scratch, they design the layers to learn the difference, or residual, between the input and the desired output. This approach makes it much easier for the network to train because the layers only need to focus on small adjustments rather than mapping everything from the beginning.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "mathematical differences between inputs and outputs"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "mappings learned without considering the original input"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 68,
+   "seconds": 0.4,
+   "retried": false
+  },
+  {
+   "id": "h04/detail/beginner",
+   "base_id": "h04",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "Instead of asking the computer to learn the entire output from scratch, the researchers change the task. They ask the computer to learn only the difference or the extra detail needed to improve the result based on the original input. This makes it much easier for the computer to train very deep networks because it focuses on small adjustments rather than starting over at every step.",
+   "terms": [
+    {
+     "term": "explicitly",
+     "meaning": "stated clearly and directly"
+    },
+    {
+     "term": "residual functions",
+     "meaning": "the difference between the desired and current output"
+    },
+    {
+     "term": "unreferenced",
+     "meaning": "not connected to the original starting input"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 66,
+   "seconds": 6.0,
+   "retried": false
+  },
+  {
+   "id": "h04/detail/grad",
+   "base_id": "h04",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This approach addresses the vanishing gradient problem by forcing layers to learn the difference between the input and output, denoted as F(x) = H(x) - x, rather than mapping the input directly to the target. By learning these residual mappings, the network can effectively pass identity information through shortcut connections. This reformulation allows for significantly deeper architectures that remain trainable, as it is easier to optimize the residual mapping toward zero than to learn an identity mapping from scratch.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "mappings representing the difference between input and output"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "direct mappings from input to target output"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 79,
+   "seconds": 5.0,
+   "retried": false
+  },
+  {
+   "id": "h05/plain/default",
+   "base_id": "h05",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "This describes how electrons move through a material without hitting obstacles or losing energy. It happens over very short distances even when the material is not cooled down.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement of particles without scattering"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h05/plain/beginner",
+   "base_id": "h05",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means electricity flows through the material without hitting any obstacles or losing energy. It happens over very short gaps even when the material is not cooled down.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement without hitting anything"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 2.7,
+   "retried": false
+  },
+  {
+   "id": "h05/plain/grad",
+   "base_id": "h05",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "Charge carriers travel across submicron scales without scattering, maintaining momentum despite thermal energy. This demonstrates exceptionally high carrier mobility in graphene at ambient conditions.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "charge flow without scattering events"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one micrometer"
+    }
+   ],
+   "overlap": 0.05,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 2.8,
+   "retried": false
+  },
+  {
+   "id": "h05/simpler/default",
+   "base_id": "h05",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means electricity moves like a bowling ball rolling straight down a lane without hitting anything, even in tiny spaces and warm rooms.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electrons moving without crashing into things"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "extremely tiny lengths smaller than a micron"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 7.0,
+   "retried": false
+  },
+  {
+   "id": "h05/simpler/beginner",
+   "base_id": "h05",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "Electricity flows through this tiny space like a bowling ball rolling down an empty lane without hitting anything.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement without hitting anything"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "extremely tiny spaces"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 18,
+   "seconds": 8.0,
+   "retried": false
+  },
+  {
+   "id": "h05/simpler/grad",
+   "base_id": "h05",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Electrons flow through the material without hitting any obstacles, like a car driving on an empty highway without ever needing to brake or turn.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "charge carrier motion without scattering"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 4.9,
+   "retried": false
+  },
+  {
+   "id": "h05/detail/default",
+   "base_id": "h05",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This refers to electrons moving through a material without colliding with atoms or impurities. In this context, it means electricity flows through graphene very efficiently over short distances without losing energy as heat. This is significant because most materials require extreme cooling to achieve this effect, but graphene maintains this high performance at room temperature, which could lead to much faster and more efficient electronic devices.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement of particles without scattering or resistance"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one micrometer"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 66,
+   "seconds": 2.0,
+   "retried": false
+  },
+  {
+   "id": "h05/detail/beginner",
+   "base_id": "h05",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This means that electrons can travel through a material in a straight line without bumping into anything or losing energy, even over tiny distances and in a warm room. Usually, electrons hit atoms and slow down, which creates heat. Because these electrons move freely without crashing, the material can carry electricity much faster and more efficiently than standard wires. This is important for making smaller, faster, and cooler electronics.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement without hitting or scattering off atoms"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 69,
+   "seconds": 5.3,
+   "retried": false
+  },
+  {
+   "id": "h05/detail/grad",
+   "base_id": "h05",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This refers to charge carriers traversing the graphene lattice without scattering events over submicron scales. In conventional semiconductors, phonon scattering typically limits mean free paths at room temperature. The observation of ballistic transport in graphene at these scales and temperatures confirms exceptionally high carrier mobility, which is critical for developing high frequency, low power field effect transistors that operate efficiently without the resistive losses associated with diffusive transport.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "charge carrier movement without scattering"
+    },
+    {
+     "term": "submicron",
+     "meaning": "dimensions smaller than one micrometer"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 68,
+   "seconds": 5.7,
+   "retried": false
+  },
+  {
+   "id": "h06/plain/default",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "The Hubble constant is a number that describes how fast the universe is expanding. It measures the rate at which galaxies move away from each other over time.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "rate of universe expansion"
+    }
+   ],
+   "overlap": 0.15,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h06/plain/beginner",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This is a number that tells us how fast the universe is stretching out. It helps scientists figure out how quickly galaxies are moving away from each other.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the speed at which the universe expands"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 8.0,
+   "retried": false
+  },
+  {
+   "id": "h06/plain/grad",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The Hubble constant represents the current expansion rate of the universe. Planck measurements derive this value indirectly from early universe data, resulting in a lower estimate than direct local measurements.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "parameter describing the universe expansion rate"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 3.9,
+   "retried": false
+  },
+  {
+   "id": "h06/simpler/default",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "The Hubble constant is the speed at which the universe is expanding. Think of it like the rate at which a balloon grows when you inflate it.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "rate of cosmic expansion"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 2.9,
+   "retried": false
+  },
+  {
+   "id": "h06/simpler/beginner",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This is a number that tells us how fast the universe is stretching out. Think of it like the speed at which a balloon expands.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate of expansion of the universe"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 3.5,
+   "retried": false
+  },
+  {
+   "id": "h06/simpler/grad",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "This is the speed at which the universe is currently expanding. Think of it like the rate at which a balloon grows when you blow it up.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "rate of cosmic expansion"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 4.9,
+   "retried": false
+  },
+  {
+   "id": "h06/detail/default",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "The Hubble constant is a number that represents the current rate at which the universe is expanding. It describes how fast galaxies are moving away from each other based on their distance from us. In this context, scientists use it to understand the overall scale and age of the universe by measuring light from the early cosmos.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "rate of cosmic expansion"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 57,
+   "seconds": 5.1,
+   "retried": false
+  },
+  {
+   "id": "h06/detail/beginner",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "The Hubble constant is a number that tells us how fast the universe is expanding. In this text, scientists use data from space to measure this speed precisely. Knowing this number helps researchers understand the age, size, and future of our entire universe.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "speed at which the universe is expanding"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 43,
+   "seconds": 8.5,
+   "retried": false
+  },
+  {
+   "id": "h06/detail/grad",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "The Hubble constant represents the current expansion rate of the universe. In this context, the Planck measurement of 67.4 kilometers per second per megaparsec is crucial because it anchors the standard Lambda CDM model. However, this early universe inferred value famously creates the Hubble tension when compared to higher local distance ladder measurements, driving ongoing debates in precision cosmology.",
+   "terms": [],
+   "overlap": 0.05,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 59,
+   "seconds": 8.3,
+   "retried": false
+  },
+  {
+   "id": "h07/plain/default",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "The vaccine prevented 95 percent of Covid-19 cases in the study. The credible interval shows the range of statistical certainty for how well the vaccine works.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range of values indicating statistical certainty"
+    }
+   ],
+   "overlap": 0.31,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h07/plain/beginner",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means the vaccine stopped 95 out of every 100 people from getting sick with Covid-19. It worked extremely well in the study.",
+   "terms": [
+    {
+     "term": "BNT162b2",
+     "meaning": "the specific name for the vaccine being tested"
+    },
+    {
+     "term": "credible interval",
+     "meaning": "a statistical range showing how sure researchers are"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 8.3,
+   "retried": false
+  },
+  {
+   "id": "h07/plain/grad",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The vaccine demonstrated a 95 percent reduction in symptomatic disease risk compared to placebo. The credible interval indicates the range where the true efficacy likely lies based on the Bayesian statistical analysis used.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "Bayesian range estimating the true parameter value"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 2.6,
+   "retried": false
+  },
+  {
+   "id": "h07/simpler/default",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "The vaccine worked very well. Think of it like a shield blocking 95 out of 100 potential infections compared to getting nothing.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range of likely values based on data"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 22,
+   "seconds": 7.4,
+   "retried": false
+  },
+  {
+   "id": "h07/simpler/beginner",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means the vaccine works like a powerful shield, stopping 95 out of 100 people from getting sick with Covid-19.",
+   "terms": [
+    {
+     "term": "BNT162b2",
+     "meaning": "the name of the specific vaccine being tested"
+    },
+    {
+     "term": "credible interval",
+     "meaning": "a range of likely values for the results"
+    }
+   ],
+   "overlap": 0.23,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 20,
+   "seconds": 7.0,
+   "retried": false
+  },
+  {
+   "id": "h07/simpler/grad",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "The vaccine reduced the risk of getting sick by 95 percent. Think of it like a shield that blocks almost all incoming arrows.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range where the true effect likely falls"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 2.5,
+   "retried": false
+  },
+  {
+   "id": "h07/detail/default",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This statement means the vaccine significantly reduced the risk of getting sick with Covid-19 compared to the placebo group. The credible interval provides a statistical range of certainty, showing that researchers are highly confident the true effectiveness of the vaccine falls between 90.3 percent and 97.6 percent. This is important because it proves the vaccine is highly reliable at preventing infection in the study population.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range indicating statistical certainty"
+    }
+   ],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 65,
+   "seconds": 3.3,
+   "retried": false
+  },
+  {
+   "id": "h07/detail/beginner",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This statement means that the vaccine works very well to stop people from getting sick. The number 95 percent shows that most people who got the vaccine stayed healthy compared to those who did not. The credible interval is a range of numbers that scientists use to show they are very confident in their results. This matters because it proves the vaccine is a strong tool for keeping people safe from the virus.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range of likely results"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 73,
+   "seconds": 2.8,
+   "retried": false
+  },
+  {
+   "id": "h07/detail/grad",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This result demonstrates the primary efficacy endpoint of the phase three trial for the BNT162b2 mRNA vaccine. The ninety-five percent vaccine efficacy, backed by a narrow credible interval, indicates robust protection against symptomatic Covid-19 across diverse demographic subgroups. This high level of protection, achieved with an acceptable safety profile, provided the foundational clinical evidence supporting emergency use authorization and global immunization campaigns during the pandemic.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "Bayesian interval estimating parameter uncertainty"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [
+    "five",
+    "ninety",
+    "three"
+   ],
+   "missingSpans": [],
+   "words": 65,
+   "seconds": 7.7,
+   "retried": false
+  },
+  {
+   "id": "h08/plain/default",
+   "base_id": "h08",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "This refers to using the CRISPR system as a tool to change DNA sequences by using specific RNA molecules to guide where those changes happen.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "make full use of and derive benefit from"
+    },
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled or directed by RNA sequences"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing an organism's DNA"
+    }
+   ],
+   "overlap": 0.15,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h08/plain/beginner",
+   "base_id": "h08",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means scientists can use these natural tools to easily change or fix the DNA inside living things by using simple RNA instructions.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "to make use of something for a benefit"
+    },
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by using specific RNA molecules"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing the genetic code of an organism"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 2.8,
+   "retried": false
+  },
+  {
+   "id": "h08/plain/grad",
+   "base_id": "h08",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "This refers to the ability to repurpose the Cas9 endonuclease as a versatile tool for precise genomic modifications by simply modifying the guide RNA sequence.",
+   "terms": [
+    {
+     "term": "RNA-programmable",
+     "meaning": "directed by synthetic RNA sequences"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 3.1,
+   "retried": false
+  },
+  {
+   "id": "h08/simpler/default",
+   "base_id": "h08",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means using a natural bacterial tool like a pair of biological scissors to rewrite DNA instructions, guided by a specific RNA molecule.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "use for one's own advantage"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing the DNA code of living things"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 11.0,
+   "retried": false
+  },
+  {
+   "id": "h08/simpler/beginner",
+   "base_id": "h08",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means we can use small pieces of RNA like a remote control to tell a special protein exactly where to change the instructions in DNA.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "to make good use of something"
+    },
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by using specific RNA molecules"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing the code inside living things"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 4.1,
+   "retried": false
+  },
+  {
+   "id": "h08/simpler/grad",
+   "base_id": "h08",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "This means we can use simple RNA molecules as remote controls to tell the Cas9 protein exactly where to cut and edit specific DNA sequences.",
+   "terms": [
+    {
+     "term": "RNA-programmable",
+     "meaning": "guided by synthetic RNA sequences"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 4.6,
+   "retried": false
+  },
+  {
+   "id": "h08/detail/default",
+   "base_id": "h08",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This phrase refers to the possibility of using the CRISPR-Cas9 system as a tool to change DNA sequences. Because the system uses RNA to find specific locations in the genome, scientists can program it to cut DNA at precise spots. This is important because it allows researchers to edit genes with high accuracy, which could help in treating genetic diseases or studying how specific genes function in living organisms.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "make full use of a resource"
+    },
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by specific RNA sequences"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing an organism's DNA"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 69,
+   "seconds": 4.1,
+   "retried": false
+  },
+  {
+   "id": "h08/detail/beginner",
+   "base_id": "h08",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This phrase means scientists can use this natural bacterial defense system as a tool to rewrite genetic code using RNA molecules as guides. This matters because it allows researchers to make precise changes to DNA, which can help fix genetic diseases or improve crops.",
+   "terms": [
+    {
+     "term": "exploit",
+     "meaning": "use for a helpful purpose"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing living things DNA"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 44,
+   "seconds": 8.8,
+   "retried": false
+  },
+  {
+   "id": "h08/detail/grad",
+   "base_id": "h08",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This phrase refers to the capability of using the dual-RNA guided Cas9 endonuclease as a modular tool for precise genomic modifications. By substituting the crRNA guide sequence, researchers can redirect the Cas9 enzyme to target arbitrary DNA loci. This mechanism is significant because it decouples the targeting specificity from the protein component, enabling a versatile, programmable platform for site-specific genome engineering that is far more efficient than traditional protein-based DNA binding domains.",
+   "terms": [
+    {
+     "term": "RNA-programmable",
+     "meaning": "directed by sequence-specific guide RNA molecules"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 72,
+   "seconds": 4.0,
+   "retried": false
+  },
+  {
+   "id": "h09/plain/default",
+   "base_id": "h09",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "This means the computer model can accurately predict a protein shape even when it cannot compare that protein to any other previously studied ones.",
+   "terms": [
+    {
+     "term": "similar structure",
+     "meaning": "a previously mapped protein shape"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h09/plain/beginner",
+   "base_id": "h09",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means the computer program can predict a protein shape successfully, even when scientists have never found another protein shaped quite like it before.",
+   "terms": [],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 7.5,
+   "retried": false
+  },
+  {
+   "id": "h09/plain/grad",
+   "base_id": "h09",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The model achieves high accuracy by predicting protein folds de novo, without relying on template-based modeling or evolutionary conservation from known structural homologs.",
+   "terms": [
+    {
+     "term": "similar structure",
+     "meaning": "a protein with a homologous fold"
+    }
+   ],
+   "overlap": 0.05,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 2.1,
+   "retried": false
+  },
+  {
+   "id": "h09/simpler/default",
+   "base_id": "h09",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means the computer can figure out a protein shape even when it has never seen anything like it before, like solving a brand new puzzle.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "having a similar structure or origin"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 25.0,
+   "retried": false
+  },
+  {
+   "id": "h09/simpler/beginner",
+   "base_id": "h09",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means figuring out the shape of something completely new, like solving a puzzle without ever seeing the picture on the box.",
+   "terms": [],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 22,
+   "seconds": 1.9,
+   "retried": false
+  },
+  {
+   "id": "h09/simpler/grad",
+   "base_id": "h09",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Predicting a protein shape completely from scratch, without using any previously known examples to help guide the computer program.",
+   "terms": [],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 19,
+   "seconds": 7.5,
+   "retried": false
+  },
+  {
+   "id": "h09/detail/default",
+   "base_id": "h09",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This phrase means that the new method works successfully even when scientists have no previous examples of similar protein structures to use as a guide. This matters because most known proteins lack a known structure, so a tool that does not rely on prior examples can solve unknowns that older methods cannot.",
+   "terms": [],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 52,
+   "seconds": 7.4,
+   "retried": false
+  },
+  {
+   "id": "h09/detail/beginner",
+   "base_id": "h09",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This phrase means that the new computer program can figure out the shape of a protein even when scientists have never seen anything like it before. Usually, researchers look for similar proteins to guess the shape of a new one. Being able to do this without any clues is a huge deal because it allows scientists to understand the shapes of many proteins that were previously a complete mystery.",
+   "terms": [
+    {
+     "term": "similar structure",
+     "meaning": "a shape that looks like another"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 69,
+   "seconds": 2.9,
+   "retried": false
+  },
+  {
+   "id": "h09/detail/grad",
+   "base_id": "h09",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This phrase highlights the key breakthrough of the new AlphaFold model. Traditional computational methods relied heavily on evolutionary templates, failing when a query protein lacked a known homologue. Achieving atomic accuracy without similar reference structures means the algorithm learns fundamental biophysical principles rather than merely memorizing or aligning existing templates, effectively solving the core bottleneck in structural bioinformatics.",
+   "terms": [],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 58,
+   "seconds": 8.4,
+   "retried": false
+  },
+  {
+   "id": "h10/plain/default",
+   "base_id": "h10",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "The hazard ratio shows that intensive treatment reduced the risk of heart events by 25 percent. The confidence interval means researchers are 95 percent sure the true risk reduction is between 11 and 36 percent.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "measure of how often events occur in groups"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "range where the true value likely falls"
+    }
+   ],
+   "overlap": 0.33,
+   "unsupported": [
+    "11",
+    "25",
+    "36"
+   ],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h10/plain/beginner",
+   "base_id": "h10",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means the intensive treatment group had a 25 percent lower risk of heart problems compared to the standard group. The range shows how certain researchers are about this result.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of how often an event happens"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "a range of likely values for a result"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 2.4,
+   "retried": false
+  },
+  {
+   "id": "h10/plain/grad",
+   "base_id": "h10",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "Intensive blood pressure control reduced the primary cardiovascular event rate by 25 percent compared to standard treatment. The narrow confidence interval confirms this finding is statistically robust.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "ratio of event rates between two groups"
+    }
+   ],
+   "overlap": 0.19,
+   "unsupported": [
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 2.4,
+   "retried": false
+  },
+  {
+   "id": "h10/simpler/default",
+   "base_id": "h10",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "The intensive treatment reduced the risk of heart problems by 25 percent. The range shows how certain researchers are that this benefit is real and not luck.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "relative risk of an event occurring"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "range where the true value likely falls"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 3.3,
+   "retried": false
+  },
+  {
+   "id": "h10/simpler/beginner",
+   "base_id": "h10",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means the intensive treatment lowered the risk of heart problems by 25 percent compared to standard care, like a discount on a price tag.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of how often events occur"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "a range of likely possible values"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 3.4,
+   "retried": false
+  },
+  {
+   "id": "h10/simpler/grad",
+   "base_id": "h10",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Intensive blood pressure control reduced the risk of major heart events by 25 percent compared to standard care, like getting a quarter off a price tag.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "relative risk of an event between two groups"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "range of values likely containing the true effect"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [
+    "25",
+    "quarter"
+   ],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 3.3,
+   "retried": false
+  },
+  {
+   "id": "h10/detail/default",
+   "base_id": "h10",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This statistical result shows that the intensive treatment group experienced twenty five percent fewer major cardiovascular events compared to the standard group. The hazard ratio of 0.75 means the risk went down. The confidence interval proves this finding is reliable and not just due to random chance, because the range stays below one.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "comparison of event rates between two groups"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "range of values likely containing the true effect"
+    }
+   ],
+   "overlap": 0.22,
+   "unsupported": [
+    "five",
+    "twenty"
+   ],
+   "missingSpans": [],
+   "words": 53,
+   "seconds": 7.9,
+   "retried": false
+  },
+  {
+   "id": "h10/detail/beginner",
+   "base_id": "h10",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "The hazard ratio of 0.75 means that people who received the intensive treatment were 25 percent less likely to have a heart problem or die compared to those in the standard group. The confidence interval shows the range of numbers that researchers are very sure about, meaning the real benefit is likely between 11 and 36 percent. This matters because it proves that lowering blood pressure more aggressively helps people stay healthier.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of how often events happen"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "a range of likely results"
+    }
+   ],
+   "overlap": 0.18,
+   "unsupported": [
+    "11",
+    "25",
+    "36"
+   ],
+   "missingSpans": [],
+   "words": 72,
+   "seconds": 2.5,
+   "retried": false
+  },
+  {
+   "id": "h10/detail/grad",
+   "base_id": "h10",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "The hazard ratio of 0.75 indicates a 25 percent relative risk reduction for the primary composite cardiovascular outcome in the intensive treatment group compared to the standard group. The 95 percent confidence interval, ranging from 0.64 to 0.89, excludes the null value of 1.0, confirming that the observed benefit is statistically significant. This precision suggests a robust clinical effect, supporting the efficacy of lower systolic targets despite the associated increase in specific adverse events.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "ratio of event rates between two study groups"
+    },
+    {
+     "term": "95% confidence interval",
+     "meaning": "range likely containing the true population effect size"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [
+    "1.0",
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 74,
+   "seconds": 3.3,
+   "retried": false
+  },
+  {
+   "id": "h11/plain/default",
+   "base_id": "h11",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "People taking semaglutide lost 14.9 percent of their body weight, while those taking a fake pill only lost 2.4 percent. This shows the drug was much more effective at helping people lose weight.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medication used for weight loss"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a pill with no active medicine"
+    }
+   ],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 3.8,
+   "retried": false
+  },
+  {
+   "id": "h11/plain/beginner",
+   "base_id": "h11",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "People taking the special medicine lost about fifteen percent of their body weight. People taking the fake medicine lost only about two percent.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a weight loss medicine"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment used for comparison"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "fifteen"
+   ],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 7.3,
+   "retried": false
+  },
+  {
+   "id": "h11/plain/grad",
+   "base_id": "h11",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "This highlights a striking efficacy difference, showing that semaglutide drove a nearly fifteen percent weight loss compared to just over two percent for placebo.",
+   "terms": [
+    {
+     "term": "semaglutide group",
+     "meaning": "patients receiving the active GLP 1 receptor agonist treatment"
+    },
+    {
+     "term": "placebo",
+     "meaning": "inactive control substance used for baseline comparison"
+    }
+   ],
+   "overlap": 0.21,
+   "unsupported": [
+    "fifteen"
+   ],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 2.0,
+   "retried": false
+  },
+  {
+   "id": "h11/simpler/default",
+   "base_id": "h11",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "People taking the medicine lost about fifteen percent of their body weight, like losing fifteen pounds out of one hundred, while the control group lost very little.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a weight loss medication used in the study"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment given for comparison"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [
+    "fifteen",
+    "hundred"
+   ],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h11/simpler/beginner",
+   "base_id": "h11",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "People taking the medicine lost about 15 percent of their body weight, while those taking a fake pill only lost about 2 percent.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medicine used to help people lose weight"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment with no active medicine"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 5.7,
+   "retried": false
+  },
+  {
+   "id": "h11/simpler/grad",
+   "base_id": "h11",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "People taking the drug lost about fifteen percent of their body weight, while those taking a dummy pill lost only two percent. It is like shedding a backpack.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a glucagon like peptide 1 receptor agonist"
+    },
+    {
+     "term": "placebo",
+     "meaning": "an inactive substance used as a control"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "fifteen"
+   ],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 5.1,
+   "retried": false
+  },
+  {
+   "id": "h11/detail/default",
+   "base_id": "h11",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This comparison shows that people taking the medication semaglutide lost significantly more body weight over 68 weeks than those taking a placebo. The negative percentages indicate a decrease in weight from the starting point. This matters because it demonstrates that the drug is much more effective at promoting weight loss than just lifestyle changes alone, which is what the placebo group experienced.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medication used to treat obesity and diabetes"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a substance with no active medicinal effect"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 62,
+   "seconds": 3.8,
+   "retried": false
+  },
+  {
+   "id": "h11/detail/beginner",
+   "base_id": "h11",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This shows how much weight people lost during the study. The group taking the medicine lost about 15 percent of their body weight, while the group taking a fake pill lost only about 2 percent. This matters because it proves the medicine is much more effective at helping people lose weight than just changing their lifestyle habits alone.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medicine used to help people lose weight"
+    },
+    {
+     "term": "placebo",
+     "meaning": "a fake treatment with no active medicine"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 58,
+   "seconds": 8.3,
+   "retried": false
+  },
+  {
+   "id": "h11/detail/grad",
+   "base_id": "h11",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This comparison highlights the significant efficacy of once-weekly subcutaneous semaglutide for weight management in non-diabetic individuals. The substantial difference between the active treatment and placebo groups demonstrates that semaglutide induces clinically meaningful weight loss over 68 weeks. This effect size is particularly notable given the primary estimand approach, which accounts for treatment discontinuation and rescue interventions, providing a robust measure of the drug's therapeutic impact on body weight reduction.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "GLP-1 receptor agonist used for weight management"
+    },
+    {
+     "term": "placebo",
+     "meaning": "Inactive substance used as a control"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 69,
+   "seconds": 4.6,
+   "retried": false
+  },
+  {
+   "id": "h12/plain/default",
+   "base_id": "h12",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "Over twenty seven years, the total weight of flying insects dropped by over three quarters during the season and by over eighty percent during the middle of summer.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total mass of living organisms"
+    },
+    {
+     "term": "seasonal decline",
+     "meaning": "a drop over the course of a year"
+    }
+   ],
+   "overlap": 0.27,
+   "unsupported": [
+    "eighty",
+    "quarters",
+    "seven",
+    "three",
+    "twenty"
+   ],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h12/plain/beginner",
+   "base_id": "h12",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "The total weight of all flying insects dropped by over three quarters during the summer months over the course of the study.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living things"
+    }
+   ],
+   "overlap": 0.36,
+   "unsupported": [
+    "quarters",
+    "three"
+   ],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 22,
+   "seconds": 4.5,
+   "retried": false
+  },
+  {
+   "id": "h12/plain/grad",
+   "base_id": "h12",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "The data indicates a severe, long-term reduction in total flying insect mass across diverse protected habitats. This magnitude of loss significantly exceeds previous estimates based on individual species counts.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total mass of living organisms in an area"
+    },
+    {
+     "term": "entomofauna",
+     "meaning": "the insect life of a particular region"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 29,
+   "seconds": 1.9,
+   "retried": false
+  },
+  {
+   "id": "h12/simpler/default",
+   "base_id": "h12",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means the total weight of all flying insects dropped by over three quarters. It is like having a full jar of fireflies and losing almost everyone.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total mass of living organisms in an area"
+    }
+   ],
+   "overlap": 0.14,
+   "unsupported": [
+    "quarters",
+    "three"
+   ],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 27,
+   "seconds": 3.9,
+   "retried": false
+  },
+  {
+   "id": "h12/simpler/beginner",
+   "base_id": "h12",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "Over 27 years, the total weight of flying insects dropped by about 80 percent, like a forest losing most of its leaves during the fall.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living things"
+    }
+   ],
+   "overlap": 0.31,
+   "unsupported": [
+    "80"
+   ],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 1.6,
+   "retried": false
+  },
+  {
+   "id": "h12/simpler/grad",
+   "base_id": "h12",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "The total weight of flying insects dropped drastically over nearly three decades, like a massive, steady leak draining a tank until almost nothing remains.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total mass of organisms in a given area"
+    },
+    {
+     "term": "entomofauna",
+     "meaning": "the insect life of a particular region"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [
+    "three"
+   ],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 24,
+   "seconds": 1.9,
+   "retried": false
+  },
+  {
+   "id": "h12/detail/default",
+   "base_id": "h12",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This phrase describes a massive reduction in the total weight of all flying insects collected during the study. A seasonal decline refers to the drop in insect numbers across the entire year, while the mid-summer decline specifically highlights the loss during the peak months when insects are usually most active. This matters because such a sharp decrease suggests that the environment is struggling to support insect life, which threatens the food sources for other animals.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total mass of living organisms in an area"
+    },
+    {
+     "term": "entomofauna",
+     "meaning": "the insect life of a particular region"
+    }
+   ],
+   "overlap": 0.21,
+   "unsupported": [],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 75,
+   "seconds": 4.4,
+   "retried": false
+  },
+  {
+   "id": "h12/detail/beginner",
+   "base_id": "h12",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This means that the total weight of all flying insects caught in traps dropped by over three quarters during the time researchers watched them. It matters because insects are a major food source for many birds and other animals. If there are far fewer insects, those animals will have a harder time finding enough to eat, which could cause big problems for the entire natural environment.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living things"
+    },
+    {
+     "term": "entomofauna",
+     "meaning": "all the insects living in a region"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [
+    "quarters",
+    "three"
+   ],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 66,
+   "seconds": 2.6,
+   "retried": false
+  },
+  {
+   "id": "h12/detail/grad",
+   "base_id": "h12",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This finding reveals a massive, multi-decade drop in total flying insect weight across protected German nature reserves. Measuring biomass rather than just single species counts is crucial because total mass directly reflects energy availability in food webs and overall ecosystem functioning. The sheer magnitude of these seasonal and mid-summer losses indicates a systemic ecological crisis that cannot be explained by local weather or land use changes alone.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total dry weight of living organisms"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 67,
+   "seconds": 6.1,
+   "retried": false
+  },
+  {
+   "id": "h13/plain/default",
+   "base_id": "h13",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "Only about one third of the repeated studies produced the same meaningful evidence as the originals. This shows that many initial findings were likely not as strong as first reported.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating a study to verify results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results unlikely to have happened by chance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "third"
+   ],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h13/plain/beginner",
+   "base_id": "h13",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "Out of the studies tested again, only thirty-six percent got the same important or clear results as the first time.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating a scientific study to test the results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results likely caused by a real pattern"
+    }
+   ],
+   "overlap": 0.4,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 20,
+   "seconds": 2.7,
+   "retried": false
+  },
+  {
+   "id": "h13/plain/grad",
+   "base_id": "h13",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "Only about a third of the replicated studies achieved statistical significance. This reveals a major drop in reproducibility compared to the original literature.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeated studies testing prior findings"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "unlikely to be due to chance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [
+    "third"
+   ],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 1.9,
+   "retried": false
+  },
+  {
+   "id": "h13/simpler/default",
+   "base_id": "h13",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "Only about one third of the repeated experiments got the same clear results as the first time. It is like trying a recipe twice and failing once.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating an experiment to check the results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results unlikely to have happened by pure chance"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [
+    "third",
+    "twice"
+   ],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 24.8,
+   "retried": false
+  },
+  {
+   "id": "h13/simpler/beginner",
+   "base_id": "h13",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "Only about one third of the repeated experiments got the same clear results as the first time, like trying a recipe twice and failing once.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating an experiment to check the results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results that are likely not just from luck"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [
+    "third",
+    "twice"
+   ],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 3.6,
+   "retried": false
+  },
+  {
+   "id": "h13/simpler/grad",
+   "base_id": "h13",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Only about a third of the repeated studies found the same significant results, like a coin flip landing on heads much less often the second time.",
+   "terms": [
+    {
+     "term": "statistically significant results",
+     "meaning": "findings likely not due to random chance"
+    },
+    {
+     "term": "replications",
+     "meaning": "repeated studies to check past findings"
+    }
+   ],
+   "overlap": 0.14,
+   "unsupported": [
+    "third"
+   ],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 3.0,
+   "retried": false
+  },
+  {
+   "id": "h13/detail/default",
+   "base_id": "h13",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This means that when researchers tried to repeat one hundred previous psychology studies, only thirty-six percent of them produced clear and reliable discoveries that met standard scientific thresholds. This matters because it shows that a large number of published findings might be difficult to reproduce, raising important questions about the reliability of published scientific research.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating studies to test previous findings"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results unlikely to be random chance"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [
+    "hundred"
+   ],
+   "missingSpans": [],
+   "words": 55,
+   "seconds": 1.8,
+   "retried": false
+  },
+  {
+   "id": "h13/detail/beginner",
+   "base_id": "h13",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This means that when researchers tried to repeat the original experiments, only about one third of them got the same clear results as the first time. In science, repeating an experiment is important to prove that the first result was not just a lucky guess or a mistake. Since so many studies failed to get the same results again, it suggests that many original findings might be less reliable than we first thought.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "repeating an experiment to check the results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "results that are likely not due to chance"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [
+    "third"
+   ],
+   "missingSpans": [],
+   "words": 73,
+   "seconds": 3.8,
+   "retried": false
+  },
+  {
+   "id": "h13/detail/grad",
+   "base_id": "h13",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This finding indicates a substantial replication crisis within psychology, where only about one third of studies yielded significant p values upon retesting. Given the high powered designs used, this low success rate suggests that many original findings were likely false positives or inflated by publication bias, rather than reflecting robust phenomena. This discrepancy highlights a systemic failure to reliably reproduce experimental effects, undermining the validity of the original literature.",
+   "terms": [
+    {
+     "term": "replications",
+     "meaning": "independent repetitions of an experiment to verify results"
+    },
+    {
+     "term": "statistically significant",
+     "meaning": "unlikely to have occurred by random chance"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [
+    "third"
+   ],
+   "missingSpans": [],
+   "words": 69,
+   "seconds": 12.3,
+   "retried": false
+  },
+  {
+   "id": "h14/plain/default",
+   "base_id": "h14",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "This refers to any corner point on a repeating pattern of triangles that covers the area the animal is moving through.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a point where two or more lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 21,
+   "seconds": 3.6,
+   "retried": false
+  },
+  {
+   "id": "h14/plain/beginner",
+   "base_id": "h14",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "This means any corner point on a repeating pattern made of triangles that covers the area where the animal is walking.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    },
+    {
+     "term": "spanning",
+     "meaning": "stretching across an entire area"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 21,
+   "seconds": 4.6,
+   "retried": false
+  },
+  {
+   "id": "h14/plain/grad",
+   "base_id": "h14",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "Grid cells fire at specific locations forming a hexagonal lattice across the environment. This geometric arrangement allows the brain to encode spatial coordinates through a periodic, repeating structure.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a point where triangle edges meet"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 5.9,
+   "retried": false
+  },
+  {
+   "id": "h14/simpler/default",
+   "base_id": "h14",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "This means a brain cell fires when an animal stands on any corner of a repeating triangle pattern that covers the floor like a tiled floor.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 23.2,
+   "retried": false
+  },
+  {
+   "id": "h14/simpler/beginner",
+   "base_id": "h14",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "This means the brain cell turns on when the animal stands on a specific spot in a pattern of triangles, like dots on a game board.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with all sides equal"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 2.9,
+   "retried": false
+  },
+  {
+   "id": "h14/simpler/grad",
+   "base_id": "h14",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "The cell fires when the animal reaches specific points on a triangular pattern covering the floor, much like a repeating honeycomb grid on a map.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 3.0,
+   "retried": false
+  },
+  {
+   "id": "h14/detail/default",
+   "base_id": "h14",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This phrase describes the specific locations where a grid cell fires or becomes active. Imagine a map covered in a perfectly repeating pattern of triangles. When an animal stands exactly on one of the points where these triangle corners meet, the brain cell fires. This matters because it shows how the brain creates a precise internal coordinate system, like a GPS grid, to help the animal track its exact location as it moves through space.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 75,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h14/detail/beginner",
+   "base_id": "h14",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This phrase describes a special repeating pattern of triangles that covers the space an animal explores. Each corner point in this triangle pattern acts like a trigger in the brain, turning on a specific brain cell whenever the animal steps on that exact spot. This helps the brain map out the environment and figure out where the animal is located.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point where lines meet"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 60,
+   "seconds": 1.8,
+   "retried": false
+  },
+  {
+   "id": "h14/detail/grad",
+   "base_id": "h14",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This refers to the hexagonal spatial firing pattern of grid cells in the dMEC. The vertices represent the specific locations where a cell fires, forming a periodic, triangular lattice that tiles the environment. This geometry is critical because it provides a metric for spatial representation, allowing the brain to compute distance and direction through path integration, independent of external sensory landmarks.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a point where lines of the grid intersect"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with three equal sides and angles"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 61,
+   "seconds": 3.0,
+   "retried": false
+  },
+  {
+   "id": "h15/plain/default",
+   "base_id": "h15",
+   "mode": "plain",
+   "profile": "default",
+   "answer": "Scientific results might not reflect reality at all. Instead, they often just show the common prejudices or expectations that researchers already held before they started their study.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "widely held unfair or slanted opinions"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 0.3,
+   "retried": false
+  },
+  {
+   "id": "h15/plain/beginner",
+   "base_id": "h15",
+   "mode": "plain",
+   "profile": "beginner",
+   "answer": "Scientific results might not be showing the truth. Instead, they often just reflect the unfair opinions or personal beliefs that the researchers already had before they started their work.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "common unfair opinions or pre-existing beliefs"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 4.9,
+   "retried": false
+  },
+  {
+   "id": "h15/plain/grad",
+   "base_id": "h15",
+   "mode": "plain",
+   "profile": "grad",
+   "answer": "Published results often reflect systematic errors or preconceived notions within a field rather than objective reality. These findings quantify the influence of bias instead of measuring the actual phenomenon under investigation.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "dominant systematic error or prejudice in research"
+    }
+   ],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 2.8,
+   "retried": false
+  },
+  {
+   "id": "h15/simpler/default",
+   "base_id": "h15",
+   "mode": "simpler",
+   "profile": "default",
+   "answer": "Scientific results might just be a mirror reflecting whatever widespread prejudice or unfair leaning already exists, like a biased scale that always tips the same way.",
+   "terms": [
+    {
+     "term": "prevailing",
+     "meaning": "most frequent or common at the time"
+    },
+    {
+     "term": "bias",
+     "meaning": "unfair preference for or against something"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 7.7,
+   "retried": false
+  },
+  {
+   "id": "h15/simpler/beginner",
+   "base_id": "h15",
+   "mode": "simpler",
+   "profile": "beginner",
+   "answer": "Scientists sometimes just report what they already expect to see instead of the truth, like a mirror reflecting only what is placed in front of it.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "common unfair opinions held by most people"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 3.8,
+   "retried": false
+  },
+  {
+   "id": "h15/simpler/grad",
+   "base_id": "h15",
+   "mode": "simpler",
+   "profile": "grad",
+   "answer": "Published scientific claims often just measure the hidden prejudices of the researchers, like a crooked scale that always weighs in favor of what scientists want.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "widespread prejudice or skewed viewpoints"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 6.8,
+   "retried": false
+  },
+  {
+   "id": "h15/detail/default",
+   "base_id": "h15",
+   "mode": "detail",
+   "profile": "default",
+   "answer": "This means that instead of discovering a new scientific truth, a study might just be reporting results that confirm what researchers already wanted or expected to find. It matters because it suggests that scientific data can be skewed by human prejudice or financial interests. When this happens, the study does not actually reveal facts about the world, but instead acts as a mirror that reflects the existing opinions or biases of the people conducting the research.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "common or dominant prejudice held by a group"
+    }
+   ],
+   "overlap": 0.03,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 76,
+   "seconds": 3.9,
+   "retried": false
+  },
+  {
+   "id": "h15/detail/beginner",
+   "base_id": "h15",
+   "mode": "detail",
+   "profile": "beginner",
+   "answer": "This means that instead of discovering new scientific truths, many published research studies are just accurately measuring the unfair prejudices or errors that scientists already held. This matters because it shows that science can sometimes be misled by human mistakes or outside influences rather than actual facts.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "widespread unfair preference or prejudice"
+    }
+   ],
+   "overlap": 0.03,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 47,
+   "seconds": 13.8,
+   "retried": false
+  },
+  {
+   "id": "h15/detail/grad",
+   "base_id": "h15",
+   "mode": "detail",
+   "profile": "grad",
+   "answer": "This statement suggests that in fields with high researcher flexibility and strong incentives for positive results, reported findings frequently reflect systematic error rather than biological reality. Instead of capturing true effects, the data effectively quantifies the researcher's prior expectations or the field's collective prejudice. This implies that the statistical significance observed is often an artifact of the experimental design choices that favor confirmation bias over objective discovery.",
+   "terms": [
+    {
+     "term": "prevailing bias",
+     "meaning": "systemic error or prejudice common within a field"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 67,
+   "seconds": 4.8,
+   "retried": false
+  }
+ ]
+}

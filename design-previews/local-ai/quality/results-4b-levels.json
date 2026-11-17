@@ -1,0 +1,5400 @@
+{
+ "engine": "local",
+ "model": "Qwen3.5-4B-Q4_K_M",
+ "label": "4b",
+ "prompts": "new",
+ "runner": "box, 6 threads, 15 GB, CPU only",
+ "modes": [
+  "plain",
+  "simpler",
+  "detail"
+ ],
+ "profiles": [
+  "default",
+  "beginner",
+  "grad"
+ ],
+ "items": [
+  {
+   "id": "r00/plain/default",
+   "base_id": "r00",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "Rubisco is a factory enzyme that makes sugar from air. If the air supply gets low, it mistakes the wrong gas for its job and starts making junk instead of sugar.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.3,
+    "promptTokens": 255,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1801,
+    "generatedTokens": 64,
+    "tokensPerSecond": 8.2
+   },
+   "retried": false,
+   "answer": "Rubisco is a factory enzyme that makes sugar from air. If the air supply gets low, it mistakes the wrong gas for its job and starts making junk instead of sugar.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that builds sugars using carbon dioxide"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 10.3,
+   "promptTokens": 255,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1801,
+   "generatedTokens": 64,
+   "tokensPerSecond": 8.2
+  },
+  {
+   "id": "r00/plain/beginner",
+   "base_id": "r00",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Rubisco is a busy worker that sometimes makes mistakes when there is too little carbon dioxide. When it mistakes oxygen for carbon dioxide, the plant wastes energy trying to fix the error.",
+    "overlap": 0.25,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.8,
+    "promptTokens": 266,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1801,
+    "generatedTokens": 85,
+    "tokensPerSecond": 10.11
+   },
+   "retried": false,
+   "answer": "Rubisco is a busy worker that sometimes makes mistakes when there is too little carbon dioxide. When it mistakes oxygen for carbon dioxide, the plant wastes energy trying to fix the error.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that helps plants make food"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "a mistake where the worker picks the wrong thing"
+    }
+   ],
+   "overlap": 0.25,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 10.8,
+   "promptTokens": 266,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1801,
+   "generatedTokens": 85,
+   "tokensPerSecond": 10.11
+  },
+  {
+   "id": "r00/plain/grad",
+   "base_id": "r00",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Rubisco mistakes oxygen for CO2 when CO2 levels fall, wasting energy fixing the wrong molecule. Plants like grasses avoid this by pumping CO2 to the enzyme, keeping oxygen reactions low.",
+    "overlap": 0.16,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.9,
+    "promptTokens": 279,
+    "promptSeconds": 2.8,
+    "cachedTokens": 1801,
+    "generatedTokens": 49,
+    "tokensPerSecond": 9.26
+   },
+   "retried": false,
+   "answer": "Rubisco mistakes oxygen for CO2 when CO2 levels fall, wasting energy fixing the wrong molecule. Plants like grasses avoid this by pumping CO2 to the enzyme, keeping oxygen reactions low.",
+   "terms": [],
+   "overlap": 0.16,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 7.9,
+   "promptTokens": 279,
+   "promptSeconds": 2.8,
+   "cachedTokens": 1801,
+   "generatedTokens": 49,
+   "tokensPerSecond": 9.26
+  },
+  {
+   "id": "r00/simpler/default",
+   "base_id": "r00",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "Rubisco likes carbon dioxide but sometimes mistakes it for oxygen. When there's less carbon dioxide inside the leaf, this mistake happens more often.",
+    "overlap": 0.5,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.1,
+    "promptTokens": 277,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1801,
+    "generatedTokens": 73,
+    "tokensPerSecond": 9.54
+   },
+   "retried": true,
+   "answer": "Rubisco is a busy enzyme that usually grabs carbon dioxide. But when there isn't enough carbon dioxide inside the leaf, it accidentally grabs oxygen instead, which wastes energy.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "the main enzyme plants use to fix carbon"
+    }
+   ],
+   "overlap": 0.4,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 20.2,
+   "promptTokens": 350,
+   "promptSeconds": 5.8,
+   "cachedTokens": 1801,
+   "generatedTokens": 63,
+   "tokensPerSecond": 9.12
+  },
+  {
+   "id": "r00/simpler/beginner",
+   "base_id": "r00",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Rubisco sometimes grabs the wrong gas when there isn't enough carbon dioxide. It should grab carbon dioxide, but if that gas is low, it grabs oxygen instead.",
+    "overlap": 0.36,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.7,
+    "promptTokens": 287,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1801,
+    "generatedTokens": 63,
+    "tokensPerSecond": 9.77
+   },
+   "retried": false,
+   "answer": "Rubisco sometimes grabs the wrong gas when there isn't enough carbon dioxide. It should grab carbon dioxide, but if that gas is low, it grabs oxygen instead.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that helps plants turn air into sugar"
+    }
+   ],
+   "overlap": 0.36,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 8.7,
+   "promptTokens": 287,
+   "promptSeconds": 2.4,
+   "cachedTokens": 1801,
+   "generatedTokens": 63,
+   "tokensPerSecond": 9.77
+  },
+  {
+   "id": "r00/simpler/grad",
+   "base_id": "r00",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Rubisco can mistakenly grab oxygen instead of carbon dioxide. As CO2 levels drop inside the leaf, this error happens more often, wasting energy fixing what was already fixed.",
+    "overlap": 0.35,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.3,
+    "promptTokens": 300,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1801,
+    "generatedTokens": 76,
+    "tokensPerSecond": 9.3
+   },
+   "retried": false,
+   "answer": "Rubisco can mistakenly grab oxygen instead of carbon dioxide. As CO2 levels drop inside the leaf, this error happens more often, wasting energy fixing what was already fixed.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "the enzyme that fixes carbon"
+    },
+    {
+     "term": "side reaction",
+     "meaning": "an unintended chemical process"
+    }
+   ],
+   "overlap": 0.35,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 10.3,
+   "promptTokens": 300,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1801,
+   "generatedTokens": 76,
+   "tokensPerSecond": 9.3
+  },
+  {
+   "id": "r00/detail/default",
+   "base_id": "r00",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "Rubisco, the enzyme that builds sugar from air, also grabs oxygen when there isn't enough carbon dioxide. This wastes energy because the plant has to fix the mistake it made.",
+    "overlap": 0.25,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.1,
+    "promptTokens": 255,
+    "promptSeconds": 2.0,
+    "cachedTokens": 1801,
+    "generatedTokens": 86,
+    "tokensPerSecond": 10.4
+   },
+   "retried": false,
+   "answer": "Rubisco, the enzyme that builds sugar from air, also grabs oxygen when there isn't enough carbon dioxide. This wastes energy because the plant has to fix the mistake it made.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "the main enzyme in plants that makes sugar"
+    },
+    {
+     "term": "oxygen",
+     "meaning": "a gas we breathe and plants use for energy"
+    }
+   ],
+   "overlap": 0.25,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 10.1,
+   "promptTokens": 255,
+   "promptSeconds": 2.0,
+   "cachedTokens": 1801,
+   "generatedTokens": 86,
+   "tokensPerSecond": 10.4
+  },
+  {
+   "id": "r00/detail/beginner",
+   "base_id": "r00",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "Rubisco is a busy worker that grabs carbon from the air. But when there's not enough carbon dioxide inside the leaf, it mistakes oxygen for carbon instead. This mistake wastes energy because the plant has to do extra work to fix the error.",
+    "overlap": 0.3,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.8,
+    "promptTokens": 266,
+    "promptSeconds": 2.0,
+    "cachedTokens": 1801,
+    "generatedTokens": 77,
+    "tokensPerSecond": 9.82
+   },
+   "retried": false,
+   "answer": "Rubisco is a busy worker that grabs carbon from the air. But when there's not enough carbon dioxide inside the leaf, it mistakes oxygen for carbon instead. This mistake wastes energy because the plant has to do extra work to fix the error.",
+   "terms": [
+    {
+     "term": "Rubisco",
+     "meaning": "an enzyme that helps plants make sugar"
+    }
+   ],
+   "overlap": 0.3,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 43,
+   "seconds": 9.8,
+   "promptTokens": 266,
+   "promptSeconds": 2.0,
+   "cachedTokens": 1801,
+   "generatedTokens": 77,
+   "tokensPerSecond": 9.82
+  },
+  {
+   "id": "r00/detail/grad",
+   "base_id": "r00",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "Rubisco isn't specific; it mistakes oxygen for CO2 when CO2 levels fall. This causes photorespiration, a wasteful process that burns fixed carbon without making sugar. Plants with C4 metabolism actively pump CO2 to Rubisco's site, suppressing this error and saving energy under hot, dry conditions.",
+    "overlap": 0.1,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 15.7,
+    "promptTokens": 279,
+    "promptSeconds": 2.7,
+    "cachedTokens": 1801,
+    "generatedTokens": 122,
+    "tokensPerSecond": 9.31
+   },
+   "retried": false,
+   "answer": "Rubisco isn't specific; it mistakes oxygen for CO2 when CO2 levels fall. This causes photorespiration, a wasteful process that burns fixed carbon without making sugar. Plants with C4 metabolism actively pump CO2 to Rubisco's site, suppressing this error and saving energy under hot, dry conditions.",
+   "terms": [
+    {
+     "term": "photorespiration",
+     "meaning": "wasteful reaction where Rubisco uses oxygen instead of CO2"
+    },
+    {
+     "term": "C4 metabolism",
+     "meaning": "a mechanism that concentrates CO2 to minimize photorespiration"
+    }
+   ],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 45,
+   "seconds": 15.7,
+   "promptTokens": 279,
+   "promptSeconds": 2.7,
+   "cachedTokens": 1801,
+   "generatedTokens": 122,
+   "tokensPerSecond": 9.31
+  },
+  {
+   "id": "h01/plain/default",
+   "base_id": "h01",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The Transformer doesn't use old methods like keeping a running list or scanning patterns in tiny windows. It only uses attention, which lets it look at all words at once instead of one by one.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.7,
+    "promptTokens": 381,
+    "promptSeconds": 3.4,
+    "cachedTokens": 1801,
+    "generatedTokens": 89,
+    "tokensPerSecond": 8.53
+   },
+   "retried": false,
+   "answer": "The Transformer doesn't use old methods like keeping a running list or scanning patterns in tiny windows. It only uses attention, which lets it look at all words at once instead of one by one.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "using past steps to calculate the next step"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "scanning small parts of data to find patterns"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 13.7,
+   "promptTokens": 381,
+   "promptSeconds": 3.4,
+   "cachedTokens": 1801,
+   "generatedTokens": 89,
+   "tokensPerSecond": 8.53
+  },
+  {
+   "id": "h01/plain/beginner",
+   "base_id": "h01",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "We built a network that doesn't use the old repeating or scanning tricks. It just uses one smart attention part to look at everything it needs, making it faster and easier to learn.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.3,
+    "promptTokens": 392,
+    "promptSeconds": 3.6,
+    "cachedTokens": 1801,
+    "generatedTokens": 84,
+    "tokensPerSecond": 9.46
+   },
+   "retried": false,
+   "answer": "We built a network that doesn't use the old repeating or scanning tricks. It just uses one smart attention part to look at everything it needs, making it faster and easier to learn.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "a method where information repeats over time"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a way of mixing nearby parts together"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 12.3,
+   "promptTokens": 392,
+   "promptSeconds": 3.6,
+   "cachedTokens": 1801,
+   "generatedTokens": 84,
+   "tokensPerSecond": 9.46
+  },
+  {
+   "id": "h01/plain/grad",
+   "base_id": "h01",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The Transformer model skips the recurrent and convolutional layers used in previous dominant sequence transduction models. It relies solely on attention mechanisms, which simplifies the architecture while improving parallelization and training speed.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.7,
+    "promptTokens": 405,
+    "promptSeconds": 3.3,
+    "cachedTokens": 1801,
+    "generatedTokens": 87,
+    "tokensPerSecond": 10.17
+   },
+   "retried": false,
+   "answer": "The Transformer model skips the recurrent and convolutional layers used in previous dominant sequence transduction models. It relies solely on attention mechanisms, which simplifies the architecture while improving parallelization and training speed.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "processing sequences one step at a time"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "filtering patterns across local regions of input"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 11.7,
+   "promptTokens": 405,
+   "promptSeconds": 3.3,
+   "cachedTokens": 1801,
+   "generatedTokens": 87,
+   "tokensPerSecond": 10.17
+  },
+  {
+   "id": "h01/simpler/default",
+   "base_id": "h01",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "The new design drops two old parts of the brain-like system. It keeps only one part that lets the model look at all words at once instead of step-by-step.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.8,
+    "promptTokens": 403,
+    "promptSeconds": 3.5,
+    "cachedTokens": 1801,
+    "generatedTokens": 81,
+    "tokensPerSecond": 9.6
+   },
+   "retried": false,
+   "answer": "The new design drops two old parts of the brain-like system. It keeps only one part that lets the model look at all words at once instead of step-by-step.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "looking at past steps one by one"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a special way to mix parts together"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 11.8,
+   "promptTokens": 403,
+   "promptSeconds": 3.5,
+   "cachedTokens": 1801,
+   "generatedTokens": 81,
+   "tokensPerSecond": 9.6
+  },
+  {
+   "id": "h01/simpler/beginner",
+   "base_id": "h01",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "They ditched two old parts of the computer brain, making a simpler design that learns faster and needs less time to train.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.3,
+    "promptTokens": 413,
+    "promptSeconds": 3.7,
+    "cachedTokens": 1801,
+    "generatedTokens": 70,
+    "tokensPerSecond": 9.15
+   },
+   "retried": false,
+   "answer": "They ditched two old parts of the computer brain, making a simpler design that learns faster and needs less time to train.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "a pattern that repeats in time"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "a way of mixing patterns together"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 22,
+   "seconds": 11.3,
+   "promptTokens": 413,
+   "promptSeconds": 3.7,
+   "cachedTokens": 1801,
+   "generatedTokens": 70,
+   "tokensPerSecond": 9.15
+  },
+  {
+   "id": "h01/simpler/grad",
+   "base_id": "h01",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "We removed the usual back-and-forth loops and sliding window filters, keeping only attention. This lets us train faster and use parallel hardware better.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.7,
+    "promptTokens": 426,
+    "promptSeconds": 3.8,
+    "cachedTokens": 1801,
+    "generatedTokens": 77,
+    "tokensPerSecond": 8.63
+   },
+   "retried": false,
+   "answer": "We removed the usual back-and-forth loops and sliding window filters, keeping only attention. This lets us train faster and use parallel hardware better.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "using past outputs to help compute current ones"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "sliding filters that mix nearby features"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 12.7,
+   "promptTokens": 426,
+   "promptSeconds": 3.8,
+   "cachedTokens": 1801,
+   "generatedTokens": 77,
+   "tokensPerSecond": 8.63
+  },
+  {
+   "id": "h01/detail/default",
+   "base_id": "h01",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "This new design drops two older, heavy parts of the network. It uses only attention to link words across sentences instead of relying on complex loops or sliding windows, which makes it faster to train.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.2,
+    "promptTokens": 381,
+    "promptSeconds": 3.4,
+    "cachedTokens": 1801,
+    "generatedTokens": 88,
+    "tokensPerSecond": 8.91
+   },
+   "retried": false,
+   "answer": "This new design drops two older, heavy parts of the network. It uses only attention to link words across sentences instead of relying on complex loops or sliding windows, which makes it faster to train.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "using past outputs to help calculate current ones"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "sliding patterns that scan data in blocks"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 13.2,
+   "promptTokens": 381,
+   "promptSeconds": 3.4,
+   "cachedTokens": 1801,
+   "generatedTokens": 88,
+   "tokensPerSecond": 8.91
+  },
+  {
+   "id": "h01/detail/beginner",
+   "base_id": "h01",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The old methods used repeating loops or sliding windows to look at words one step at a time. The Transformer skips those parts, letting it jump straight to related words in any order, which makes training faster.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.7,
+    "promptTokens": 392,
+    "promptSeconds": 3.6,
+    "cachedTokens": 1801,
+    "generatedTokens": 93,
+    "tokensPerSecond": 9.17
+   },
+   "retried": false,
+   "answer": "The old methods used repeating loops or sliding windows to look at words one step at a time. The Transformer skips those parts, letting it jump straight to related words in any order, which makes training faster.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "repeating steps that process data one by one"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "sliding windows that look at nearby bits of data"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 37,
+   "seconds": 13.7,
+   "promptTokens": 392,
+   "promptSeconds": 3.6,
+   "cachedTokens": 1801,
+   "generatedTokens": 93,
+   "tokensPerSecond": 9.17
+  },
+  {
+   "id": "h01/detail/grad",
+   "base_id": "h01",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The Transformer replaces the standard recurrent and convolutional layers used in previous sequence transduction models. By relying only on attention mechanisms, it removes the need for sequential processing or local feature extraction, enabling full parallelization and faster training times.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.8,
+    "promptTokens": 405,
+    "promptSeconds": 3.4,
+    "cachedTokens": 1801,
+    "generatedTokens": 94,
+    "tokensPerSecond": 8.98
+   },
+   "retried": false,
+   "answer": "The Transformer replaces the standard recurrent and convolutional layers used in previous sequence transduction models. By relying only on attention mechanisms, it removes the need for sequential processing or local feature extraction, enabling full parallelization and faster training times.",
+   "terms": [
+    {
+     "term": "recurrence",
+     "meaning": "processing data step-by-step in a chain"
+    },
+    {
+     "term": "convolutions",
+     "meaning": "sliding windows to extract local features"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 39,
+   "seconds": 13.8,
+   "promptTokens": 405,
+   "promptSeconds": 3.4,
+   "cachedTokens": 1801,
+   "generatedTokens": 94,
+   "tokensPerSecond": 8.98
+  },
+  {
+   "id": "h02/plain/default",
+   "base_id": "h02",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The chance that this signal was just random noise is less than one in 203,000 years. That's why scientists say it is more than 5.1 standard deviations away from what they'd expect by accident.",
+    "overlap": 0.31,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 15.4,
+    "promptTokens": 540,
+    "promptSeconds": 4.7,
+    "cachedTokens": 1801,
+    "generatedTokens": 97,
+    "tokensPerSecond": 9.01
+   },
+   "retried": false,
+   "answer": "The chance that this signal was just random noise is less than one in 203,000 years. That's why scientists say it is more than 5.1 standard deviations away from what they'd expect by accident.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a signal looks real but isn't"
+    },
+    {
+     "term": "σ",
+     "meaning": "a measure of how far from chance"
+    }
+   ],
+   "overlap": 0.31,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 34,
+   "seconds": 15.4,
+   "promptTokens": 540,
+   "promptSeconds": 4.7,
+   "cachedTokens": 1801,
+   "generatedTokens": 97,
+   "tokensPerSecond": 9.01
+  },
+  {
+   "id": "h02/plain/beginner",
+   "base_id": "h02",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "This signal was so rare that it would take more than 200,000 years for noise alone to make it up. That means the chance of this being random is tiny.",
+    "overlap": 0.15,
+    "unsupported": [
+     "200000"
+    ],
+    "missingSpans": [
+     "203 000 years"
+    ],
+    "seconds": 15.3,
+    "promptTokens": 527,
+    "promptSeconds": 4.9,
+    "cachedTokens": 1825,
+    "generatedTokens": 90,
+    "tokensPerSecond": 8.57
+   },
+   "retried": true,
+   "answer": "This signal was so rare that it would only happen by chance less than once every 203 000 years. That's why scientists say the significance is greater than 5.1 σ, meaning it is very unlikely to be a random mistake.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "the chance of a signal appearing when nothing real happened"
+    },
+    {
+     "term": "σ",
+     "meaning": "a measure of how far from random chance the result is"
+    }
+   ],
+   "overlap": 0.39,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 40,
+   "seconds": 31.5,
+   "promptTokens": 630,
+   "promptSeconds": 10.1,
+   "cachedTokens": 1836,
+   "generatedTokens": 107,
+   "tokensPerSecond": 9.6
+  },
+  {
+   "id": "h02/plain/grad",
+   "base_id": "h02",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The chance that this signal was just random noise is less than one in two hundred thousand years. The 5.1 sigma significance means the match to general relativity predictions is extremely strong and unlikely to be false.",
+    "overlap": 0.25,
+    "unsupported": [
+     "hundred",
+     "thousand"
+    ],
+    "missingSpans": [
+     "203 000 years"
+    ],
+    "seconds": 15.1,
+    "promptTokens": 529,
+    "promptSeconds": 4.6,
+    "cachedTokens": 1836,
+    "generatedTokens": 94,
+    "tokensPerSecond": 8.84
+   },
+   "retried": true,
+   "answer": "This false alarm rate means if there were no real signal, we'd expect to see something like this by chance less than once in 203 000 years. The >5.1 σ significance shows the probability of this match occurring by accident is extremely low.",
+   "terms": [],
+   "overlap": 0.39,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 43,
+   "seconds": 27.6,
+   "promptTokens": 626,
+   "promptSeconds": 10.2,
+   "cachedTokens": 1849,
+   "generatedTokens": 66,
+   "tokensPerSecond": 9.42
+  },
+  {
+   "id": "h02/simpler/default",
+   "base_id": "h02",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "The signal was so rare that it would have happened by chance less than once in 203,000 years. That's like finding a needle in a haystack and being sure the needle is real.",
+    "overlap": 0.31,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.2,
+    "promptTokens": 514,
+    "promptSeconds": 3.9,
+    "cachedTokens": 1849,
+    "generatedTokens": 91,
+    "tokensPerSecond": 9.7
+   },
+   "retried": false,
+   "answer": "The signal was so rare that it would have happened by chance less than once in 203,000 years. That's like finding a needle in a haystack and being sure the needle is real.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how likely a signal is just noise"
+    },
+    {
+     "term": "σ",
+     "meaning": "a measure of how far from random chance"
+    }
+   ],
+   "overlap": 0.31,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 13.2,
+   "promptTokens": 514,
+   "promptSeconds": 3.9,
+   "cachedTokens": 1849,
+   "generatedTokens": 91,
+   "tokensPerSecond": 9.7
+  },
+  {
+   "id": "h02/simpler/beginner",
+   "base_id": "h02",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "This signal was so rare that it would happen less than once in 203,000 years by chance alone. The 5.1 sigma means the chance of this being a random noise glitch is extremely tiny.",
+    "overlap": 0.29,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 14.8,
+    "promptTokens": 524,
+    "promptSeconds": 4.3,
+    "cachedTokens": 1849,
+    "generatedTokens": 100,
+    "tokensPerSecond": 9.45
+   },
+   "retried": false,
+   "answer": "This signal was so rare that it would happen less than once in 203,000 years by chance alone. The 5.1 sigma means the chance of this being a random noise glitch is extremely tiny.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a random mistake looks like a real signal"
+    },
+    {
+     "term": "sigma",
+     "meaning": "a measure of how sure we are that something is real"
+    }
+   ],
+   "overlap": 0.29,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 34,
+   "seconds": 14.8,
+   "promptTokens": 524,
+   "promptSeconds": 4.3,
+   "cachedTokens": 1849,
+   "generatedTokens": 100,
+   "tokensPerSecond": 9.45
+  },
+  {
+   "id": "h02/simpler/grad",
+   "base_id": "h02",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The chance this signal was random noise is less than one in two hundred thousand years. That's a significance of over 5.1 sigma, meaning it's extremely unlikely to be a fluke.",
+    "overlap": 0.27,
+    "unsupported": [
+     "hundred",
+     "thousand"
+    ],
+    "missingSpans": [
+     "203 000 years"
+    ],
+    "seconds": 14.2,
+    "promptTokens": 529,
+    "promptSeconds": 4.1,
+    "cachedTokens": 1857,
+    "generatedTokens": 94,
+    "tokensPerSecond": 9.18
+   },
+   "retried": true,
+   "answer": "The chance this signal was random noise is less than one in two hundred thousand years. That's a significance of over 5.1 sigma, meaning it's extremely unlikely to be a fluke.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a random fluctuation looks like a real signal"
+    },
+    {
+     "term": "sigma",
+     "meaning": "a measure of how far a result is from chance"
+    }
+   ],
+   "overlap": 0.27,
+   "unsupported": [
+    "hundred",
+    "thousand"
+   ],
+   "missingSpans": [
+    "203 000 years"
+   ],
+   "words": 31,
+   "seconds": 30.5,
+   "promptTokens": 626,
+   "promptSeconds": 9.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 101,
+   "tokensPerSecond": 9.18
+  },
+  {
+   "id": "h02/detail/default",
+   "base_id": "h02",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "This means the chance of seeing this signal by pure luck is tiny. It's like flipping a coin and getting heads 24 times in a row. The 5.1 sigma measure tells us we are very sure this was a real event from black holes.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [
+     "203 000 years"
+    ],
+    "seconds": 14.6,
+    "promptTokens": 471,
+    "promptSeconds": 3.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 104,
+    "tokensPerSecond": 9.71
+   },
+   "retried": true,
+   "answer": "This number measures how often a fake signal like this would appear by chance if nothing were happening. It says such a random fluke is less likely than once in every 203,000 years, which means the real event is very unlikely to be a mistake.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "the chance that the signal is just noise"
+    },
+    {
+     "term": "σ",
+     "meaning": "a unit of how far a result is from random chance"
+    }
+   ],
+   "overlap": 0.22,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 45,
+   "seconds": 30.7,
+   "promptTokens": 567,
+   "promptSeconds": 8.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 108,
+   "tokensPerSecond": 9.6
+  },
+  {
+   "id": "h02/detail/beginner",
+   "base_id": "h02",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The chance this signal was just random noise is less than one in two hundred thousand years. That's why scientists call it real and not a fluke.",
+    "overlap": 0.17,
+    "unsupported": [
+     "hundred",
+     "thousand"
+    ],
+    "missingSpans": [
+     "203 000 years"
+    ],
+    "seconds": 12.2,
+    "promptTokens": 482,
+    "promptSeconds": 3.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 83,
+    "tokensPerSecond": 9.54
+   },
+   "retried": true,
+   "answer": "This rate means you'd expect fewer than one fake signal like this every 203,000 years by pure chance. A significance greater than 5.1 σ shows the signal is far from random noise and is very strong evidence of a real event.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "how often a signal looks real but is just noise"
+    },
+    {
+     "term": "σ",
+     "meaning": "a unit measuring how far a result is from chance"
+    }
+   ],
+   "overlap": 0.35,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 29.3,
+   "promptTokens": 592,
+   "promptSeconds": 8.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 107,
+   "tokensPerSecond": 8.63
+  },
+  {
+   "id": "h02/detail/grad",
+   "base_id": "h02",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The false alarm rate is the probability of seeing this signal by pure chance if no black hole merger occurred. Less than 1 per 203,000 years means it's extremely unlikely to be noise. The 5.1σ significance confirms the detection is robust against random fluctuations.",
+    "overlap": 0.38,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 14.9,
+    "promptTokens": 495,
+    "promptSeconds": 4.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 106,
+    "tokensPerSecond": 9.67
+   },
+   "retried": false,
+   "answer": "The false alarm rate is the probability of seeing this signal by pure chance if no black hole merger occurred. Less than 1 per 203,000 years means it's extremely unlikely to be noise. The 5.1σ significance confirms the detection is robust against random fluctuations.",
+   "terms": [
+    {
+     "term": "false alarm rate",
+     "meaning": "probability of a signal being noise"
+    },
+    {
+     "term": "σ",
+     "meaning": "standard deviation used to measure statistical evidence"
+    }
+   ],
+   "overlap": 0.38,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 44,
+   "seconds": 14.9,
+   "promptTokens": 495,
+   "promptSeconds": 4.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 106,
+   "tokensPerSecond": 9.67
+  },
+  {
+   "id": "h03/plain/default",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "5.9 standard deviations means the signal is extremely unlikely to be a random chance event. It's so far from what we expect by accident that scientists can be very sure it's real.",
+    "overlap": 0.19,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.8,
+    "promptTokens": 354,
+    "promptSeconds": 2.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 48,
+    "tokensPerSecond": 9.39
+   },
+   "retried": false,
+   "answer": "5.9 standard deviations means the signal is extremely unlikely to be a random chance event. It's so far from what we expect by accident that scientists can be very sure it's real.",
+   "terms": [],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 7.8,
+   "promptTokens": 354,
+   "promptSeconds": 2.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 48,
+   "tokensPerSecond": 9.39
+  },
+  {
+   "id": "h03/plain/beginner",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "That number means the chance this result is just random luck is incredibly tiny. It's like flipping a coin 100 times and getting heads every single time.",
+    "overlap": 0.0,
+    "unsupported": [
+     "100"
+    ],
+    "missingSpans": [],
+    "seconds": 10.4,
+    "promptTokens": 365,
+    "promptSeconds": 3.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 64,
+    "tokensPerSecond": 8.63
+   },
+   "retried": true,
+   "answer": "The search found a signal that was 5.9 standard deviations away from what random chance would produce. That means the result is very unlikely to be a fluke and points strongly to the discovery of the Higgs boson.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "how far away something is from what chance predicts"
+    }
+   ],
+   "overlap": 0.16,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 23.4,
+   "promptTokens": 453,
+   "promptSeconds": 7.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 76,
+   "tokensPerSecond": 8.37
+  },
+  {
+   "id": "h03/plain/grad",
+   "base_id": "h03",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The result shows a signal that would only happen once in every 1.7 billion random background fluctuations. That 5.9 sigma level is the threshold used by the field to claim discovery, so this is a real observation of the Higgs boson.",
+    "overlap": 0.05,
+    "unsupported": [
+     "billion"
+    ],
+    "missingSpans": [],
+    "seconds": 14.1,
+    "promptTokens": 378,
+    "promptSeconds": 2.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 103,
+    "tokensPerSecond": 9.1
+   },
+   "retried": true,
+   "answer": "The 5.9 standard deviations measure how far the signal is from a random background fluctuation. This level of evidence is extremely unlikely to be a fluke, confirming the discovery of the Higgs boson.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a statistical measure of how far an event is from chance"
+    }
+   ],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 25.1,
+   "promptTokens": 463,
+   "promptSeconds": 6.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 75,
+   "tokensPerSecond": 9.72
+  },
+  {
+   "id": "h03/simpler/default",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "That's like finding a needle in a haystack that never happened by chance. It's 5.9 times further away from random noise than normal, so it's very likely real.",
+    "overlap": 0.07,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.7,
+    "promptTokens": 376,
+    "promptSeconds": 2.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 69,
+    "tokensPerSecond": 9.98
+   },
+   "retried": false,
+   "answer": "That's like finding a needle in a haystack that never happened by chance. It's 5.9 times further away from random noise than normal, so it's very likely real.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "how far a result is from what random chance usually gives"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 9.7,
+   "promptTokens": 376,
+   "promptSeconds": 2.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 69,
+   "tokensPerSecond": 9.98
+  },
+  {
+   "id": "h03/simpler/beginner",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "That number means the result is far from what would happen by chance. It's like finding a needle in a haystack that you'd never expect to find just by luck.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.9,
+    "promptTokens": 386,
+    "promptSeconds": 3.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 66,
+    "tokensPerSecond": 9.53
+   },
+   "retried": false,
+   "answer": "That number means the result is far from what would happen by chance. It's like finding a needle in a haystack that you'd never expect to find just by luck.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a way to say how far a result is from chance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 9.9,
+   "promptTokens": 386,
+   "promptSeconds": 3.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 66,
+   "tokensPerSecond": 9.53
+  },
+  {
+   "id": "h03/simpler/grad",
+   "base_id": "h03",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The signal is 5.9 sigma away from background noise, meaning a background fluctuation probability of 1.7x10^-9. This exceeds the typical 5-sigma discovery threshold.",
+    "overlap": 0.06,
+    "unsupported": [
+     "5"
+    ],
+    "missingSpans": [],
+    "seconds": 12.8,
+    "promptTokens": 399,
+    "promptSeconds": 3.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 87,
+    "tokensPerSecond": 9.17
+   },
+   "retried": true,
+   "answer": "The 5.9 standard deviations means the signal is far from chance. It corresponds to a background fluctuation probability of 1.7x10^-9, indicating very strong evidence for the production and decay of the Standard Model Higgs boson.",
+   "terms": [],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 23.8,
+   "promptTokens": 485,
+   "promptSeconds": 7.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 62,
+   "tokensPerSecond": 8.99
+  },
+  {
+   "id": "h03/detail/default",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "That number means the chance of finding this result by random luck is practically zero. It's like flipping a coin 23 times and getting heads every single time, or rolling a die 10 times and getting six every time.",
+    "overlap": 0.0,
+    "unsupported": [
+     "10",
+     "23",
+     "six"
+    ],
+    "missingSpans": [],
+    "seconds": 13.1,
+    "promptTokens": 354,
+    "promptSeconds": 3.0,
+    "cachedTokens": 1870,
+    "generatedTokens": 96,
+    "tokensPerSecond": 9.43
+   },
+   "retried": true,
+   "answer": "The finding has a significance of 5.9 standard deviations, meaning it is far from what random chance would usually produce. That corresponds to a background fluctuation probability of 1.7x10^-9, which is the chance that the signal is just a fluke.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how far away from chance something is"
+    },
+    {
+     "term": "background fluctuation probability",
+     "meaning": "the chance the result is just random noise"
+    }
+   ],
+   "overlap": 0.15,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 40,
+   "seconds": 30.4,
+   "promptTokens": 447,
+   "promptSeconds": 7.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 110,
+   "tokensPerSecond": 8.53
+  },
+  {
+   "id": "h03/detail/beginner",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "This number shows how sure scientists are that they found something real. A result this far from random chance means it's extremely unlikely to be a mistake or luck.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.5,
+    "promptTokens": 365,
+    "promptSeconds": 2.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 67,
+    "tokensPerSecond": 7.65
+   },
+   "retried": false,
+   "answer": "This number shows how sure scientists are that they found something real. A result this far from random chance means it's extremely unlikely to be a mistake or luck.",
+   "terms": [
+    {
+     "term": "standard deviations",
+     "meaning": "a measure of how far a result is from what chance would normally produce"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 11.5,
+   "promptTokens": 365,
+   "promptSeconds": 2.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 67,
+   "tokensPerSecond": 7.65
+  },
+  {
+   "id": "h03/detail/grad",
+   "base_id": "h03",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "This 5.9 sigma result means the signal is far beyond random background fluctuations, making it highly unlikely to be a statistical fluke. The probability of this being a background fluctuation is only 1.7x10^-9. It's the strongest evidence yet for the existence of the Higgs boson at that mass.",
+    "overlap": 0.04,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.0,
+    "promptTokens": 378,
+    "promptSeconds": 3.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 78,
+    "tokensPerSecond": 9.25
+   },
+   "retried": false,
+   "answer": "This 5.9 sigma result means the signal is far beyond random background fluctuations, making it highly unlikely to be a statistical fluke. The probability of this being a background fluctuation is only 1.7x10^-9. It's the strongest evidence yet for the existence of the Higgs boson at that mass.",
+   "terms": [],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 48,
+   "seconds": 12.0,
+   "promptTokens": 378,
+   "promptSeconds": 3.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 78,
+   "tokensPerSecond": 9.25
+  },
+  {
+   "id": "h04/plain/default",
+   "base_id": "h04",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "Instead of trying to learn a brand new picture from scratch for every layer, this method makes each layer learn only what it needs to fix or improve on what came before.",
+    "overlap": 0.13,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.7,
+    "promptTokens": 376,
+    "promptSeconds": 3.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 63,
+    "tokensPerSecond": 9.67
+   },
+   "retried": false,
+   "answer": "Instead of trying to learn a brand new picture from scratch for every layer, this method makes each layer learn only what it needs to fix or improve on what came before.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "changes that fix up the previous step"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 9.7,
+   "promptTokens": 376,
+   "promptSeconds": 3.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 63,
+   "tokensPerSecond": 9.67
+  },
+  {
+   "id": "h04/plain/beginner",
+   "base_id": "h04",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Instead of trying to learn a brand new function for every single layer, the network learns what to change from the previous layer's output. This makes it easier to train very deep networks.",
+    "overlap": 0.18,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.9,
+    "promptTokens": 387,
+    "promptSeconds": 3.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 83,
+    "tokensPerSecond": 8.69
+   },
+   "retried": false,
+   "answer": "Instead of trying to learn a brand new function for every single layer, the network learns what to change from the previous layer's output. This makes it easier to train very deep networks.",
+   "terms": [
+    {
+     "term": "residual",
+     "meaning": "the difference between two things"
+    },
+    {
+     "term": "reformulate",
+     "meaning": "to change how something is written or explained"
+    }
+   ],
+   "overlap": 0.18,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 12.9,
+   "promptTokens": 387,
+   "promptSeconds": 3.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 83,
+   "tokensPerSecond": 8.69
+  },
+  {
+   "id": "h04/plain/grad",
+   "base_id": "h04",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Instead of forcing each layer to learn a full transformation from input to output, we let them learn just the difference needed. This makes it easier for very deep networks to train without vanishing gradients.",
+    "overlap": 0.16,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 164.1,
+    "promptTokens": 400,
+    "promptSeconds": 3.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 91,
+    "tokensPerSecond": 0.56
+   },
+   "retried": false,
+   "answer": "Instead of forcing each layer to learn a full transformation from input to output, we let them learn just the difference needed. This makes it easier for very deep networks to train without vanishing gradients.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "the small update or difference a layer learns"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "functions that don't reference the original input"
+    }
+   ],
+   "overlap": 0.16,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 164.1,
+   "promptTokens": 400,
+   "promptSeconds": 3.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 91,
+   "tokensPerSecond": 0.56
+  },
+  {
+   "id": "h04/simpler/default",
+   "base_id": "h04",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "Instead of trying to learn every single step from scratch, the new method only learns what needs to change. It compares each layer's output to its own input.",
+    "overlap": 0.2,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.1,
+    "promptTokens": 398,
+    "promptSeconds": 3.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 61,
+    "tokensPerSecond": 9.3
+   },
+   "retried": false,
+   "answer": "Instead of trying to learn every single step from scratch, the new method only learns what needs to change. It compares each layer's output to its own input.",
+   "terms": [
+    {
+     "term": "residual",
+     "meaning": "the part that is left over or changed"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 10.1,
+   "promptTokens": 398,
+   "promptSeconds": 3.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 61,
+   "tokensPerSecond": 9.3
+  },
+  {
+   "id": "h04/simpler/beginner",
+   "base_id": "h04",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Instead of teaching the network to build a brand new map from scratch, we teach it what to subtract from its previous map. This keeps the signal strong all the way through the deep layers.",
+    "overlap": 0.12,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.6,
+    "promptTokens": 408,
+    "promptSeconds": 3.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 88,
+    "tokensPerSecond": 9.69
+   },
+   "retried": false,
+   "answer": "Instead of teaching the network to build a brand new map from scratch, we teach it what to subtract from its previous map. This keeps the signal strong all the way through the deep layers.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "small adjustments made to keep information flowing"
+    },
+    {
+     "term": "layer inputs",
+     "meaning": "the information coming into one step of the network"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 12.6,
+   "promptTokens": 408,
+   "promptSeconds": 3.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 88,
+   "tokensPerSecond": 9.69
+  },
+  {
+   "id": "h04/simpler/grad",
+   "base_id": "h04",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Instead of forcing the network to learn a new function from scratch for each layer, we let it learn the difference between the input and the output. This makes training very deep networks much easier.",
+    "overlap": 0.25,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 14.2,
+    "promptTokens": 421,
+    "promptSeconds": 3.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 90,
+    "tokensPerSecond": 8.45
+   },
+   "retried": false,
+   "answer": "Instead of forcing the network to learn a new function from scratch for each layer, we let it learn the difference between the input and the output. This makes training very deep networks much easier.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "learning the difference between input and output"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "learning a function with no reference to the input"
+    }
+   ],
+   "overlap": 0.25,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 14.2,
+   "promptTokens": 421,
+   "promptSeconds": 3.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 90,
+   "tokensPerSecond": 8.45
+  },
+  {
+   "id": "h04/detail/default",
+   "base_id": "h04",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "Normally, deep networks try to learn what each layer should do from scratch. This method teaches layers what to change from the input they received, rather than starting fresh. It's like teaching a student to correct a draft instead of writing a whole new essay. The paper shows this makes training much easier and allows for deeper networks that perform better on image tasks.",
+    "overlap": 0.09,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 17.1,
+    "promptTokens": 376,
+    "promptSeconds": 3.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 119,
+    "tokensPerSecond": 8.79
+   },
+   "retried": false,
+   "answer": "Normally, deep networks try to learn what each layer should do from scratch. This method teaches layers what to change from the input they received, rather than starting fresh. It's like teaching a student to correct a draft instead of writing a whole new essay. The paper shows this makes training much easier and allows for deeper networks that perform better on image tasks.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "changes applied to the input data"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "learning without using the original input"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 64,
+   "seconds": 17.1,
+   "promptTokens": 376,
+   "promptSeconds": 3.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 119,
+   "tokensPerSecond": 8.79
+  },
+  {
+   "id": "h04/detail/beginner",
+   "base_id": "h04",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "Usually, deep networks forget how to connect back from the end to the start. This trick makes every layer learn a small change on top of what came before. That way, even very long chains stay clear and easy to teach.",
+    "overlap": 0.04,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.9,
+    "promptTokens": 387,
+    "promptSeconds": 3.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 100,
+    "tokensPerSecond": 10.09
+   },
+   "retried": false,
+   "answer": "Usually, deep networks forget how to connect back from the end to the start. This trick makes every layer learn a small change on top of what came before. That way, even very long chains stay clear and easy to teach.",
+   "terms": [
+    {
+     "term": "residual functions",
+     "meaning": "learning just the small change needed to pass forward"
+    },
+    {
+     "term": "unreferenced functions",
+     "meaning": "trying to learn a whole new thing from scratch"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 12.9,
+   "promptTokens": 387,
+   "promptSeconds": 3.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 100,
+   "tokensPerSecond": 10.09
+  },
+  {
+   "id": "h04/detail/grad",
+   "base_id": "h04",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "Standard deep nets struggle because they try to learn complex mappings directly from input to output. We reframe layers to learn residuals, which are corrections or updates relative to the previous layer's output. This allows stable training for networks up to 152 layers on ImageNet, achieving 3.57% error and winning ILSVRC 2015.",
+    "overlap": 0.1,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.2,
+    "promptTokens": 400,
+    "promptSeconds": 3.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 85,
+    "tokensPerSecond": 8.61
+   },
+   "retried": false,
+   "answer": "Standard deep nets struggle because they try to learn complex mappings directly from input to output. We reframe layers to learn residuals, which are corrections or updates relative to the previous layer's output. This allows stable training for networks up to 152 layers on ImageNet, achieving 3.57% error and winning ILSVRC 2015.",
+   "terms": [],
+   "overlap": 0.1,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 52,
+   "seconds": 13.2,
+   "promptTokens": 400,
+   "promptSeconds": 3.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 85,
+   "tokensPerSecond": 8.61
+  },
+  {
+   "id": "h05/plain/default",
+   "base_id": "h05",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "This material lets electrons fly through without bumping into anything, like a smooth highway. It works this way even when the room is hot, not just when it's super cold.",
+    "overlap": 0.07,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.7,
+    "promptTokens": 144,
+    "promptSeconds": 1.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 68,
+    "tokensPerSecond": 9.27
+   },
+   "retried": false,
+   "answer": "This material lets electrons fly through without bumping into anything, like a smooth highway. It works this way even when the room is hot, not just when it's super cold.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electrons moving in straight lines without hitting other particles"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 8.7,
+   "promptTokens": 144,
+   "promptSeconds": 1.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 68,
+   "tokensPerSecond": 9.27
+  },
+  {
+   "id": "h05/plain/beginner",
+   "base_id": "h05",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Electrons move like a smooth train on a track instead of bumping into bumps. They go fast without slowing down, even when the chip is warm.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.6,
+    "promptTokens": 155,
+    "promptSeconds": 1.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 82,
+    "tokensPerSecond": 9.14
+   },
+   "retried": false,
+   "answer": "Electrons move like a smooth train on a track instead of bumping into bumps. They go fast without slowing down, even when the chip is warm.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement with no energy loss or slowing"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 10.6,
+   "promptTokens": 155,
+   "promptSeconds": 1.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 82,
+   "tokensPerSecond": 9.14
+  },
+  {
+   "id": "h05/plain/grad",
+   "base_id": "h05",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Electrons moved through the material without scattering or losing energy. This ballistic transport happens over nanoscale lengths and persists at room temperature, which is rare for such devices.",
+    "overlap": 0.24,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.0,
+    "promptTokens": 168,
+    "promptSeconds": 1.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 84,
+    "tokensPerSecond": 9.03
+   },
+   "retried": false,
+   "answer": "Electrons moved through the material without scattering or losing energy. This ballistic transport happens over nanoscale lengths and persists at room temperature, which is rare for such devices.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "movement of particles without scattering or resistance"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "distances smaller than one micrometer"
+    }
+   ],
+   "overlap": 0.24,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 11.0,
+   "promptTokens": 168,
+   "promptSeconds": 1.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 84,
+   "tokensPerSecond": 9.03
+  },
+  {
+   "id": "h05/simpler/default",
+   "base_id": "h05",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "The electrons move like a bullet in a straight line without bumping into anything. This works here because the path is so tiny that they don't hit obstacles.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.8,
+    "promptTokens": 166,
+    "promptSeconds": 1.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 86,
+    "tokensPerSecond": 8.6
+   },
+   "retried": false,
+   "answer": "The electrons move like a bullet in a straight line without bumping into anything. This works here because the path is so tiny that they don't hit obstacles.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electrons moving without bouncing or slowing down"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "distances smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 11.8,
+   "promptTokens": 166,
+   "promptSeconds": 1.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 86,
+   "tokensPerSecond": 8.6
+  },
+  {
+   "id": "h05/simpler/beginner",
+   "base_id": "h05",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Electrons move like a ball rolling down a smooth track instead of bumping into things. This works at normal temperatures and over very tiny spaces, making it super fast.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.0,
+    "promptTokens": 176,
+    "promptSeconds": 1.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 65,
+    "tokensPerSecond": 8.97
+   },
+   "retried": false,
+   "answer": "Electrons move like a ball rolling down a smooth track instead of bumping into things. This works at normal temperatures and over very tiny spaces, making it super fast.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "things moving in a straight line without hitting anything"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 9.0,
+   "promptTokens": 176,
+   "promptSeconds": 1.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 65,
+   "tokensPerSecond": 8.97
+  },
+  {
+   "id": "h05/simpler/grad",
+   "base_id": "h05",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Electrons move through this graphene like a solid beam of light. They don't bounce off impurities, so they zip across tiny gaps without losing energy.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.9,
+    "promptTokens": 189,
+    "promptSeconds": 1.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 78,
+    "tokensPerSecond": 9.52
+   },
+   "retried": false,
+   "answer": "Electrons move through this graphene like a solid beam of light. They don't bounce off impurities, so they zip across tiny gaps without losing energy.",
+   "terms": [
+    {
+     "term": "ballistic",
+     "meaning": "moving in a straight line without scattering"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one micrometer"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 9.9,
+   "promptTokens": 189,
+   "promptSeconds": 1.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 78,
+   "tokensPerSecond": 9.52
+  },
+  {
+   "id": "h05/detail/default",
+   "base_id": "h05",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "In this material, electrons move like a straight shot with no bumps or heat slowing them down. This happens at tiny scales and without cooling, which is rare because heat usually messes up that clean movement.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.2,
+    "promptTokens": 144,
+    "promptSeconds": 1.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 98,
+    "tokensPerSecond": 9.01
+   },
+   "retried": false,
+   "answer": "In this material, electrons move like a straight shot with no bumps or heat slowing them down. This happens at tiny scales and without cooling, which is rare because heat usually messes up that clean movement.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electrons moving in a straight line without bouncing off obstacles"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "distances smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 36,
+   "seconds": 12.2,
+   "promptTokens": 144,
+   "promptSeconds": 1.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 98,
+   "tokensPerSecond": 9.01
+  },
+  {
+   "id": "h05/detail/beginner",
+   "base_id": "h05",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "Usually, electrons bump into atoms and get slowed down by heat. Here they move like a smooth slide without hitting anything, even when it's warm. This lets electricity flow super fast in tiny circuits.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.7,
+    "promptTokens": 155,
+    "promptSeconds": 1.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 94,
+    "tokensPerSecond": 9.32
+   },
+   "retried": false,
+   "answer": "Usually, electrons bump into atoms and get slowed down by heat. Here they move like a smooth slide without hitting anything, even when it's warm. This lets electricity flow super fast in tiny circuits.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electrons moving without bumping into anything"
+    },
+    {
+     "term": "submicron distances",
+     "meaning": "distances smaller than one millionth of a meter"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 34,
+   "seconds": 11.7,
+   "promptTokens": 155,
+   "promptSeconds": 1.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 94,
+   "tokensPerSecond": 9.32
+  },
+  {
+   "id": "h05/detail/grad",
+   "base_id": "h05",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "Electrons move like a solid stream rather than bouncing off impurities in the graphene channel. This ballistic transport occurs over submicron distances, which is remarkable because most materials suffer from scattering at room temperature, limiting performance.",
+    "overlap": 0.27,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.1,
+    "promptTokens": 168,
+    "promptSeconds": 1.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 91,
+    "tokensPerSecond": 9.48
+   },
+   "retried": false,
+   "answer": "Electrons move like a solid stream rather than bouncing off impurities in the graphene channel. This ballistic transport occurs over submicron distances, which is remarkable because most materials suffer from scattering at room temperature, limiting performance.",
+   "terms": [
+    {
+     "term": "ballistic transport",
+     "meaning": "electrons moving without scattering or resistance"
+    },
+    {
+     "term": "submicron",
+     "meaning": "smaller than one micron"
+    }
+   ],
+   "overlap": 0.27,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 36,
+   "seconds": 11.1,
+   "promptTokens": 168,
+   "promptSeconds": 1.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 91,
+   "tokensPerSecond": 9.48
+  },
+  {
+   "id": "h06/plain/default",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The Hubble constant tells how fast the universe is expanding right now, measured in kilometers per second for every megaparsec of distance.",
+    "overlap": 0.14,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.8,
+    "promptTokens": 620,
+    "promptSeconds": 5.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 57,
+    "tokensPerSecond": 8.29
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells how fast the universe is expanding right now, measured in kilometers per second for every megaparsec of distance.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe expands"
+    }
+   ],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 22,
+   "seconds": 12.8,
+   "promptTokens": 620,
+   "promptSeconds": 5.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 57,
+   "tokensPerSecond": 8.29
+  },
+  {
+   "id": "h06/plain/beginner",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The Hubble constant tells us how fast the universe is stretching right now. Think of it as a speed limit for space itself.",
+    "overlap": 0.17,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.0,
+    "promptTokens": 631,
+    "promptSeconds": 4.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 55,
+    "tokensPerSecond": 9.8
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells us how fast the universe is stretching right now. Think of it as a speed limit for space itself.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe expands"
+    }
+   ],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 10.0,
+   "promptTokens": 631,
+   "promptSeconds": 4.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 55,
+   "tokensPerSecond": 9.8
+  },
+  {
+   "id": "h06/plain/grad",
+   "base_id": "h06",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The Hubble constant measures the current expansion rate of the universe, here found to be 67.4 km/s/Mpc with a margin of ±0.5. This value is the best estimate from Planck data when assuming the standard cosmological model.",
+    "overlap": 0.09,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.9,
+    "promptTokens": 644,
+    "promptSeconds": 5.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 83,
+    "tokensPerSecond": 9.26
+   },
+   "retried": false,
+   "answer": "The Hubble constant measures the current expansion rate of the universe, here found to be 67.4 km/s/Mpc with a margin of ±0.5. This value is the best estimate from Planck data when assuming the standard cosmological model.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the current rate at which the universe expands"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 37,
+   "seconds": 13.9,
+   "promptTokens": 644,
+   "promptSeconds": 5.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 83,
+   "tokensPerSecond": 9.26
+  },
+  {
+   "id": "h06/simpler/default",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "The Hubble constant tells us how fast the universe is expanding right now. The number found is 67.4, meaning galaxies move away from us at that speed for every kilometer of distance.",
+    "overlap": 0.11,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.3,
+    "promptTokens": 642,
+    "promptSeconds": 5.0,
+    "cachedTokens": 1870,
+    "generatedTokens": 69,
+    "tokensPerSecond": 9.37
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells us how fast the universe is expanding right now. The number found is 67.4, meaning galaxies move away from us at that speed for every kilometer of distance.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the speed at which the universe expands"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 12.3,
+   "promptTokens": 642,
+   "promptSeconds": 5.0,
+   "cachedTokens": 1870,
+   "generatedTokens": 69,
+   "tokensPerSecond": 9.37
+  },
+  {
+   "id": "h06/simpler/beginner",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "The Hubble constant is a number that tells us how fast the universe is stretching right now. It's measured in kilometers per second for every megaparsec of distance.",
+    "overlap": 0.12,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.2,
+    "promptTokens": 652,
+    "promptSeconds": 5.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 66,
+    "tokensPerSecond": 9.61
+   },
+   "retried": false,
+   "answer": "The Hubble constant is a number that tells us how fast the universe is stretching right now. It's measured in kilometers per second for every megaparsec of distance.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "a number showing how fast the universe is expanding"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 12.2,
+   "promptTokens": 652,
+   "promptSeconds": 5.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 66,
+   "tokensPerSecond": 9.61
+  },
+  {
+   "id": "h06/simpler/grad",
+   "base_id": "h06",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The Hubble constant measures how fast the universe is expanding right now, expressed in kilometers per second per megaparsec. Its value here is 67.4 with a small margin of error.",
+    "overlap": 0.12,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.0,
+    "promptTokens": 665,
+    "promptSeconds": 5.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 69,
+    "tokensPerSecond": 9.95
+   },
+   "retried": false,
+   "answer": "The Hubble constant measures how fast the universe is expanding right now, expressed in kilometers per second per megaparsec. Its value here is 67.4 with a small margin of error.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the current rate of cosmic expansion"
+    }
+   ],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 12.0,
+   "promptTokens": 665,
+   "promptSeconds": 5.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 69,
+   "tokensPerSecond": 9.95
+  },
+  {
+   "id": "h06/detail/default",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "The Hubble constant tells us how fast the universe is expanding right now, measured in kilometers per second per megaparsec. The value here is 67.4 ± 0.5 km/s/Mpc.",
+    "overlap": 0.11,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.7,
+    "promptTokens": 620,
+    "promptSeconds": 4.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 75,
+    "tokensPerSecond": 9.38
+   },
+   "retried": false,
+   "answer": "The Hubble constant tells us how fast the universe is expanding right now, measured in kilometers per second per megaparsec. The value here is 67.4 ± 0.5 km/s/Mpc.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the rate at which the universe is expanding"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 12.7,
+   "promptTokens": 620,
+   "promptSeconds": 4.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 75,
+   "tokensPerSecond": 9.38
+  },
+  {
+   "id": "h06/detail/beginner",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The Hubble constant tells us how fast the universe is expanding right now, measured in kilometers per second for every million light-years we look at. It's like a speedometer for the whole cosmos.",
+    "overlap": 0.1,
+    "unsupported": [
+     "million"
+    ],
+    "missingSpans": [],
+    "seconds": 12.4,
+    "promptTokens": 631,
+    "promptSeconds": 5.0,
+    "cachedTokens": 1870,
+    "generatedTokens": 69,
+    "tokensPerSecond": 9.27
+   },
+   "retried": true,
+   "answer": "The Hubble constant is a rate of expansion for the universe, measured in kilometers per second per megaparsec. The Planck data gives a value of 67.4 with an uncertainty of 0.5 km/s/Mpc.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "a number describing how fast the universe is expanding"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 25.7,
+   "promptTokens": 601,
+   "promptSeconds": 10.0,
+   "cachedTokens": 1985,
+   "generatedTokens": 81,
+   "tokensPerSecond": 9.68
+  },
+  {
+   "id": "h06/detail/grad",
+   "base_id": "h06",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The inferred Hubble constant is $H_0 = (67.4\\\\/0.5)$ km/s/Mpc. This value represents the current expansion rate of the universe. It is derived from the CMB anisotropies and remains stable across many commonly considered extensions to the base-$Λ$CDM cosmology.",
+    "overlap": 0.07,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 20.2,
+    "promptTokens": 644,
+    "promptSeconds": 4.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 150,
+    "tokensPerSecond": 9.75
+   },
+   "retried": false,
+   "answer": "The inferred Hubble constant is $H_0 = (67.4\\\\/0.5)$ km/s/Mpc. This value represents the current expansion rate of the universe. It is derived from the CMB anisotropies and remains stable across many commonly considered extensions to the base-$Λ$CDM cosmology.",
+   "terms": [
+    {
+     "term": "Hubble constant",
+     "meaning": "the current expansion rate of the universe"
+    },
+    {
+     "term": "$Λ$CDM",
+     "meaning": "the standard model of cosmology with dark energy and cold dark matter"
+    },
+    {
+     "term": "CMB anisotropies",
+     "meaning": "tiny temperature variations in the cosmic microwave background radiation"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 20.2,
+   "promptTokens": 644,
+   "promptSeconds": 4.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 150,
+   "tokensPerSecond": 9.75
+  },
+  {
+   "id": "h07/plain/default",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The vaccine stopped 95% of cases that would have happened otherwise. The 90.3 to 97.6 range shows how sure we are about that number.",
+    "overlap": 0.25,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.6,
+    "promptTokens": 609,
+    "promptSeconds": 4.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 66,
+    "tokensPerSecond": 10.24
+   },
+   "retried": false,
+   "answer": "The vaccine stopped 95% of cases that would have happened otherwise. The 90.3 to 97.6 range shows how sure we are about that number.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range that likely contains the true value"
+    }
+   ],
+   "overlap": 0.25,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 10.6,
+   "promptTokens": 609,
+   "promptSeconds": 4.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 66,
+   "tokensPerSecond": 10.24
+  },
+  {
+   "id": "h07/plain/beginner",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The vaccine worked by giving the body a safe copy of a virus piece to practice fighting. It stopped 95 out of every 100 infections from happening.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.8,
+    "promptTokens": 620,
+    "promptSeconds": 4.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 65,
+    "tokensPerSecond": 10.04
+   },
+   "retried": false,
+   "answer": "The vaccine worked by giving the body a safe copy of a virus piece to practice fighting. It stopped 95 out of every 100 infections from happening.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range that is likely to contain the true value"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 10.8,
+   "promptTokens": 620,
+   "promptSeconds": 4.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 65,
+   "tokensPerSecond": 10.04
+  },
+  {
+   "id": "h07/plain/grad",
+   "base_id": "h07",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The vaccine prevented 95% of Covid-19 cases in this trial. The 95% credible interval means we are very confident the true protection is between 90.3 and 97.6.",
+    "overlap": 0.47,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.5,
+    "promptTokens": 633,
+    "promptSeconds": 4.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 79,
+    "tokensPerSecond": 9.83
+   },
+   "retried": false,
+   "answer": "The vaccine prevented 95% of Covid-19 cases in this trial. The 95% credible interval means we are very confident the true protection is between 90.3 and 97.6.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range where the true value likely lies with a given confidence"
+    }
+   ],
+   "overlap": 0.47,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 12.5,
+   "promptTokens": 633,
+   "promptSeconds": 4.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 79,
+   "tokensPerSecond": 9.83
+  },
+  {
+   "id": "h07/simpler/default",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "95% of people who got the shot didn't get sick. The 90.3 to 97.6 number is the range where we are very sure the real protection is there.",
+    "overlap": 0.27,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.9,
+    "promptTokens": 631,
+    "promptSeconds": 4.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 70,
+    "tokensPerSecond": 9.56
+   },
+   "retried": false,
+   "answer": "95% of people who got the shot didn't get sick. The 90.3 to 97.6 number is the range where we are very sure the real protection is there.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "the range where the true value likely lies"
+    }
+   ],
+   "overlap": 0.27,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 11.9,
+   "promptTokens": 631,
+   "promptSeconds": 4.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 70,
+   "tokensPerSecond": 9.56
+  },
+  {
+   "id": "h07/simpler/beginner",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "The vaccine worked on 95 out of 100 people who got it. That means it stopped the virus from making you sick in 95 cases.",
+    "overlap": 0.09,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.8,
+    "promptTokens": 641,
+    "promptSeconds": 4.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 65,
+    "tokensPerSecond": 10.4
+   },
+   "retried": false,
+   "answer": "The vaccine worked on 95 out of 100 people who got it. That means it stopped the virus from making you sick in 95 cases.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "the range where the true number is likely to be"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 10.8,
+   "promptTokens": 641,
+   "promptSeconds": 4.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 65,
+   "tokensPerSecond": 10.4
+  },
+  {
+   "id": "h07/simpler/grad",
+   "base_id": "h07",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The vaccine prevented 95% of Covid-19 cases. The 95% credible interval of 90.3 to 97.6 means we are very sure the true effectiveness is in that range.",
+    "overlap": 0.47,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.6,
+    "promptTokens": 654,
+    "promptSeconds": 4.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 76,
+    "tokensPerSecond": 10.51
+   },
+   "retried": false,
+   "answer": "The vaccine prevented 95% of Covid-19 cases. The 95% credible interval of 90.3 to 97.6 means we are very sure the true effectiveness is in that range.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a statistical range where the true value likely lies"
+    }
+   ],
+   "overlap": 0.47,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 11.6,
+   "promptTokens": 654,
+   "promptSeconds": 4.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 76,
+   "tokensPerSecond": 10.51
+  },
+  {
+   "id": "h07/detail/default",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "95% means that if you had a group of people who got this vaccine and a similar group who got a fake shot, the vaccine group would get Covid-19 only 5% as often. The 95% credible interval of 90.3 to 97.6 is the range where we are very sure the true protection level lies.",
+    "overlap": 0.32,
+    "unsupported": [
+     "5"
+    ],
+    "missingSpans": [],
+    "seconds": 14.4,
+    "promptTokens": 609,
+    "promptSeconds": 4.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 106,
+    "tokensPerSecond": 10.3
+   },
+   "retried": true,
+   "answer": "The study found that BNT162b2 prevented Covid-19 95% of the time among people 16 and older. The 95% credible interval, 90.3 to 97.6, means we are very sure that the true protection level falls between these two numbers.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range where the true value likely lies"
+    },
+    {
+     "term": "BNT162b2",
+     "meaning": "the name of the vaccine being tested"
+    }
+   ],
+   "overlap": 0.35,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 29.7,
+   "promptTokens": 602,
+   "promptSeconds": 8.1,
+   "cachedTokens": 1963,
+   "generatedTokens": 120,
+   "tokensPerSecond": 10.46
+  },
+  {
+   "id": "h07/detail/beginner",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The vaccine worked really well. It stopped 95 out of every 100 cases of the virus from happening in people who got it, compared to those who didn't. The range from 90.3% to 97.6% shows how sure we are that it is this good.",
+    "overlap": 0.17,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.2,
+    "promptTokens": 620,
+    "promptSeconds": 4.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 95,
+    "tokensPerSecond": 10.37
+   },
+   "retried": false,
+   "answer": "The vaccine worked really well. It stopped 95 out of every 100 cases of the virus from happening in people who got it, compared to those who didn't. The range from 90.3% to 97.6% shows how sure we are that it is this good.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "the range where the true number is likely to be"
+    }
+   ],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 44,
+   "seconds": 13.2,
+   "promptTokens": 620,
+   "promptSeconds": 4.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 95,
+   "tokensPerSecond": 10.37
+  },
+  {
+   "id": "h07/detail/grad",
+   "base_id": "h07",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The vaccine prevented 95% of Covid-19 cases in this trial. The 95% credible interval from 90.3 to 97.6 means we are 95% confident the true efficacy lies within that range, reflecting a narrow estimate around the point estimate.",
+    "overlap": 0.3,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.4,
+    "promptTokens": 633,
+    "promptSeconds": 4.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 92,
+    "tokensPerSecond": 9.86
+   },
+   "retried": false,
+   "answer": "The vaccine prevented 95% of Covid-19 cases in this trial. The 95% credible interval from 90.3 to 97.6 means we are 95% confident the true efficacy lies within that range, reflecting a narrow estimate around the point estimate.",
+   "terms": [
+    {
+     "term": "credible interval",
+     "meaning": "a range where the true value is likely to be"
+    }
+   ],
+   "overlap": 0.3,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 13.4,
+   "promptTokens": 633,
+   "promptSeconds": 4.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 92,
+   "tokensPerSecond": 9.86
+  },
+  {
+   "id": "h08/plain/default",
+   "base_id": "h08",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "This research shows how scientists can program bacteria's own immune defense to cut out specific genes in a DNA sequence. That means we could use it to edit genomes using just RNA instructions.",
+    "overlap": 0.11,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.7,
+    "promptTokens": 322,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 64,
+    "tokensPerSecond": 10.16
+   },
+   "retried": false,
+   "answer": "This research shows how scientists can program bacteria's own immune defense to cut out specific genes in a DNA sequence. That means we could use it to edit genomes using just RNA instructions.",
+   "terms": [
+    {
+     "term": "genome editing",
+     "meaning": "changing the genetic code of an organism"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 8.7,
+   "promptTokens": 322,
+   "promptSeconds": 2.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 64,
+   "tokensPerSecond": 10.16
+  },
+  {
+   "id": "h08/plain/beginner",
+   "base_id": "h08",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "This system lets scientists program tiny scissors with RNA to cut specific genes in DNA. That could help fix genetic diseases by cutting out broken parts.",
+    "overlap": 0.11,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.7,
+    "promptTokens": 333,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 55,
+    "tokensPerSecond": 10.5
+   },
+   "retried": false,
+   "answer": "This system lets scientists program tiny scissors with RNA to cut specific genes in DNA. That could help fix genetic diseases by cutting out broken parts.",
+   "terms": [
+    {
+     "term": "genome",
+     "meaning": "all the DNA code of an organism"
+    }
+   ],
+   "overlap": 0.11,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 7.7,
+   "promptTokens": 333,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 55,
+   "tokensPerSecond": 10.5
+  },
+  {
+   "id": "h08/plain/grad",
+   "base_id": "h08",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "By fusing crRNA and tracrRNA into one strand, we can program Cas9 to cut any specific DNA sequence. This turns a bacterial immune system into a tool for precise genome editing.",
+    "overlap": 0.17,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.1,
+    "promptTokens": 346,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 86,
+    "tokensPerSecond": 9.68
+   },
+   "retried": false,
+   "answer": "By fusing crRNA and tracrRNA into one strand, we can program Cas9 to cut any specific DNA sequence. This turns a bacterial immune system into a tool for precise genome editing.",
+   "terms": [
+    {
+     "term": "genome editing",
+     "meaning": "cutting or changing DNA in an organism"
+    },
+    {
+     "term": "endonuclease",
+     "meaning": "an enzyme that cuts DNA"
+    }
+   ],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 11.1,
+   "promptTokens": 346,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 86,
+   "tokensPerSecond": 9.68
+  },
+  {
+   "id": "h08/simpler/default",
+   "base_id": "h08",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "This system lets scientists use a custom RNA code to cut specific parts of DNA, like using molecular scissors with a remote control.",
+    "overlap": 0.12,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 5.8,
+    "promptTokens": 344,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 35,
+    "tokensPerSecond": 10.49
+   },
+   "retried": false,
+   "answer": "This system lets scientists use a custom RNA code to cut specific parts of DNA, like using molecular scissors with a remote control.",
+   "terms": [],
+   "overlap": 0.12,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 5.8,
+   "promptTokens": 344,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 35,
+   "tokensPerSecond": 10.49
+  },
+  {
+   "id": "h08/simpler/beginner",
+   "base_id": "h08",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "This system lets scientists program RNA to cut specific genes in a genome. This could help fix genetic diseases by cutting out bad DNA.",
+    "overlap": 0.19,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 5.9,
+    "promptTokens": 354,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 36,
+    "tokensPerSecond": 10.55
+   },
+   "retried": false,
+   "answer": "This system lets scientists program RNA to cut specific genes in a genome. This could help fix genetic diseases by cutting out bad DNA.",
+   "terms": [],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 5.9,
+   "promptTokens": 354,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 36,
+   "tokensPerSecond": 10.55
+  },
+  {
+   "id": "h08/simpler/grad",
+   "base_id": "h08",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "This work shows how CRISPR-Cas9 uses two RNAs to find DNA cuts. By combining them into one, we can program the enzyme with just RNA to edit genomes.",
+    "overlap": 0.14,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.2,
+    "promptTokens": 367,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 82,
+    "tokensPerSecond": 10.57
+   },
+   "retried": false,
+   "answer": "This work shows how CRISPR-Cas9 uses two RNAs to find DNA cuts. By combining them into one, we can program the enzyme with just RNA to edit genomes.",
+   "terms": [
+    {
+     "term": "endonuclease",
+     "meaning": "an enzyme that cuts DNA"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "changing DNA sequences in an organism"
+    }
+   ],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 10.2,
+   "promptTokens": 367,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 82,
+   "tokensPerSecond": 10.57
+  },
+  {
+   "id": "h08/detail/default",
+   "base_id": "h08",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "This paper shows how engineers can use a single RNA strand to tell the Cas9 protein exactly where to cut DNA. That means scientists can change any gene in a cell by just writing a new RNA recipe, making it easier to fix genetic diseases or study how genes work.",
+    "overlap": 0.04,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.7,
+    "promptTokens": 322,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 102,
+    "tokensPerSecond": 10.71
+   },
+   "retried": false,
+   "answer": "This paper shows how engineers can use a single RNA strand to tell the Cas9 protein exactly where to cut DNA. That means scientists can change any gene in a cell by just writing a new RNA recipe, making it easier to fix genetic diseases or study how genes work.",
+   "terms": [
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by artificial RNA instructions"
+    },
+    {
+     "term": "genome editing",
+     "meaning": "cutting and changing DNA to alter traits"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 50,
+   "seconds": 11.7,
+   "promptTokens": 322,
+   "promptSeconds": 2.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 102,
+   "tokensPerSecond": 10.71
+  },
+  {
+   "id": "h08/detail/beginner",
+   "base_id": "h08",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "This system lets scientists tell Cas9 exactly where to cut DNA using a custom RNA code. It's like a GPS for a molecular scissors, allowing precise changes to any gene without needing special machinery at every site.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.2,
+    "promptTokens": 333,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 71,
+    "tokensPerSecond": 10.4
+   },
+   "retried": false,
+   "answer": "This system lets scientists tell Cas9 exactly where to cut DNA using a custom RNA code. It's like a GPS for a molecular scissors, allowing precise changes to any gene without needing special machinery at every site.",
+   "terms": [
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by a specific RNA sequence"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 37,
+   "seconds": 9.2,
+   "promptTokens": 333,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 71,
+   "tokensPerSecond": 10.4
+  },
+  {
+   "id": "h08/detail/grad",
+   "base_id": "h08",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "This passage shows how CRISPR uses a guide RNA to find specific DNA sequences and cut them. By engineering single RNAs that mimic two separate RNAs, we can program Cas9 to cut any DNA sequence we design, enabling precise genome editing.",
+    "overlap": 0.14,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.5,
+    "promptTokens": 346,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 96,
+    "tokensPerSecond": 10.7
+   },
+   "retried": false,
+   "answer": "This passage shows how CRISPR uses a guide RNA to find specific DNA sequences and cut them. By engineering single RNAs that mimic two separate RNAs, we can program Cas9 to cut any DNA sequence we design, enabling precise genome editing.",
+   "terms": [
+    {
+     "term": "endonucleases",
+     "meaning": "enzymes that cut DNA"
+    },
+    {
+     "term": "RNA-programmable",
+     "meaning": "controlled by synthetic RNA guides"
+    }
+   ],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 11.5,
+   "promptTokens": 346,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 96,
+   "tokensPerSecond": 10.7
+  },
+  {
+   "id": "h09/plain/default",
+   "base_id": "h09",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "Most methods only work if you can compare a protein to a known one. This new method works even when there is nothing similar to match it against.",
+    "overlap": 0.22,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.2,
+    "promptTokens": 393,
+    "promptSeconds": 2.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 70,
+    "tokensPerSecond": 10.69
+   },
+   "retried": false,
+   "answer": "Most methods only work if you can compare a protein to a known one. This new method works even when there is nothing similar to match it against.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "similar or related"
+    },
+    {
+     "term": "sequence",
+     "meaning": "the order of parts"
+    }
+   ],
+   "overlap": 0.22,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 9.2,
+   "promptTokens": 393,
+   "promptSeconds": 2.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 70,
+   "tokensPerSecond": 10.69
+  },
+  {
+   "id": "h09/plain/beginner",
+   "base_id": "h09",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Normally scientists need a similar model to copy from. But this tool guesses the shape correctly even when there's nothing else to compare it to.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.0,
+    "promptTokens": 404,
+    "promptSeconds": 2.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 76,
+    "tokensPerSecond": 10.35
+   },
+   "retried": false,
+   "answer": "Normally scientists need a similar model to copy from. But this tool guesses the shape correctly even when there's nothing else to compare it to.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "similar or related"
+    },
+    {
+     "term": "structure prediction",
+     "meaning": "figuring out the 3D shape of a protein"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 10.0,
+   "promptTokens": 404,
+   "promptSeconds": 2.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 76,
+   "tokensPerSecond": 10.35
+  },
+  {
+   "id": "h09/plain/grad",
+   "base_id": "h09",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Existing methods usually need a known template to predict a new structure. AlphaFold works even when that template is absent, which solves a key limitation.",
+    "overlap": 0.13,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.7,
+    "promptTokens": 417,
+    "promptSeconds": 2.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 55,
+    "tokensPerSecond": 10.8
+   },
+   "retried": false,
+   "answer": "Existing methods usually need a known template to predict a new structure. AlphaFold works even when that template is absent, which solves a key limitation.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "related by common ancestry"
+    }
+   ],
+   "overlap": 0.13,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 25,
+   "seconds": 7.7,
+   "promptTokens": 417,
+   "promptSeconds": 2.7,
+   "cachedTokens": 1870,
+   "generatedTokens": 55,
+   "tokensPerSecond": 10.8
+  },
+  {
+   "id": "h09/simpler/default",
+   "base_id": "h09",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "This is hard because scientists usually compare a new protein to an old one they already know. But when there's no match to compare it to, predicting its shape is very difficult.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.5,
+    "promptTokens": 415,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 76,
+    "tokensPerSecond": 10.93
+   },
+   "retried": false,
+   "answer": "This is hard because scientists usually compare a new protein to an old one they already know. But when there's no match to compare it to, predicting its shape is very difficult.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "similar or related"
+    },
+    {
+     "term": "sequence",
+     "meaning": "the order of parts"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 9.5,
+   "promptTokens": 415,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 76,
+   "tokensPerSecond": 10.93
+  },
+  {
+   "id": "h09/simpler/beginner",
+   "base_id": "h09",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Before this method, computers couldn't guess a protein's shape if it had no close relatives. Now it can do that for many proteins.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.2,
+    "promptTokens": 425,
+    "promptSeconds": 2.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 57,
+    "tokensPerSecond": 10.43
+   },
+   "retried": false,
+   "answer": "Before this method, computers couldn't guess a protein's shape if it had no close relatives. Now it can do that for many proteins.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "sharing a common ancestor or similar structure"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 23,
+   "seconds": 8.2,
+   "promptTokens": 425,
+   "promptSeconds": 2.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 57,
+   "tokensPerSecond": 10.43
+  },
+  {
+   "id": "h09/simpler/grad",
+   "base_id": "h09",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Most methods fail when there's no related structure to compare against. This new method works even then.",
+    "overlap": 0.14,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 5.7,
+    "promptTokens": 438,
+    "promptSeconds": 2.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 30,
+    "tokensPerSecond": 10.27
+   },
+   "retried": false,
+   "answer": "Most methods fail when there's no related structure to compare against. This new method works even then.",
+   "terms": [],
+   "overlap": 0.14,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 17,
+   "seconds": 5.7,
+   "promptTokens": 438,
+   "promptSeconds": 2.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 30,
+   "tokensPerSecond": 10.27
+  },
+  {
+   "id": "h09/detail/default",
+   "base_id": "h09",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "For decades, scientists could only guess a protein's shape if a very similar one was already solved. This new method works even when there are no similar examples to copy from, making it much more useful for studying unknown proteins.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.5,
+    "promptTokens": 393,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 55,
+    "tokensPerSecond": 11.09
+   },
+   "retried": false,
+   "answer": "For decades, scientists could only guess a protein's shape if a very similar one was already solved. This new method works even when there are no similar examples to copy from, making it much more useful for studying unknown proteins.",
+   "terms": [],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 40,
+   "seconds": 7.5,
+   "promptTokens": 393,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 55,
+   "tokensPerSecond": 11.09
+  },
+  {
+   "id": "h09/detail/beginner",
+   "base_id": "h09",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "Scientists usually compare a new protein to one already solved to figure out its shape. This result shows the computer can guess the shape correctly even when there's nothing else to compare it to, which makes the method much more useful.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.1,
+    "promptTokens": 404,
+    "promptSeconds": 2.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 91,
+    "tokensPerSecond": 10.85
+   },
+   "retried": false,
+   "answer": "Scientists usually compare a new protein to one already solved to figure out its shape. This result shows the computer can guess the shape correctly even when there's nothing else to compare it to, which makes the method much more useful.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "similar in structure or origin"
+    },
+    {
+     "term": "sequence",
+     "meaning": "the order of building blocks in a protein"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 11.1,
+   "promptTokens": 404,
+   "promptSeconds": 2.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 91,
+   "tokensPerSecond": 10.85
+  },
+  {
+   "id": "h09/detail/grad",
+   "base_id": "h09",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "This is the hard part: when you have no evolutionary relatives to use as a template. Most methods fail here because they rely on homology, but AlphaFold uses deep learning and physical constraints to predict atomic accuracy without any similar structure in the database.",
+    "overlap": 0.09,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.0,
+    "promptTokens": 417,
+    "promptSeconds": 3.0,
+    "cachedTokens": 1870,
+    "generatedTokens": 94,
+    "tokensPerSecond": 10.25
+   },
+   "retried": false,
+   "answer": "This is the hard part: when you have no evolutionary relatives to use as a template. Most methods fail here because they rely on homology, but AlphaFold uses deep learning and physical constraints to predict atomic accuracy without any similar structure in the database.",
+   "terms": [
+    {
+     "term": "homologous",
+     "meaning": "evolutionarily related"
+    },
+    {
+     "term": "template",
+     "meaning": "a known example used as a model"
+    }
+   ],
+   "overlap": 0.09,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 44,
+   "seconds": 12.0,
+   "promptTokens": 417,
+   "promptSeconds": 3.0,
+   "cachedTokens": 1870,
+   "generatedTokens": 94,
+   "tokensPerSecond": 10.25
+  },
+  {
+   "id": "h10/plain/default",
+   "base_id": "h10",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means people in the intensive group were less likely to have a major heart event than those in the standard group. The 95% CI from 0.64 to 0.89 shows this difference is solid and not due to chance.",
+    "overlap": 0.36,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.8,
+    "promptTokens": 573,
+    "promptSeconds": 4.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 70,
+    "tokensPerSecond": 10.4
+   },
+   "retried": false,
+   "answer": "The hazard ratio of 0.75 means people in the intensive group were less likely to have a major heart event than those in the standard group. The 95% CI from 0.64 to 0.89 shows this difference is solid and not due to chance.",
+   "terms": [],
+   "overlap": 0.36,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 43,
+   "seconds": 10.8,
+   "promptTokens": 573,
+   "promptSeconds": 4.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 70,
+   "tokensPerSecond": 10.4
+  },
+  {
+   "id": "h10/plain/beginner",
+   "base_id": "h10",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means people on the stricter blood pressure plan had a lower chance of having heart attacks or strokes. The 95% CI from 0.64 to 0.89 means we are very sure this difference is real.",
+    "overlap": 0.33,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.5,
+    "promptTokens": 584,
+    "promptSeconds": 4.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 90,
+    "tokensPerSecond": 10.81
+   },
+   "retried": false,
+   "answer": "The hazard ratio of 0.75 means people on the stricter blood pressure plan had a lower chance of having heart attacks or strokes. The 95% CI from 0.64 to 0.89 means we are very sure this difference is real.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a way to compare how likely an event is in two groups"
+    }
+   ],
+   "overlap": 0.33,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 39,
+   "seconds": 12.5,
+   "promptTokens": 584,
+   "promptSeconds": 4.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 90,
+   "tokensPerSecond": 10.81
+  },
+  {
+   "id": "h10/plain/grad",
+   "base_id": "h10",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means the intensive group had a 25% lower risk of the primary outcome compared to standard treatment, which is statistically significant.",
+    "overlap": 0.31,
+    "unsupported": [
+     "25"
+    ],
+    "missingSpans": [],
+    "seconds": 12.3,
+    "promptTokens": 597,
+    "promptSeconds": 3.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 91,
+    "tokensPerSecond": 10.69
+   },
+   "retried": true,
+   "answer": "The hazard ratio of 0.75 means intensive treatment cuts the rate of major cardiovascular events compared to standard treatment, where 1 equals no difference. The 95% CI of 0.64 to 0.89 excludes 1, confirming this lower risk is statistically significant.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "ratio of event rates between two groups"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "range estimating where the true effect lies"
+    }
+   ],
+   "overlap": 0.35,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 40,
+   "seconds": 26.5,
+   "promptTokens": 603,
+   "promptSeconds": 7.6,
+   "cachedTokens": 1951,
+   "generatedTokens": 109,
+   "tokensPerSecond": 10.32
+  },
+  {
+   "id": "h10/simpler/default",
+   "base_id": "h10",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means people in the lower blood pressure group were less likely to have a heart event. The 95% CI from 0.64 to 0.89 shows how sure we are that the difference is real.",
+    "overlap": 0.33,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.0,
+    "promptTokens": 595,
+    "promptSeconds": 4.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 86,
+    "tokensPerSecond": 9.92
+   },
+   "retried": false,
+   "answer": "The hazard ratio of 0.75 means people in the lower blood pressure group were less likely to have a heart event. The 95% CI from 0.64 to 0.89 shows how sure we are that the difference is real.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "how much more or less likely an event happens"
+    }
+   ],
+   "overlap": 0.33,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 13.0,
+   "promptTokens": 595,
+   "promptSeconds": 4.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 86,
+   "tokensPerSecond": 9.92
+  },
+  {
+   "id": "h10/simpler/beginner",
+   "base_id": "h10",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means people in the low-blood-pressure group were less likely to have a heart event or die from it. The 95% CI from 0.64 to 0.89 shows this difference is pretty sure and not just a fluke.",
+    "overlap": 0.3,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 14.5,
+    "promptTokens": 605,
+    "promptSeconds": 3.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 111,
+    "tokensPerSecond": 10.46
+   },
+   "retried": false,
+   "answer": "The hazard ratio of 0.75 means people in the low-blood-pressure group were less likely to have a heart event or die from it. The 95% CI from 0.64 to 0.89 shows this difference is pretty sure and not just a fluke.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a way to compare risk between two groups"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "the range that likely contains the true answer"
+    }
+   ],
+   "overlap": 0.3,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 14.5,
+   "promptTokens": 605,
+   "promptSeconds": 3.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 111,
+   "tokensPerSecond": 10.46
+  },
+  {
+   "id": "h10/simpler/grad",
+   "base_id": "h10",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means the intensive group had a 25% lower risk of the first major cardiovascular event compared to standard treatment. The CI of 0.64 to 0.89 confirms this reduction is statistically significant and not due to chance.",
+    "overlap": 0.32,
+    "unsupported": [
+     "25"
+    ],
+    "missingSpans": [],
+    "seconds": 16.2,
+    "promptTokens": 618,
+    "promptSeconds": 4.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 122,
+    "tokensPerSecond": 10.11
+   },
+   "retried": true,
+   "answer": "The hazard ratio of 0.75 means the intensive group had a 25% lower risk of the first major cardiovascular event compared to standard treatment. The CI of 0.64 to 0.89 confirms this reduction is statistically significant and not due to chance.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of how much faster or slower an outcome happens in one group versus another"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "the range where the true effect likely falls with 95% certainty"
+    }
+   ],
+   "overlap": 0.32,
+   "unsupported": [
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 31.1,
+   "promptTokens": 603,
+   "promptSeconds": 8.3,
+   "cachedTokens": 1972,
+   "generatedTokens": 115,
+   "tokensPerSecond": 10.47
+  },
+  {
+   "id": "h10/detail/default",
+   "base_id": "h10",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means people in the intensive group were less likely to have heart attacks or strokes than those in the standard group. The 95% CI from 0.64 to 0.89 shows this difference is solid and not just luck, since the whole range is below 1.",
+    "overlap": 0.32,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 16.5,
+    "promptTokens": 573,
+    "promptSeconds": 4.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 125,
+    "tokensPerSecond": 10.04
+   },
+   "retried": false,
+   "answer": "The hazard ratio of 0.75 means people in the intensive group were less likely to have heart attacks or strokes than those in the standard group. The 95% CI from 0.64 to 0.89 shows this difference is solid and not just luck, since the whole range is below 1.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a number showing how much more or less likely an event is"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "a range that shows how sure we are about a result"
+    }
+   ],
+   "overlap": 0.32,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 49,
+   "seconds": 16.5,
+   "promptTokens": 573,
+   "promptSeconds": 4.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 125,
+   "tokensPerSecond": 10.04
+  },
+  {
+   "id": "h10/detail/beginner",
+   "base_id": "h10",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means the group with lower blood pressure had a lower chance of having a heart event or stroke. The 95% CI from 0.64 to 0.89 tells us we are very sure this difference is real and not just luck.",
+    "overlap": 0.32,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 17.1,
+    "promptTokens": 584,
+    "promptSeconds": 5.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 113,
+    "tokensPerSecond": 9.73
+   },
+   "retried": false,
+   "answer": "The hazard ratio of 0.75 means the group with lower blood pressure had a lower chance of having a heart event or stroke. The 95% CI from 0.64 to 0.89 tells us we are very sure this difference is real and not just luck.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a number showing how much more likely an event is"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "a range that shows how sure we are"
+    }
+   ],
+   "overlap": 0.32,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 44,
+   "seconds": 17.1,
+   "promptTokens": 584,
+   "promptSeconds": 5.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 113,
+   "tokensPerSecond": 9.73
+  },
+  {
+   "id": "h10/detail/grad",
+   "base_id": "h10",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The hazard ratio of 0.75 means the intensive group had a 25% lower risk of the composite outcome compared to standard treatment, assuming proportional hazards. The 95% CI of 0.64 to 0.89 excludes 1, indicating statistical significance at the 0.05 level. This suggests a robust effect size for the intervention in reducing cardiovascular events.",
+    "overlap": 0.26,
+    "unsupported": [
+     ".05",
+     "25"
+    ],
+    "missingSpans": [],
+    "seconds": 12.7,
+    "promptTokens": 597,
+    "promptSeconds": 4.0,
+    "cachedTokens": 1870,
+    "generatedTokens": 92,
+    "tokensPerSecond": 10.4
+   },
+   "retried": true,
+   "answer": "The hazard ratio of 0.75 means a 25% lower risk of the primary composite outcome in the intensive-treatment group compared to standard treatment. The 95% CI of 0.64 to 0.89 confirms this, as it does not include 1. This significant reduction occurred after a median follow-up of 3.26 years.",
+   "terms": [
+    {
+     "term": "hazard ratio",
+     "meaning": "a measure of the rate of an event happening in one group versus another"
+    },
+    {
+     "term": "confidence interval",
+     "meaning": "the range where the true effect is likely to lie with a certain level of certainty"
+    }
+   ],
+   "overlap": 0.31,
+   "unsupported": [
+    "25"
+   ],
+   "missingSpans": [],
+   "words": 49,
+   "seconds": 31.7,
+   "promptTokens": 607,
+   "promptSeconds": 8.4,
+   "cachedTokens": 1951,
+   "generatedTokens": 143,
+   "tokensPerSecond": 9.79
+  },
+  {
+   "id": "h11/plain/default",
+   "base_id": "h11",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The average person lost 14.9 percent of their starting weight on the drug versus only 2.4 percent on the sugar pill.",
+    "overlap": 0.17,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.4,
+    "promptTokens": 594,
+    "promptSeconds": 4.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 39,
+    "tokensPerSecond": 9.65
+   },
+   "retried": false,
+   "answer": "The average person lost 14.9 percent of their starting weight on the drug versus only 2.4 percent on the sugar pill.",
+   "terms": [],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 21,
+   "seconds": 8.4,
+   "promptTokens": 594,
+   "promptSeconds": 4.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 39,
+   "tokensPerSecond": 9.65
+  },
+  {
+   "id": "h11/plain/beginner",
+   "base_id": "h11",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The drug group lost 14.9 percent of their starting weight, while the sugar pill group only lost 2.4 percent. That is a big difference in how much weight each person shed.",
+    "overlap": 0.21,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.6,
+    "promptTokens": 605,
+    "promptSeconds": 4.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 51,
+    "tokensPerSecond": 10.11
+   },
+   "retried": false,
+   "answer": "The drug group lost 14.9 percent of their starting weight, while the sugar pill group only lost 2.4 percent. That is a big difference in how much weight each person shed.",
+   "terms": [],
+   "overlap": 0.21,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 9.6,
+   "promptTokens": 605,
+   "promptSeconds": 4.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 51,
+   "tokensPerSecond": 10.11
+  },
+  {
+   "id": "h11/plain/grad",
+   "base_id": "h11",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Semaglutide caused an average 14.9% weight loss versus 2.4% with placebo, a difference of 12.4 percentage points. This is the mean change in body weight from baseline to week 68.",
+    "overlap": 0.21,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 15.3,
+    "promptTokens": 618,
+    "promptSeconds": 4.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 96,
+    "tokensPerSecond": 9.12
+   },
+   "retried": false,
+   "answer": "Semaglutide caused an average 14.9% weight loss versus 2.4% with placebo, a difference of 12.4 percentage points. This is the mean change in body weight from baseline to week 68.",
+   "terms": [
+    {
+     "term": "mean change",
+     "meaning": "average change from start to end"
+    },
+    {
+     "term": "percentage points",
+     "meaning": "the gap between two percent values"
+    }
+   ],
+   "overlap": 0.21,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 15.3,
+   "promptTokens": 618,
+   "promptSeconds": 4.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 96,
+   "tokensPerSecond": 9.12
+  },
+  {
+   "id": "h11/simpler/default",
+   "base_id": "h11",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "On average, people on semaglutide lost 14.9% of their starting weight over 68 weeks. Those on the fake pill only lost 2.4% during the same time.",
+    "overlap": 0.23,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.4,
+    "promptTokens": 616,
+    "promptSeconds": 4.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 73,
+    "tokensPerSecond": 9.54
+   },
+   "retried": false,
+   "answer": "On average, people on semaglutide lost 14.9% of their starting weight over 68 weeks. Those on the fake pill only lost 2.4% during the same time.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medicine that helps people lose weight"
+    }
+   ],
+   "overlap": 0.23,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 12.4,
+   "promptTokens": 616,
+   "promptSeconds": 4.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 73,
+   "tokensPerSecond": 9.54
+  },
+  {
+   "id": "h11/simpler/beginner",
+   "base_id": "h11",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "The semaglutide group lost 14.9% of their body weight, while the placebo group only lost 2.4%. That big difference means the medicine helped people lose more fat than the sugar pill did.",
+    "overlap": 0.28,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.9,
+    "promptTokens": 626,
+    "promptSeconds": 4.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 78,
+    "tokensPerSecond": 10.02
+   },
+   "retried": false,
+   "answer": "The semaglutide group lost 14.9% of their body weight, while the placebo group only lost 2.4%. That big difference means the medicine helped people lose more fat than the sugar pill did.",
+   "terms": [
+    {
+     "term": "placebo",
+     "meaning": "a fake medicine that looks real but has no active drug"
+    }
+   ],
+   "overlap": 0.28,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 32,
+   "seconds": 11.9,
+   "promptTokens": 626,
+   "promptSeconds": 4.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 78,
+   "tokensPerSecond": 10.02
+  },
+  {
+   "id": "h11/simpler/grad",
+   "base_id": "h11",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Semaglutide caused a 12.5 percentage point greater weight loss than placebo over 68 weeks. That's a massive difference in the primary endpoint, driven by the drug's effect on appetite and metabolism.",
+    "overlap": 0.1,
+    "unsupported": [
+     "12.5"
+    ],
+    "missingSpans": [],
+    "seconds": 15.2,
+    "promptTokens": 639,
+    "promptSeconds": 5.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 99,
+    "tokensPerSecond": 10.06
+   },
+   "retried": true,
+   "answer": "The mean change in body weight was -14.9% in the semaglutide group as compared with -2.4% with placebo over 68 weeks. This means participants lost more weight on average, and it matters because it shows a clear treatment effect.",
+   "terms": [],
+   "overlap": 0.3,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 39,
+   "seconds": 26.6,
+   "promptTokens": 605,
+   "promptSeconds": 9.7,
+   "cachedTokens": 1993,
+   "generatedTokens": 66,
+   "tokensPerSecond": 9.16
+  },
+  {
+   "id": "h11/detail/default",
+   "base_id": "h11",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "The drug group lost 14.9% of their body weight, while the placebo group only lost 2.4%. That 12.5 percentage point difference is huge because it means the drug worked much better at helping people lose weight.",
+    "overlap": 0.21,
+    "unsupported": [
+     "12.5"
+    ],
+    "missingSpans": [],
+    "seconds": 11.1,
+    "promptTokens": 594,
+    "promptSeconds": 4.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 61,
+    "tokensPerSecond": 9.46
+   },
+   "retried": true,
+   "answer": "At week 68, people on semaglutide lost an average of 14.9% of their body weight, while those on placebo lost only 2.4%. This is the percentage change in body weight from baseline to week 68.",
+   "terms": [],
+   "overlap": 0.29,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 22.0,
+   "promptTokens": 605,
+   "promptSeconds": 9.5,
+   "cachedTokens": 1948,
+   "generatedTokens": 64,
+   "tokensPerSecond": 10.29
+  },
+  {
+   "id": "h11/detail/beginner",
+   "base_id": "h11",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "The drug caused people to lose 14.9% of their starting weight, while the fake pill group lost only 2.4%. That means the real drug made them shed about 12 percentage points more weight than the fake pill did.",
+    "overlap": 0.16,
+    "unsupported": [
+     "12"
+    ],
+    "missingSpans": [],
+    "seconds": 10.5,
+    "promptTokens": 605,
+    "promptSeconds": 4.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 61,
+    "tokensPerSecond": 10.63
+   },
+   "retried": true,
+   "answer": "People on the drug lost 14.9% of their body weight over 68 weeks, while those on the fake medicine lost only 2.4%. This means the drug caused much more weight loss than the placebo did.",
+   "terms": [
+    {
+     "term": "semaglutide",
+     "meaning": "a medicine given by injection"
+    },
+    {
+     "term": "placebo",
+     "meaning": "an inactive treatment used for comparison"
+    }
+   ],
+   "overlap": 0.2,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 24.3,
+   "promptTokens": 603,
+   "promptSeconds": 9.1,
+   "cachedTokens": 1959,
+   "generatedTokens": 94,
+   "tokensPerSecond": 9.79
+  },
+  {
+   "id": "h11/detail/grad",
+   "base_id": "h11",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The mean change in body weight was -14.9% on semaglutide versus -2.4% on placebo. That's an estimated treatment difference of -12.4 percentage points, meaning the drug drove substantially more weight loss than the control arm over 68 weeks.",
+    "overlap": 0.17,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 11.4,
+    "promptTokens": 618,
+    "promptSeconds": 4.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 70,
+    "tokensPerSecond": 9.87
+   },
+   "retried": false,
+   "answer": "The mean change in body weight was -14.9% on semaglutide versus -2.4% on placebo. That's an estimated treatment difference of -12.4 percentage points, meaning the drug drove substantially more weight loss than the control arm over 68 weeks.",
+   "terms": [],
+   "overlap": 0.17,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 11.4,
+   "promptTokens": 618,
+   "promptSeconds": 4.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 70,
+   "tokensPerSecond": 9.87
+  },
+  {
+   "id": "h12/plain/default",
+   "base_id": "h12",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "This study measured total living weight of insects, not just how many were caught. It found the total weight dropped by 76% across a season and 82% in mid-summer.",
+    "overlap": 0.4,
+    "unsupported": [],
+    "missingSpans": [
+     "27 years"
+    ],
+    "seconds": 10.1,
+    "promptTokens": 342,
+    "promptSeconds": 2.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 67,
+    "tokensPerSecond": 9.16
+   },
+   "retried": true,
+   "answer": "Over the 27 years, flying insect weight dropped by 76% in a season and 82% in mid-summer. This loss matters because it shrinks the total food available to other animals, even if some individual bug counts look stable.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total weight of all living things"
+    }
+   ],
+   "overlap": 0.35,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 38,
+   "seconds": 21.5,
+   "promptTokens": 433,
+   "promptSeconds": 5.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 81,
+   "tokensPerSecond": 9.57
+  },
+  {
+   "id": "h12/plain/beginner",
+   "base_id": "h12",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Over 27 years, flying insects got much heavier than before. The 76% drop is across a season, and the 82% drop is in mid-summer.",
+    "overlap": 0.67,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.0,
+    "promptTokens": 353,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 48,
+    "tokensPerSecond": 10.09
+   },
+   "retried": true,
+   "answer": "The 76% drop is the loss of total flying insect weight across a season, and the 82% drop is the loss in mid-summer. This big loss happened over 27 years and shows fewer insects are flying.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living things"
+    }
+   ],
+   "overlap": 0.44,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 36,
+   "seconds": 17.5,
+   "promptTokens": 426,
+   "promptSeconds": 5.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 77,
+   "tokensPerSecond": 10.26
+  },
+  {
+   "id": "h12/plain/grad",
+   "base_id": "h12",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The study shows a massive loss of total insect weight, not just fewer species. The 76% drop is across a season, and the 82% drop is in mid-summer over 27 years.",
+    "overlap": 0.44,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.8,
+    "promptTokens": 366,
+    "promptSeconds": 2.6,
+    "cachedTokens": 1870,
+    "generatedTokens": 73,
+    "tokensPerSecond": 9.94
+   },
+   "retried": false,
+   "answer": "The study shows a massive loss of total insect weight, not just fewer species. The 76% drop is across a season, and the 82% drop is in mid-summer over 27 years.",
+   "terms": [
+    {
+     "term": "insect biomass",
+     "meaning": "the total weight of all insects"
+    }
+   ],
+   "overlap": 0.44,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 9.8,
+   "promptTokens": 366,
+   "promptSeconds": 2.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 73,
+   "tokensPerSecond": 9.94
+  },
+  {
+   "id": "h12/simpler/default",
+   "base_id": "h12",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "Over 27 years, the total weight of flying insects dropped by 76% across a season and 82% in mid-summer. This big loss matters because it changes how nature works.",
+    "overlap": 0.42,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.4,
+    "promptTokens": 364,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 70,
+    "tokensPerSecond": 10.01
+   },
+   "retried": false,
+   "answer": "Over 27 years, the total weight of flying insects dropped by 76% across a season and 82% in mid-summer. This big loss matters because it changes how nature works.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living things"
+    }
+   ],
+   "overlap": 0.42,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 9.4,
+   "promptTokens": 364,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 70,
+   "tokensPerSecond": 10.01
+  },
+  {
+   "id": "h12/simpler/beginner",
+   "base_id": "h12",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Over 27 years, flying insects got much lighter. The 76% drop is across a whole season, and the 82% drop is in mid-summer.",
+    "overlap": 0.62,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.4,
+    "promptTokens": 374,
+    "promptSeconds": 2.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 47,
+    "tokensPerSecond": 9.85
+   },
+   "retried": true,
+   "answer": "Over 27 years, the total weight of flying insects dropped by 76% in a season and 82% in mid-summer. This means far fewer living bugs than before.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living things"
+    }
+   ],
+   "overlap": 0.47,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 18.7,
+   "promptTokens": 447,
+   "promptSeconds": 6.6,
+   "cachedTokens": 1870,
+   "generatedTokens": 68,
+   "tokensPerSecond": 8.97
+  },
+  {
+   "id": "h12/simpler/grad",
+   "base_id": "h12",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "The total weight of insects dropped by 76% across a season and 82% in mid-summer. This massive loss of biomass happens everywhere, and weather or land use don't explain it.",
+    "overlap": 0.32,
+    "unsupported": [],
+    "missingSpans": [
+     "27 years"
+    ],
+    "seconds": 10.8,
+    "promptTokens": 387,
+    "promptSeconds": 3.7,
+    "cachedTokens": 1870,
+    "generatedTokens": 70,
+    "tokensPerSecond": 9.64
+   },
+   "retried": true,
+   "answer": "The total weight of insects dropped by 76% across a season and 82% in mid-summer. This massive loss of biomass happens everywhere, and weather or land use don't explain it.",
+   "terms": [
+    {
+     "term": "insect biomass",
+     "meaning": "total weight of all living insects"
+    }
+   ],
+   "overlap": 0.32,
+   "unsupported": [],
+   "missingSpans": [
+    "27 years"
+   ],
+   "words": 30,
+   "seconds": 19.8,
+   "promptTokens": 478,
+   "promptSeconds": 7.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 52,
+   "tokensPerSecond": 9.38
+  },
+  {
+   "id": "h12/detail/default",
+   "base_id": "h12",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "This study measured the total weight of all flying insects, not just one species. Over 27 years, the total weight dropped by 76% in a season and 82% in mid-summer. This is important because losing insect biomass hurts food webs more than we thought, even if individual species counts stay the same.",
+    "overlap": 0.4,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 13.0,
+    "promptTokens": 342,
+    "promptSeconds": 2.8,
+    "cachedTokens": 1870,
+    "generatedTokens": 99,
+    "tokensPerSecond": 9.68
+   },
+   "retried": false,
+   "answer": "This study measured the total weight of all flying insects, not just one species. Over 27 years, the total weight dropped by 76% in a season and 82% in mid-summer. This is important because losing insect biomass hurts food webs more than we thought, even if individual species counts stay the same.",
+   "terms": [
+    {
+     "term": "insect biomass",
+     "meaning": "the total weight of all insects in an area"
+    }
+   ],
+   "overlap": 0.4,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 52,
+   "seconds": 13.0,
+   "promptTokens": 342,
+   "promptSeconds": 2.8,
+   "cachedTokens": 1870,
+   "generatedTokens": 99,
+   "tokensPerSecond": 9.68
+  },
+  {
+   "id": "h12/detail/beginner",
+   "base_id": "h12",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "They counted how much total flying insect weight was caught, not just how many different types. Over 27 years, total weight dropped by 76% in a season and 82% in mid-summer. This matters because losing insects hurts food chains and nature's services, even if some specific bugs didn't disappear.",
+    "overlap": 0.31,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.9,
+    "promptTokens": 353,
+    "promptSeconds": 2.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 95,
+    "tokensPerSecond": 9.46
+   },
+   "retried": false,
+   "answer": "They counted how much total flying insect weight was caught, not just how many different types. Over 27 years, total weight dropped by 76% in a season and 82% in mid-summer. This matters because losing insects hurts food chains and nature's services, even if some specific bugs didn't disappear.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "the total weight of living stuff"
+    }
+   ],
+   "overlap": 0.31,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 49,
+   "seconds": 12.9,
+   "promptTokens": 353,
+   "promptSeconds": 2.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 95,
+   "tokensPerSecond": 9.46
+  },
+  {
+   "id": "h12/detail/grad",
+   "base_id": "h12",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "The study uses biomass instead of just counts to measure total insect impact. The 76% seasonal drop and 82% mid-summer drop show a massive loss in total mass, not just fewer individuals. This is critical because ecosystem services depend on the energy flow represented by total biomass, which is far greater than what abundance metrics capture.",
+    "overlap": 0.24,
+    "unsupported": [],
+    "missingSpans": [
+     "27 years"
+    ],
+    "seconds": 13.6,
+    "promptTokens": 366,
+    "promptSeconds": 3.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 96,
+    "tokensPerSecond": 9.0
+   },
+   "retried": true,
+   "answer": "Over 27 years, flying insect biomass dropped sharply. The 76% seasonal decline and 82% mid-summer decline show a massive loss of total insect mass, not just fewer individuals. This matters because biomass drives energy flow in food webs, and this decline isn't explained by weather or land use changes.",
+   "terms": [
+    {
+     "term": "biomass",
+     "meaning": "total weight of living organisms"
+    }
+   ],
+   "overlap": 0.35,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 49,
+   "seconds": 27.2,
+   "promptTokens": 457,
+   "promptSeconds": 6.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 93,
+   "tokensPerSecond": 9.35
+  },
+  {
+   "id": "h13/plain/default",
+   "base_id": "h13",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "Only 36% of the new studies found a result strong enough to call it real. Most of the original 100 studies were considered real, but fewer than half of the new ones were.",
+    "overlap": 0.07,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.2,
+    "promptTokens": 272,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 52,
+    "tokensPerSecond": 10.18
+   },
+   "retried": false,
+   "answer": "Only 36% of the new studies found a result strong enough to call it real. Most of the original 100 studies were considered real, but fewer than half of the new ones were.",
+   "terms": [],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 33,
+   "seconds": 7.2,
+   "promptTokens": 272,
+   "promptSeconds": 2.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 52,
+   "tokensPerSecond": 10.18
+  },
+  {
+   "id": "h13/plain/beginner",
+   "base_id": "h13",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Out of 100 tries, only 36 showed a real effect that stood up to checking. That means most of the findings from the first studies didn't hold up when tested again.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.9,
+    "promptTokens": 283,
+    "promptSeconds": 2.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 69,
+    "tokensPerSecond": 10.02
+   },
+   "retried": false,
+   "answer": "Out of 100 tries, only 36 showed a real effect that stood up to checking. That means most of the findings from the first studies didn't hold up when tested again.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to happen by chance"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 8.9,
+   "promptTokens": 283,
+   "promptSeconds": 2.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 69,
+   "tokensPerSecond": 10.02
+  },
+  {
+   "id": "h13/plain/grad",
+   "base_id": "h13",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Only 36% of the replications were statistically significant, meaning most failed to reach the same level of confidence as the originals. This is a substantial decline from the 97% significance rate in the original studies.",
+    "overlap": 0.19,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.1,
+    "promptTokens": 296,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 78,
+    "tokensPerSecond": 9.96
+   },
+   "retried": false,
+   "answer": "Only 36% of the replications were statistically significant, meaning most failed to reach the same level of confidence as the originals. This is a substantial decline from the 97% significance rate in the original studies.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "strong enough evidence that the result isn't just random chance"
+    }
+   ],
+   "overlap": 0.19,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 10.1,
+   "promptTokens": 296,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 78,
+   "tokensPerSecond": 9.96
+  },
+  {
+   "id": "h13/simpler/default",
+   "base_id": "h13",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "Of the 100 studies checked, only 36% showed a real effect when tried again. That means most results that looked solid at first disappeared or got much weaker when repeated.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.3,
+    "promptTokens": 294,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 68,
+    "tokensPerSecond": 9.69
+   },
+   "retried": false,
+   "answer": "Of the 100 studies checked, only 36% showed a real effect when tried again. That means most results that looked solid at first disappeared or got much weaker when repeated.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to happen by chance"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 9.3,
+   "promptTokens": 294,
+   "promptSeconds": 2.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 68,
+   "tokensPerSecond": 9.69
+  },
+  {
+   "id": "h13/simpler/beginner",
+   "base_id": "h13",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Only 36% of the new tests showed a real link. That means most of them didn't find the same clear connection that the original studies did.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.7,
+    "promptTokens": 304,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 62,
+    "tokensPerSecond": 9.8
+   },
+   "retried": false,
+   "answer": "Only 36% of the new tests showed a real link. That means most of them didn't find the same clear connection that the original studies did.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to be just random luck"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 26,
+   "seconds": 8.7,
+   "promptTokens": 304,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 62,
+   "tokensPerSecond": 9.8
+  },
+  {
+   "id": "h13/simpler/grad",
+   "base_id": "h13",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Only 36% of the new studies showed a result strong enough to pass standard statistical tests, meaning most of them didn't reach the same level of certainty as the original papers.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.3,
+    "promptTokens": 317,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 67,
+    "tokensPerSecond": 9.72
+   },
+   "retried": false,
+   "answer": "Only 36% of the new studies showed a result strong enough to pass standard statistical tests, meaning most of them didn't reach the same level of certainty as the original papers.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to happen by random chance"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 9.3,
+   "promptTokens": 317,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 67,
+   "tokensPerSecond": 9.72
+  },
+  {
+   "id": "h13/detail/default",
+   "base_id": "h13",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "Out of 100 studies checked, only 36 showed a clear, repeatable result. The other 64 didn't reach that same standard. This suggests that many scientific findings might not be stable or reliable when tested again.",
+    "overlap": 0.06,
+    "unsupported": [
+     "64"
+    ],
+    "missingSpans": [],
+    "seconds": 7.8,
+    "promptTokens": 272,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 59,
+    "tokensPerSecond": 10.31
+   },
+   "retried": true,
+   "answer": "Out of 100 studies checked, only 36 showed a clear, repeatable result. The other 64 didn't reach that same standard. This suggests that many scientific findings might not be stable or reliable when tested again.",
+   "terms": [],
+   "overlap": 0.06,
+   "unsupported": [
+    "64"
+   ],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 17.4,
+   "promptTokens": 359,
+   "promptSeconds": 4.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 74,
+   "tokensPerSecond": 10.5
+  },
+  {
+   "id": "h13/detail/beginner",
+   "base_id": "h13",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "Out of many studies checked, only about one in three showed a real result when tested again. That means most findings didn't hold up under the same careful checks.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.0,
+    "promptTokens": 283,
+    "promptSeconds": 1.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 62,
+    "tokensPerSecond": 10.08
+   },
+   "retried": false,
+   "answer": "Out of many studies checked, only about one in three showed a real result when tested again. That means most findings didn't hold up under the same careful checks.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "a result unlikely to be just luck"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 29,
+   "seconds": 8.0,
+   "promptTokens": 283,
+   "promptSeconds": 1.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 62,
+   "tokensPerSecond": 10.08
+  },
+  {
+   "id": "h13/detail/grad",
+   "base_id": "h13",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "Only 36% of the replications showed a result strong enough to pass standard statistical tests, compared to 97% in the original studies. This suggests that many published findings are not robust enough to be reproduced under rigorous conditions, which challenges the reliability of current research.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 12.5,
+    "promptTokens": 296,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 107,
+    "tokensPerSecond": 10.48
+   },
+   "retried": false,
+   "answer": "Only 36% of the replications showed a result strong enough to pass standard statistical tests, compared to 97% in the original studies. This suggests that many published findings are not robust enough to be reproduced under rigorous conditions, which challenges the reliability of current research.",
+   "terms": [
+    {
+     "term": "statistically significant",
+     "meaning": "result unlikely to happen by chance alone"
+    },
+    {
+     "term": "replication",
+     "meaning": "running the same experiment again to check if results hold"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 45,
+   "seconds": 12.5,
+   "promptTokens": 296,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 107,
+   "tokensPerSecond": 10.48
+  },
+  {
+   "id": "h14/plain/default",
+   "base_id": "h14",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "The brain uses a pattern of spots arranged like a honeycomb to track where an animal is. Each spot lights up when the animal lands on one of those specific points.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.8,
+    "promptTokens": 278,
+    "promptSeconds": 2.0,
+    "cachedTokens": 1870,
+    "generatedTokens": 61,
+    "tokensPerSecond": 10.43
+   },
+   "retried": false,
+   "answer": "The brain uses a pattern of spots arranged like a honeycomb to track where an animal is. Each spot lights up when the animal lands on one of those specific points.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "the corner or point of a shape"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 7.8,
+   "promptTokens": 278,
+   "promptSeconds": 2.0,
+   "cachedTokens": 1870,
+   "generatedTokens": 61,
+   "tokensPerSecond": 10.43
+  },
+  {
+   "id": "h14/plain/beginner",
+   "base_id": "h14",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "Imagine the animal's brain is a giant graph paper. Every time it steps on a specific spot, a special cell lights up exactly where that spot would be on the paper.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 10.0,
+    "promptTokens": 289,
+    "promptSeconds": 1.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 82,
+    "tokensPerSecond": 10.04
+   },
+   "retried": false,
+   "answer": "Imagine the animal's brain is a giant graph paper. Every time it steps on a specific spot, a special cell lights up exactly where that spot would be on the paper.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a single corner or point"
+    },
+    {
+     "term": "equilateral triangles",
+     "meaning": "triangles with all three sides the same length"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 10.0,
+   "promptTokens": 289,
+   "promptSeconds": 1.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 82,
+   "tokensPerSecond": 10.04
+  },
+  {
+   "id": "h14/plain/grad",
+   "base_id": "h14",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "Grid cells fire at specific points that form a perfect geometric pattern of equilateral triangles across the space. This means the animal's position aligns with one of these mathematically precise vertices.",
+    "overlap": 0.15,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.4,
+    "promptTokens": 302,
+    "promptSeconds": 2.5,
+    "cachedTokens": 1870,
+    "generatedTokens": 64,
+    "tokensPerSecond": 10.66
+   },
+   "retried": false,
+   "answer": "Grid cells fire at specific points that form a perfect geometric pattern of equilateral triangles across the space. This means the animal's position aligns with one of these mathematically precise vertices.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "one corner point of a triangle"
+    }
+   ],
+   "overlap": 0.15,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 31,
+   "seconds": 8.4,
+   "promptTokens": 302,
+   "promptSeconds": 2.5,
+   "cachedTokens": 1870,
+   "generatedTokens": 64,
+   "tokensPerSecond": 10.66
+  },
+  {
+   "id": "h14/simpler/default",
+   "base_id": "h14",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "Imagine a giant invisible net made of perfect triangles covering the ground. A cell lights up only when you stand exactly on one of those triangle corners.",
+    "overlap": 0.07,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.4,
+    "promptTokens": 300,
+    "promptSeconds": 2.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 54,
+    "tokensPerSecond": 10.07
+   },
+   "retried": false,
+   "answer": "Imagine a giant invisible net made of perfect triangles covering the ground. A cell lights up only when you stand exactly on one of those triangle corners.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "one corner of a shape"
+    }
+   ],
+   "overlap": 0.07,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 7.4,
+   "promptTokens": 300,
+   "promptSeconds": 2.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 54,
+   "tokensPerSecond": 10.07
+  },
+  {
+   "id": "h14/simpler/beginner",
+   "base_id": "h14",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Imagine a giant invisible honeycomb covering the whole room. The grid cells light up exactly where you stand on the corners of that honeycomb.",
+    "overlap": 0.08,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.4,
+    "promptTokens": 310,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 51,
+    "tokensPerSecond": 9.79
+   },
+   "retried": false,
+   "answer": "Imagine a giant invisible honeycomb covering the whole room. The grid cells light up exactly where you stand on the corners of that honeycomb.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner point"
+    }
+   ],
+   "overlap": 0.08,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 24,
+   "seconds": 7.4,
+   "promptTokens": 310,
+   "promptSeconds": 2.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 51,
+   "tokensPerSecond": 9.79
+  },
+  {
+   "id": "h14/simpler/grad",
+   "base_id": "h14",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "Grid cells fire at every point where the animal is on a specific equilateral triangle pattern. These triangles form a regular grid that covers the whole space.",
+    "overlap": 0.27,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.2,
+    "promptTokens": 323,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 55,
+    "tokensPerSecond": 10.9
+   },
+   "retried": false,
+   "answer": "Grid cells fire at every point where the animal is on a specific equilateral triangle pattern. These triangles form a regular grid that covers the whole space.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner or intersection point"
+    }
+   ],
+   "overlap": 0.27,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 27,
+   "seconds": 7.2,
+   "promptTokens": 323,
+   "promptSeconds": 2.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 55,
+   "tokensPerSecond": 10.9
+  },
+  {
+   "id": "h14/detail/default",
+   "base_id": "h14",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "The brain uses a special code made of overlapping hexagons to track location. The animal’s position matches one point on this pattern, like a checkerboard square. This grid changes size depending on where you are, and it stays even if landmarks disappear.",
+    "overlap": 0.04,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.1,
+    "promptTokens": 278,
+    "promptSeconds": 1.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 76,
+    "tokensPerSecond": 10.47
+   },
+   "retried": false,
+   "answer": "The brain uses a special code made of overlapping hexagons to track location. The animal’s position matches one point on this pattern, like a checkerboard square. This grid changes size depending on where you are, and it stays even if landmarks disappear.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner or meeting point"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 42,
+   "seconds": 9.1,
+   "promptTokens": 278,
+   "promptSeconds": 1.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 76,
+   "tokensPerSecond": 10.47
+  },
+  {
+   "id": "h14/detail/beginner",
+   "base_id": "h14",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "Imagine a floor covered in matching triangular tiles. A 'grid cell' fires whenever you stand on one of those spots, no matter how big the room is or if the landmarks are gone. This helps the animal count steps and stay on track.",
+    "overlap": 0.04,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.7,
+    "promptTokens": 289,
+    "promptSeconds": 1.9,
+    "cachedTokens": 1870,
+    "generatedTokens": 75,
+    "tokensPerSecond": 10.81
+   },
+   "retried": false,
+   "answer": "Imagine a floor covered in matching triangular tiles. A 'grid cell' fires whenever you stand on one of those spots, no matter how big the room is or if the landmarks are gone. This helps the animal count steps and stay on track.",
+   "terms": [
+    {
+     "term": "vertex",
+     "meaning": "a corner where three triangles meet"
+    }
+   ],
+   "overlap": 0.04,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 43,
+   "seconds": 8.7,
+   "promptTokens": 289,
+   "promptSeconds": 1.9,
+   "cachedTokens": 1870,
+   "generatedTokens": 75,
+   "tokensPerSecond": 10.81
+  },
+  {
+   "id": "h14/detail/grad",
+   "base_id": "h14",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "Grid cells fire at precise locations forming a hexagonal lattice. The spacing and size of individual fields increase from dorsal to ventral dMEC, creating a continuous topographical map anchored to landmarks yet persisting in their absence, suggesting a path-integration-based spatial representation.",
+    "overlap": 0.03,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 133.7,
+    "promptTokens": 302,
+    "promptSeconds": 2.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 104,
+    "tokensPerSecond": 0.78
+   },
+   "retried": false,
+   "answer": "Grid cells fire at precise locations forming a hexagonal lattice. The spacing and size of individual fields increase from dorsal to ventral dMEC, creating a continuous topographical map anchored to landmarks yet persisting in their absence, suggesting a path-integration-based spatial representation.",
+   "terms": [
+    {
+     "term": "path-integration",
+     "meaning": "self-contained navigation by tracking movement vectors"
+    },
+    {
+     "term": "topographically organized",
+     "meaning": "arranged so location maps directly onto space"
+    }
+   ],
+   "overlap": 0.03,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 41,
+   "seconds": 133.7,
+   "promptTokens": 302,
+   "promptSeconds": 2.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 104,
+   "tokensPerSecond": 0.78
+  },
+  {
+   "id": "h15/plain/default",
+   "base_id": "h15",
+   "mode": "plain",
+   "profile": "default",
+   "first": {
+    "answer": "If researchers are chasing results that look good, their data might just reflect that bias instead of real truth. The numbers they report could be a mirror of how they were looking for answers.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 8.5,
+    "promptTokens": 304,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 65,
+    "tokensPerSecond": 10.2
+   },
+   "retried": false,
+   "answer": "If researchers are chasing results that look good, their data might just reflect that bias instead of real truth. The numbers they report could be a mirror of how they were looking for answers.",
+   "terms": [
+    {
+     "term": "bias",
+     "meaning": "a system that favors one result over another"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 34,
+   "seconds": 8.5,
+   "promptTokens": 304,
+   "promptSeconds": 2.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 65,
+   "tokensPerSecond": 10.2
+  },
+  {
+   "id": "h15/plain/beginner",
+   "base_id": "h15",
+   "mode": "plain",
+   "profile": "beginner",
+   "first": {
+    "answer": "The study says that what scientists claim might just show how much they are wrong about their own methods. It's like a mirror showing the mistakes people make.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 6.6,
+    "promptTokens": 315,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 41,
+    "tokensPerSecond": 9.31
+   },
+   "retried": false,
+   "answer": "The study says that what scientists claim might just show how much they are wrong about their own methods. It's like a mirror showing the mistakes people make.",
+   "terms": [],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 6.6,
+   "promptTokens": 315,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 41,
+   "tokensPerSecond": 9.31
+  },
+  {
+   "id": "h15/plain/grad",
+   "base_id": "h15",
+   "mode": "plain",
+   "profile": "grad",
+   "first": {
+    "answer": "The paper argues that many published results are just reflections of systematic errors in how studies are designed or funded, rather than truths about nature. Essentially, the data itself is a mirror of the methodological flaws.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 6.9,
+    "promptTokens": 328,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 51,
+    "tokensPerSecond": 10.92
+   },
+   "retried": false,
+   "answer": "The paper argues that many published results are just reflections of systematic errors in how studies are designed or funded, rather than truths about nature. Essentially, the data itself is a mirror of the methodological flaws.",
+   "terms": [],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 36,
+   "seconds": 6.9,
+   "promptTokens": 328,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 51,
+   "tokensPerSecond": 10.92
+  },
+  {
+   "id": "h15/simpler/default",
+   "base_id": "h15",
+   "mode": "simpler",
+   "profile": "default",
+   "first": {
+    "answer": "This means some results are just reflecting what researchers already want to see or how they are biased. It's like a mirror showing only what you already expect.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.7,
+    "promptTokens": 326,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 59,
+    "tokensPerSecond": 10.87
+   },
+   "retried": false,
+   "answer": "This means some results are just reflecting what researchers already want to see or how they are biased. It's like a mirror showing only what you already expect.",
+   "terms": [
+    {
+     "term": "bias",
+     "meaning": "a tendency to favor one thing over another"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 7.7,
+   "promptTokens": 326,
+   "promptSeconds": 2.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 59,
+   "tokensPerSecond": 10.87
+  },
+  {
+   "id": "h15/simpler/beginner",
+   "base_id": "h15",
+   "mode": "simpler",
+   "profile": "beginner",
+   "first": {
+    "answer": "Some studies might just show what people already believe instead of finding new truth. If a team pushes their favorite idea, they might accidentally prove it is true.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 7.3,
+    "promptTokens": 336,
+    "promptSeconds": 2.2,
+    "cachedTokens": 1870,
+    "generatedTokens": 58,
+    "tokensPerSecond": 11.09
+   },
+   "retried": false,
+   "answer": "Some studies might just show what people already believe instead of finding new truth. If a team pushes their favorite idea, they might accidentally prove it is true.",
+   "terms": [
+    {
+     "term": "bias",
+     "meaning": "a personal preference that skews results"
+    }
+   ],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 28,
+   "seconds": 7.3,
+   "promptTokens": 336,
+   "promptSeconds": 2.2,
+   "cachedTokens": 1870,
+   "generatedTokens": 58,
+   "tokensPerSecond": 11.09
+  },
+  {
+   "id": "h15/simpler/grad",
+   "base_id": "h15",
+   "mode": "simpler",
+   "profile": "grad",
+   "first": {
+    "answer": "When a study is small or biased, its result might just reflect that bias rather than a real effect. In many fields, false claims are more common than true ones.",
+    "overlap": 0.06,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 6.2,
+    "promptTokens": 349,
+    "promptSeconds": 2.1,
+    "cachedTokens": 1870,
+    "generatedTokens": 44,
+    "tokensPerSecond": 10.62
+   },
+   "retried": false,
+   "answer": "When a study is small or biased, its result might just reflect that bias rather than a real effect. In many fields, false claims are more common than true ones.",
+   "terms": [],
+   "overlap": 0.06,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 30,
+   "seconds": 6.2,
+   "promptTokens": 349,
+   "promptSeconds": 2.1,
+   "cachedTokens": 1870,
+   "generatedTokens": 44,
+   "tokensPerSecond": 10.62
+  },
+  {
+   "id": "h15/detail/default",
+   "base_id": "h15",
+   "mode": "detail",
+   "profile": "default",
+   "first": {
+    "answer": "The authors warn that many published results might just reflect the researcher's expectations or hidden influences. If a study is small or biased, the result could match what the researchers hoped to find rather than reality. It means the number doesn't prove truth on its own.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.8,
+    "promptTokens": 304,
+    "promptSeconds": 2.3,
+    "cachedTokens": 1870,
+    "generatedTokens": 79,
+    "tokensPerSecond": 10.38
+   },
+   "retried": false,
+   "answer": "The authors warn that many published results might just reflect the researcher's expectations or hidden influences. If a study is small or biased, the result could match what the researchers hoped to find rather than reality. It means the number doesn't prove truth on its own.",
+   "terms": [
+    {
+     "term": "bias",
+     "meaning": "a preference or prejudice that influences results"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 46,
+   "seconds": 9.8,
+   "promptTokens": 304,
+   "promptSeconds": 2.3,
+   "cachedTokens": 1870,
+   "generatedTokens": 79,
+   "tokensPerSecond": 10.38
+  },
+  {
+   "id": "h15/detail/beginner",
+   "base_id": "h15",
+   "mode": "detail",
+   "profile": "beginner",
+   "first": {
+    "answer": "This means a result might just show how much the study was pushed by money or expectations, not what is actually true. If a team wants to find a link, they might design the study to make one appear.",
+    "overlap": 0.0,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.2,
+    "promptTokens": 315,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 72,
+    "tokensPerSecond": 10.46
+   },
+   "retried": false,
+   "answer": "This means a result might just show how much the study was pushed by money or expectations, not what is actually true. If a team wants to find a link, they might design the study to make one appear.",
+   "terms": [
+    {
+     "term": "bias",
+     "meaning": "a hidden push in the way things are done"
+    }
+   ],
+   "overlap": 0.0,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 39,
+   "seconds": 9.2,
+   "promptTokens": 315,
+   "promptSeconds": 2.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 72,
+   "tokensPerSecond": 10.46
+  },
+  {
+   "id": "h15/detail/grad",
+   "base_id": "h15",
+   "mode": "detail",
+   "profile": "grad",
+   "first": {
+    "answer": "When many studies chase statistical significance with small samples and flexible designs, they amplify bias. Here, a positive result might not reflect a real effect but rather the systematic error introduced by these methodological weaknesses.",
+    "overlap": 0.05,
+    "unsupported": [],
+    "missingSpans": [],
+    "seconds": 9.4,
+    "promptTokens": 328,
+    "promptSeconds": 2.4,
+    "cachedTokens": 1870,
+    "generatedTokens": 77,
+    "tokensPerSecond": 10.9
+   },
+   "retried": false,
+   "answer": "When many studies chase statistical significance with small samples and flexible designs, they amplify bias. Here, a positive result might not reflect a real effect but rather the systematic error introduced by these methodological weaknesses.",
+   "terms": [
+    {
+     "term": "statistical significance",
+     "meaning": "a threshold that determines if an observed effect is unlikely to be due to chance"
+    }
+   ],
+   "overlap": 0.05,
+   "unsupported": [],
+   "missingSpans": [],
+   "words": 35,
+   "seconds": 9.4,
+   "promptTokens": 328,
+   "promptSeconds": 2.4,
+   "cachedTokens": 1870,
+   "generatedTokens": 77,
+   "tokensPerSecond": 10.9
+  }
+ ],
+ "podcast": null
+}
